@@ -1196,6 +1196,9 @@
     <ClCompile Include="Tailor1.cpp">
       <Filter>Tailor</Filter>
     </ClCompile>
+    <ClCompile Include="ExtFont_Tailor.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SkirmishDialog.rc">

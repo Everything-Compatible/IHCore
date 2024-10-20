@@ -524,6 +524,7 @@
     <ClCompile Include="ExtCsf.cpp" />
     <ClCompile Include="ExtFile.cpp" />
     <ClCompile Include="ExtFont.cpp" />
+    <ClCompile Include="ExtFont_Tailor.cpp" />
     <ClCompile Include="ExtIni.cpp" />
     <ClCompile Include="ExtLog.cpp" />
     <ClCompile Include="ExtMix.cpp" />
