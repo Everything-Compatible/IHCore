@@ -1,0 +1,1210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{de6bf841-7e20-4fb7-aaa6-ffd7cbb19cf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{a39303ce-aa50-4e26-a978-cc70bdb390ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File">
+      <UniqueIdentifier>{557e34a7-b3bf-45da-bf90-e06723cab448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{3fa4902d-d76d-48c8-8d5e-4efb03d53bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ext">
+      <UniqueIdentifier>{2615cac3-38f9-4ee7-b6b2-c9fc78fb9e4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="YRPP">
+      <UniqueIdentifier>{c02b0147-8d64-49e2-87c3-cbc9cb653f0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="YRPP\Helpers">
+      <UniqueIdentifier>{e3ddfa9b-a9a1-4069-b8cb-19b7fc90ec6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="YRPP\Blitters">
+      <UniqueIdentifier>{730b2ec6-7ba4-411b-b9e4-2ac0b587f0ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="YRPP\FileFormats">
+      <UniqueIdentifier>{aecd3dbb-68a0-4f78-bb2f-32b8791d7070}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IHLoader">
+      <UniqueIdentifier>{40910ebb-52e9-4948-b1da-f1f9df9b9173}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tailor">
+      <UniqueIdentifier>{b8cc4068-89bc-4c88-b032-98d9dda04ae1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="MiscFunc.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtFile.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtCsf.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\DataStructure.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\ToolFunc.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\LocalData.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtLog.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Macro.h">
+      <Filter>Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="Patch.h">
+      <Filter>Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AbstractClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AbstractTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AircraftClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AircraftTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AirstrikeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AITriggerTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AlphaLightingRemapClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AlphaShapeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AnimClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\AnimTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ArrayClasses.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ASMMacros.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Audio.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BasicStructures.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BitFont.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BitText.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BombClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BombListClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BounceClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BuildingClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BuildingLightClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BuildingTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BulletClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\BulletTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CampaignClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CaptureManagerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CCFileClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CCINIClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CCToolTip.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CD.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CellClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CellSpread.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CheckListClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ColorListClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ColorScheme.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CommandClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ControlClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Conversions.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ConvertClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CRC.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\CRT.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Dir.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\DiscreteDistributionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\DiscreteSelectionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\DiskLaserClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\DisplayClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Drawing.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\DriveLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\DropListClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\EBolt.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\EditClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\EMPulseClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\EvadeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\EventClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Facing.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FactoryClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FileSystem.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FlyLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FootClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FPSCounter.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Fundamentals.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GadgetClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GameClasses.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GameModeOptionsClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GameOptionsClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GameStrings.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GaugeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GeneralDefinitions.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GeneralStructures.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GenericList.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GetCDClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\GScreenClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\HeapClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\HouseClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\HouseTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\IndexClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\InfantryClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\InfantryTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\InputManagerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Interfaces.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Ion.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\IonBlastClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\IPX.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\IPXManagerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\IsometricTileClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\IsometricTileTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\JumpjetLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Kamikaze.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LaserDrawClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LightSourceClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LineTrail.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LinkClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ListClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LoadOptionsClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LoadProgressManager.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\LocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MapClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MapSeedClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Matrix3D.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MessageBox.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MessageListClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MissionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MixFileClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MouseClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MPGameModeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\MPTeams.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\NeuronClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Notifications.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ObjectClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ObjectTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\OverlayClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\OverlayTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\PacketClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ParasiteClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ParticleClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ParticleSystemClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ParticleSystemTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ParticleTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\PCX.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Pipes.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\PlanningTokenClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\PowerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Powerups.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\PreviewClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ProgressScreenClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Quaternion.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RadarClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RadarEventClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RadBeam.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RadioClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RadSiteClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Randomizer.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RocketLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\RulesClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ScenarioClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ScriptClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ScriptTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SessionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ShapeButtonClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ShipLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SidebarClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SideClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SlaveManagerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SliderClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SmudgeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SmudgeTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SpawnManagerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SpecificStructures.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SpotlightClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\StageClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Straws.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\StringTable.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SuperClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SuperWeaponTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Surface.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\SwizzleManagerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Syringe.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TacticalClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TActionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TagClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TagTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TargetClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TaskForceClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TeamClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TeamTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TechnoClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TechnoTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TeleportLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TemporalClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TerrainClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TerrainTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TEventClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TextLabelClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Theater.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ThemeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TiberiumClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Timer.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ToggleClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\ToolTipManager.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TransitionTimer.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TriColorGaugeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TriggerClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TriggerTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\TunnelLocomotionClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\UDPInterfaceClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\UI.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\UnitClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\UnitTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Unsorted.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Vault.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\VeinholeMonsterClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\VocClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\VoxClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\VoxelAnimClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\VoxelAnimTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\VTables.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WarheadTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WaveClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WaypointPathClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WeaponTypeClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WinsockInterfaceClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WOLAPIInterfaces.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Wstring.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WWMessageBox.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\WWMouseClass.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRAllocator.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRCom.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRDDraw.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRMath.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRMathVector.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRMemory.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRPP.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\YRPPCore.h">
+      <Filter>YRPP</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\Cast.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\CompileTime.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\ComPtr.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\Enumerators.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\EnumFlags.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\Iterators.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\Macro.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\String.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Helpers\Template.h">
+      <Filter>YRPP\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlatAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlatZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlatZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\Blitter.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransDarken.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransDarkenZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransDarkenZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25Alpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25AlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25AlphaZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25AlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25ZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25ZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25ZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50Alpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50AlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50AlphaZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50AlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTranslucent50NonzeroAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTranslucent50ZeroAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50ZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50ZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50ZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75Alpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75AlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75AlphaZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75AlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75ZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75ZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75ZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTranslucentWriteAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransRemapDest.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransRemapXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatAlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatAlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatMultWriteAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatWriteAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatAlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatAlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransDarken.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransDarkenZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransDarkenZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25Alpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25AlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25AlphaZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25AlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25ZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25ZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25ZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50Alpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50AlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50AlphaZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50AlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50ZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50ZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50ZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75Alpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75AlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75AlphaZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75AlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75ZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75ZReadWarp.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75ZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapDest.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapDestZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapDestZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapXlatZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapXlatZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatAlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatAlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlat.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatAlpha.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatAlphaZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatAlphaZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatZRead.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatZReadWrite.h">
+      <Filter>YRPP\Blitters</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FileFormats\_Loader.h">
+      <Filter>YRPP\FileFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FileFormats\HVA.h">
+      <Filter>YRPP\FileFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FileFormats\SHP.h">
+      <Filter>YRPP\FileFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="YRPP\FileFormats\VXL.h">
+      <Filter>YRPP\FileFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtIni.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\ExtJson.h">
+      <Filter>IHLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\LoaderLib.h">
+      <Filter>IHLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\SyringeEx.h">
+      <Filter>IHLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="StringManagerExt.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="SomeData.h">
+      <Filter>Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtCD.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="InitialLoad.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="IHConfig.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\cJSON.h">
+      <Filter>File</Filter>
+    </ClInclude>
+    <ClInclude Include="sha1.h">
+      <Filter>Ext</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Syringe.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="MiscFunc.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Test1.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtCsf.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\ToolFunc.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\LocalData.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\DataStructure.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\LocalLibManager.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="Load.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>Ext</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtLog.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Patch.cpp">
+      <Filter>Ext</Filter>
+    </ClCompile>
+    <ClCompile Include="YRPP\StaticInits.cpp">
+      <Filter>YRPP</Filter>
+    </ClCompile>
+    <ClCompile Include="Test.StableHooks.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtFile.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtIni.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalLibFunc.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="Optional.Hooks.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\cJSON.c">
+      <Filter>IHLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\ExtJson.cpp">
+      <Filter>IHLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\LoaderLib.cpp">
+      <Filter>IHLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp">
+      <Filter>IHLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="InitSomewhere.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="StringManagerExt.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtMix.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtCD.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="InitialLoad.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtFont.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="IHConfig.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="Tailor1.cpp">
+      <Filter>Tailor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SkirmishDialog.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="YRPP\YRpp.props">
+      <Filter>YRPP</Filter>
+    </None>
+  </ItemGroup>
+</Project>

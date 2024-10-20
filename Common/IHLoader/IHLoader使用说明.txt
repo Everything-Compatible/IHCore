@@ -1,0 +1,446 @@
+
+使用前的准备：
+
+MyInit函数需要自己编写一个，并放入一个CPP当中，以下是一个示例：
+
+const int MyVersion = 114514;
+std::unordered_map<std::string, FuncInfo>Funcs;
+InitInput* LibInput;
+FuncInfo* __cdecl MyGetFunc(const char* Name, int Version)
+{
+	if (MyVersion < Version)return nullptr;
+	auto it = Funcs.find(Name);
+	if (it == Funcs.end())return nullptr;
+	else return &it->second;
+}
+
+void __cdecl DependentInit()
+{
+
+}
+
+void MyInit(InitResult& Result)
+{
+	static LibVersionInfo info;
+
+	info.LibName = "MyLib";
+	info.Version = MyVersion;
+	info.LowestSupportedVersion = 0;
+	Result.Info = &info;
+	Result.GetFunc = MyGetFunc;
+	Result.OrderedInit = DependentInit;
+	Result.Dependencies.N = 0;
+	Result.Dependencies.Data = nullptr;
+}
+
+
+同时，DllMain当中也应该调用Init::Initialize()。
+另外，如果想要注册初始服务，请在DllMain之后，Init::Initialize()之前完成注册。
+例如：
+
+BOOL APIENTRY DllMain( HMODULE hModule,
+					   DWORD  ul_reason_for_call,
+					   LPVOID lpReserved
+					 )
+{
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+		if (Init::Initialize())
+        {
+            //调用初始服务，详见下面“有关初始服务”一节。
+        }
+		break;
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+	return TRUE;
+}
+
+
+
+————LoaderLib————
+
+关于数据结构：
+Ext命名空间当中的一切都只有在MyInit运行起才能使用（MyInit里面就已经可以使用）
+Ext里面的结构，在MyInit运行之前就可以使用noinit_t的初始化
+
+LibFuncHandle：指向任意的一个函数。
+JsonObject：一个Json对象的索引。
+JsonFile：持有一个Json的所有权。
+
+FuncInfo：带有函数和对函数的类型说明（FuncType）。
+	FuncType包括：
+		Default , 实际类型为非以下类型的函数，具体则未知。
+		Condition , 实际类型为 bool (__cdecl *)(JsonObject Context)
+		Action , 实际类型为 void (__cdecl *)(JsonObject Context)
+		Callback , 实际类型为 void (__cdecl *)(JsonObject Context)
+		Procedure , 实际类型为 void (__cdecl *)(void)
+		Comm , 实际类型为 void* (__cdecl *)(void*)
+	其中的Context是绑定好的上下文，可以通过ActiveContext或Executor配置。
+
+GeneratorParam：一组用于把上下文绑定到某个Class的参数。
+	通过GetGeneratorParam函数来获取参数。传入原版RTTI类型的一个指针即可获取Param。
+	注：GeneratorParam里面有指针，注意Swizzle的时候把里面的ptr成员改了。
+
+GeneralExecutor：一个执行器类型。
+	创建后可以传入Ext::AddExecutor投入执行。
+	投入执行的Executor可以通过Ext::RemoveExecutor从游戏中移除。
+	其中的Base成员通过MakeExecutor_BaseText或MakeExecutor_Base构建。
+	该构建过程中如果返回值为false，则构建失败（一般是传入的FuncInfo的类型不对，或者某些参数传入了nullptr）
+	其中的Swizzle可以传入nullptr，Destructor也可以。
+	Base构建之后，Ext::MakeExecutor_xxx或Ext::MakeExecutorEx_xxx完成后续的构建。
+	Ext::MakeExecutor_xxx默认构造好的Base是传入的GeneralExecutor的成员，Ext::MakeExecutorEx_xxx则相反。
+	该构建过程中如果返回值为false，则构建失败（一般是传入的FuncInfo的类型不对，或者某些参数传入了nullptr）
+	成员：（包括Base当中的）
+		Base::Delay是Ext::AddExecutor创建到开始运行的间隔（单位：帧）
+		Base::Type是执行器对应的Binder类型
+		Base::ExecType是执行器自己的类型
+		注意Type和ExecType必须由GeneralExecutor的创建一端持有所有权，或为常量存在
+		对一个GeneralExecutor来说，Base::Type和Base::ExecType不可与另一个GeneralExecutor同时一致。
+		Base::Context是未绑定的上下文。
+		Action，Condition，Destructor的类型都是FuncInfo*，其中：
+			Action和Destructor的FuncType限制为Action/Callback/Procedure之一
+			Condition的FuncType限制为Condition
+			Condition是用于Trigger，WhileLoop，InfiniteTrigger当中判定条件的函数
+			Action是这个Executor要干的事
+			Destructor是在这个Executor执行结束，或被移除（通过Ext::RemoveExecutor）的时候干的事（仅在游戏当中执行，退出游戏不会触发Destructor）
+		Swizzle是一个void(__cdecl*)(GeneralExecutor* Exec, const GeneratorParam* Param, JsonObject CurrentContext)类型的函数
+			这个Swizzle完成的是修改Exec里面的上下文的功能。
+			具体来说，在存档时，可以直接把一个Executor里面的当前Context直接以文本保存。
+			读档时，通过这个文本初始化GeneralExecutor，在对应对象的指针Swizzle同时修正配套的GeneratorParam里面的指针，
+			之后用修正的GeneratorParam和刚才初始化的GeneralExecutor传入Ext::AddExecutor，随即Swizzle会被调用来修正上下文（以参数CurrentContext传入）
+	分类：
+		Trigger：等待，直到Condition满足才执行Action，执行后消失，每隔Interval帧检查一次Condition
+		Once：执行一次Action后消失
+		InfiniteLoop：无限执行，每隔Interval帧执行一次Action
+		WhileLoop：每隔Interval帧检查一次Condition，若Condition满足则执行Action，否则循环结束，执行器消失
+		NLoop：执行N次，每隔Interval帧执行一次Action
+		InfiniteTrigger：等待，每当Condition满足就执行Action，执行后继续等待，每隔Interval帧检查一次Condition
+
+BasicLibData：接入的库的注册数据
+	可以通过Ext::LibData的GetRaw函数获取。
+	成员：
+	    Available：这个库是否可用。
+		In、Out：都是注册时的原始数据。详见InitInput和InitResult的说明。
+		ReservedA、ReservedB、Reserved：都是保留数据。当他们不存在就好。
+
+Ext::LibData：接入的库的基本信息
+    可以访问所有接入EC的库的信息。
+	只应该通过Ext::GetLib或Ext::GetAvailableLib获取到。
+	构造函数被禁用（除了从BasicLibData*构造）
+	成员函数：
+	    Available：检查LibData的可用性。可用则返回true。只有可用时才可以使用LibData。
+		QueryFunction：直接从对应的库获取接口。只保留了最小检查，直接调用对应库的获取接口的函数。
+		Version：获取对应的库的版本。
+		LibName：获取对应的库的注册名。
+		LibFnTable：获取对应的库得到的函数表。
+		GetTableFn：按照索引获取IH的API函数。可以用于在低版本调用高版本特供的函数等。
+		SetTableFn：修改指定索引的API函数，使对应的库在调用IH的API时指向其他地方。
+		GetTableCustormFn：每个函数表上有5个自定义函数槽，这个函数可以获取对应的库槽里面的函数。索引为0~4。
+		SetTableCustomFn：每个函数表上有5个自定义函数槽，这个函数可以改变对应的库槽里面的函数。索引为0~4。
+        GetRaw：获取BasicLibData*类型的库数据。
+		GetBack：获取在IHCore当中存储的库数据。（除非你确定你在做什么，否则不要调用，且这个数据不保证布局在版本更新时稳定）
+
+CSFEntry
+	作为CSF的键值。
+	成员：
+	    Value：是const wchar_t*，就是CSF的值。
+	    Extra：是const char* ，是额外值。
+
+Ext::CSFClass
+	是一个CSF文件对象。可以像原版的CSF一样打开、使用。
+	支持复制构造和移动构造。
+	成员函数：
+	    Available：检查CSF文件的可用性。可用则返回true。只有可用时CSF才可以访问。
+	    Assign：用另一个CSFClass来赋值。
+		operator=：和Assign一样，就是赋值。
+        LoadAsCCFile：通过CCFileClass来初始化，可以访问mix里面的文件。
+		    传入一个文件名或打开了文件的CCFileClass*。
+        LoadAsExternalFile：通过外部文件来初始化。
+		GetString：传入一个Key（不分大小写）返回一个CSFEntry存有值。
+		    在Merge操作之后请重新获取值，Clear操作之后之前所有获取的值全部失效。如果不想失效可以复制一份。
+		GetStringDefault：传入一个Key（不分大小写）返回一个CSFEntry存有值。如果找不到值会返回MISSING:XXX作为Value。
+		    在Merge操作之后请重新获取值，Clear操作之后之前所有获取的值全部失效。如果不想失效可以复制一份。
+		Merge(const CSFClass* Another)：会合并入来自另一个CSFClass的键值对。不会删除Another里面的键值对而是复制一份。
+		Merge(const char* Key, const wchar_t* value, const char* Extra) ：会合并入一个键值对。
+		Clear：清空整个CSF。所有GetString和GetStringDefault此前获取的值全部失效。
+
+Ext::ActiveExecutor：
+
+Context：
+Ext::ActiveContext：
+DirectBinder：
+
+Routine：一个定期执行的任务。
+	类型是Routine_t （ int(__cdecl*)(RoutineParam*) ）。返回值为Int。
+	RoutineParam是一个大小为16字节的结构体。具体在创建RoutineParam时传入，此后始终返回同一个Param结构体。
+		注：如果在Routiine当中修改Param，那么下一次执行到时候拿到的保证是修改后的Param。
+Ext::ActiveRoutine：
+	在让Routine投入运行时使用。传入它的名字和要执行的Routine_t。
+	执行的Routine的返回值是到下一次执行Routine的间隔。
+	如果返回值是ExitThisRoutine (大小是INT_MAX)，Routine会销毁自己。
+	如果返回值是PauseThisRoutine (大小是INT_MAX - 1)，Routine会暂停自己。
+	成员函数：
+		Init：用于采用noinit_t构造的两步初始化。如果想要一步初始化，请直接使用相应的构造函数。
+		GetHandle：获取RoutineHandle，可以用来直接操作Routine，或是在外部通过Ext::DeleteRoutine删除掉它（注意：此时请立即直接Destroy对应的ActiveRoutine）。
+		InstantRun：立刻继续（若暂停）并清零等待时间
+		Pause：让Routine暂停执行,Pause一个暂停的Routine什么都不会发生
+		Resume：让Routine继续执行，Resume一个在运行的Routine什么都不会发生
+		Delay：让Routine在下次执行之前多等一会（单位：帧）
+		GetParam：获得指向该Routine持有的RoutineParam的指针
+		Destroy：销毁自己，比外部通过Ext::DeleteRoutine删除能少一些麻烦（)
+		对未Init或已经Destroy而尚未重新Init的ActiveRoutine，执行除Init外的成员函数什么都不会发生。
+
+Ext::CallInterface：接口实现方的接口结构。
+	 只能通过一个字符串FuncName构造。使用方法见下文说明。
+	 成员函数：
+		Call：在接口处调用，会调用所有注册名为FuncName的函数。
+			Context参数是绑定后的上下文。调用的类型可以为：Action/Callback/Procedure，如果Context为空，则请保证类型都是Procedure。
+		Get：在接口处调用，会返回所有注册名为FuncName的函数，由于有缓存，保证复杂度O(1)。
+		Reload：改变里面的FuncName。
+
+Ext::DispatchInterface：接口调用方的接口结构。
+
+
+ContextIndex：
+	一个对运行中的Executor，及其持有的Context的索引。由于里面包含了指向xxxClass的GeneratorParam，也可能需要Swizzle。
+
+GenCallRetType：
+	Ext::GeneralCall的返回值。Action/Callback/Procedure返回Void，Condition返回True或False，其他返回Default（此时Ext::GeneralCall传入的函数没有执行）
+
+InitResult：详见MyInit来确定其配置方式。
+InitInput/LibInputFnTable：由IHLoader库自动管理。
+PArray：携带长度的一个数组指针。
+
+关于初始服务：
+
+初始服务是在EC初始化（mix加载之后）前提供载入服务的系统。
+初始服务涉及到载入文件及文件类型、初始设置等操作。
+在EC初始化之后，应当使用EC的各个Interface来连接接口等。
+
+注意！！！
+以下的InitialLoadParam及其派生类都是全局创建一次永不销毁
+所有传入const char*的位置不可传入临时对象（如std::string运算的结果）
+可以直接传入稳定的全局对象或常量。
+如果创建了临时对象作为参数，请套一层创建副本再传，直接传入临时对象会导致崩溃
+如创建临时的char*必须使用strdup创建副本。
+
+IH组件的服务：
+（一）现在IH自带6类10个服务：
+InitialLoadParam_CustomPath ："IHFile::CustomPathListHead"，"IHFile::CustomPathListTail"，"IHFile::CustomPathListFirst"
+InitialLoadParam_CustomFile ："IHFile::AddStringTable"，"IHFile::AddMixFile"
+InitialLoadParam_StringTablePair ：	"StringTable::AddPair"
+InitialLoadParam_RedirectFile ：	"IHFile::BindToStream"，"IHFile::RedirectFileName"
+InitialLoadParam_RegisterVTable ："IHFile::RegisterIHFile"
+InitialLoadParam_RegisterFunction ："IHFile::RegisterIHFileFilter"
+（二）使用方式：
+在DllMain当中：(参照前面的段落)
+if (Init::Initialize())
+{
+    //调用初始服务
+	InitialLoad::CreateRequestAndSubmit<服务类型>(服务名字, 服务参数1, 服务参数2, ...);
+	……
+}
+（四）服务含义&参数：
+InitialLoadParam_CustomPath ：
+含义：注册自定义路径
+	"IHFile::CustomPathListHead" 代表在CD列表的开头插入的自定义路径，不分大小写
+	"IHFile::CustomPathListTail" 代表在CD列表的结尾插入的自定义路径，不分大小写
+	"IHFile::CustomPathListFirst"代表在读CD列表之前读入的自定义路径，不分大小写
+	顺序：CustomPathListFirst→CD列表（CustomPathListHead→原始的CD列表→CustomPathListTail）
+参数：
+	(I) 绝对路径（const char*）  （如果路径使用临时值请strdup复制）
+	例：InitialLoad::CreateRequestAndSubmit<InitialLoadParam_CustomPath>("IHFile::CustomPathListFirst", "C:\\ECTest\\Custom\\");
+	(II) UseRelativePath, 相对路径（const char*）（如果相对路径使用临时值可以不strdup复制，因为本身这个会strdup一次）
+	例：InitialLoad::CreateRequestAndSubmit<InitialLoadParam_CustomPath>("IHFile::CustomPathListFirst", UseRelativePath, "\\Custom\\");
+InitialLoadParam_CustomFile ：
+含义：注册自定义文件
+	"IHFile::AddStringTable" 代表注册一个新的CSF或可作为CSF使用的INI/Json文件，不分大小写，相关规范见用户包里面的说明书。
+	"IHFile::AddMixFile"     代表注册一个MIX文件，不分大小写，会像原版的expandmdxx.mix一样被读取。
+参数：
+	(I) 文件名（const char*）  （如果名字使用临时值请strdup复制）
+	例：InitialLoad::CreateRequestAndSubmit<InitialLoadParam_CustomFile>("IHFile::AddMixFile", "EC_Custom.mix");
+InitialLoadParam_StringTablePair ：	
+含义：注册一条CSF条目
+	"StringTable::AddPair" 代表注册一条CSF条目并合入StringTable，Key不分大小写
+参数：
+	(I) 键(Key)（const char*）值(Value)（const wchar_t*）额外值(Extra)（const char*）  （如果名字使用临时值请strdup复制）
+	例：InitialLoad::CreateRequestAndSubmit<InitialLoadParam_StringTablePair>("StringTable::AddPair", "Name:WTF", L"什么东西", "");
+InitialLoadParam_RedirectFile ：
+含义：注册文件的重定向
+	"IHFile::BindToStream"     代表把特定名字的文件（重定向后的名字）绑定到指定名字的流上，文件不分大小写，流名字分大小写
+	"IHFile::RedirectFileName" 代表把某个文件名重定向到另一个文件，允许连锁重定向，即A->B B->C 是可以把A重定向到C的
+参数：
+	(I) 起始点名称（const char*），  目标名称（const char*）  （如果名字使用临时值请strdup复制）
+	例：
+	    对"IHFile::BindToStream"：2个参数代表文件名称和流名称，文件名称不分大小写，流名称分大小写
+	    对"IHFile::RedirectFileName"：2个参数代表原名称和目标文件，文件名称不分大小写（在请求打开原名称时会导向目标文件）
+	    InitialLoad::CreateRequestAndSubmit<InitialLoadParam_RedirectFile>("IHFile::BindToStream", "rulesmd.ini","ECFileClass");
+	    InitialLoad::CreateRequestAndSubmit<InitialLoadParam_RedirectFile>("IHFile::RedirectFileName", "rulesmd.ini","rulesmo.ini");
+InitialLoadParam_RegisterVTable ：
+含义：注册类型信息供跨模块多态使用
+	"IHFile::RegisterIHFile" 代表注册一个自定义文件流（详见“关于自定义文件流”一节）
+参数：
+    (I) 类型注册名（const char*），虚表指针（unsigned），类型尺寸（size_t）  （如果名字使用临时值请strdup复制）
+	例：InitialLoad::CreateRequestAndSubmit<InitialLoadParam_RegisterVTable>("IHFile::RegisterIHFile", "ECFileClass", GetIHFileRegisterKey<ECFileClass>(), sizeof(ECFileClass));
+	或者使用一个特化的注册逻辑，与上个方法等价：（#240921A起）
+	例：InitialLoad::ClassRegisterByName("IHFile::RegisterIHFile", ECFileClass); 
+InitialLoadParam_RegisterFunction ：
+含义：注册一个具名的函数
+	"IHFile::RegisterIHFileFilter" 代表给自定义文件流绑定一个筛选器
+	注：自定义文件流的筛选器是一个 bool __cdecl (const char*) 类型的函数，入参为文件名（重定向后的名字），返回true则此文件由对应文件流接管
+	例：一个只会盯上rulesmd的筛选器： bool __cdecl ECFilter(const char* Name) { return !strcmp(Name, "rulesmd.ini"); }
+参数：
+    (I) 类型注册名（const char*），函数指针（T*）  （如果名字使用临时值请strdup复制）
+	例：
+	    对"IHFile::RegisterIHFileFilter"：类型注册名填绑定到的自定义文件流的类型注册名
+	    InitialLoad::CreateRequestAndSubmit<InitialLoadParam_RegisterFunction>("IHFile::RegisterIHFileFilter", "ECFileClass", ECFilter);
+	
+
+
+关于自定义初始服务：
+
+一个自定义服务由参数、服务端和处理函数构成。
+参数：
+	含义&要求：
+		一类参数对应一类服务，每个服务都必须有配套的参数种类。
+		参数必须是InitialLoadParam的派生类或其派生类（即参数的基类的基类……直到最根上的基类必须是InitialLoadParam）
+	制作：
+	    参照IHInitialLoad.h和IHInitialLoad.cpp当中的6类参数制作。
+		一个参数应该继承InitialLoadParam或继承其派生类。
+		参数所需要的内存可以随意瞎分配，都是全局创建一次永不销毁，没有人持有他们
+		参数不应该具有所有者，而是一经创建就永久存留在内存当中，永不释放。
+		参数不应该持有即将释放的临时对象。
+		参数应该在构造函数当中以参数本身的size传入InitialLoadParam的构造函数。
+	示例：
+	    IHInitialLoad.h和IHInitialLoad.cpp当中的6类参数都算示例。
+服务端：
+	含义&要求：
+		服务端是一个InitialLoad::Service类型的变量，它可以接收指定的请求并分派之。
+		服务端会缓存收到的请求。服务端可以随用随创建，也可以一次创建多次使用。
+		如果反复响应同一个服务，请一次创建多次使用来利用缓存加速调用。
+	制作：
+	    定义一个服务端，然后在处理函数里面使用即可。（服务名：std::string）
+		定义方式：InitialLoad::Service<参数类型> 变量名(服务名);
+	示例：
+	    InitialLoad::Service<InitialLoadParam_RegisterVTable> Service_RegisterIHFile("IHFile::RegisterIHFile");
+处理函数：
+    含义&要求：
+	    处理函数是能够自发执行的，如通过钩子等方式被调用。
+		处理函数不应为DllMain或在DllMain里直接或间接调用的函数。
+		在一个处理函数里面可以通过服务端派发请求。
+	制作：
+		可以调用Refresh()来刷新缓存的请求。
+		可以使用ProcessOnce、Process、RefreshAndProcess来相应请求。
+		RefreshAndProcess会在每次调用时刷新缓存。
+		Process会在没有缓存请求时获取请求，之后仅使用缓存的请求。
+		ProcessOnce只会让这个服务端变量获取一次请求并派发。如果同一个服务端变量多次调用ProcessOnce，那么从第二次起都什么也不会发生。
+		ProcessOnce、Process、RefreshAndProcess的参数都是const std::function<void(const ParamType&)>& 其中ParamType是服务端的参数类型。
+		参数可以传入所有std::function接受的类型，如函数指针、lambda、仿函数等。
+	示例：
+	    用不上，自己看LoaderLib.h里面的InitialLoad::Service的定义。
+		
+
+关于自定义文件流：
+
+自定义文件流派生自IHFileClass或派生自其派生类（如IHReadOnlyFileClass）。
+派生后请挨个实现里面的纯虚函数。
+
+构建：
+    新建一个class继承IHFileClass（对应有读写的文件）或IHReadOnlyFileClass（对应只读的文件）。
+    这两个Class可以参见CustomFile.h。
+    建立后实现成员函数。
+成员函数：
+    构造函数：应该有一个接受noinit_t的构造函数，里面什么都不要干，只需要往IHFileClass的构造函数里面传一个noinit_t即可。
+	注：实际上你在构造函数里面即使写了任何东西也都会被无视，所以啥都不要写。
+	虚函数：需实现基类当中剩余的所有纯虚函数，保证构建的派生类当中所有的函数都不是纯虚的。
+让自定义文件流被调用：
+	写完自定义文件流之后需通过RegisterIHFile服务注册一下文件流（详见“关于初始服务”一节里面"IHFile::RegisterIHFile"一段）
+	之后通过BindToStream或者RegisterIHFileFilter服务决定哪些文件从自制的文件流打开。
+	    （详见“关于初始服务”一节里面"IHFile::BindToStream"一段和"IHFile::RegisterIHFileFilter"一段）
+备注：
+	由于自定义文件流被调用的第一个函数总是SetFileName，所以可以把初始化相关的内容部署在里面。
+	如果不知道怎么写，可以抄EC_ExampleDll里面的ECFileClass.h和ECFileClass.cpp当中ECFileClass的实现。
+	如果不知道怎么注册，可以抄EC_ExampleDll里面的DllMain函数。
+	相关函数原型总是和FileClass一致的（毕竟IHFileClass也是派生自FileClass的）
+
+
+关于引入的函数：
+
+	bool IHAvailable();
+	查阅IH组件是否加载。
+
+以下的函数均由IHCore.dll完成实现，存放于Ext命名空间中。
+Ext命名空间当中的一切都只有在MyInit运行起才能使用（MyInit里面就已经可以使用）
+
+	FuncInfo* GetFuncFromLib(const char* pLib, const char* pFunc, int Version);
+	PArray<FuncInfo*> GetFuncByName(const char* pFunc);
+	GenCallRetType GeneralCall(const FuncInfo& Fn, JsonObject Context = NullJsonObject);
+	void ResetGetFunctionBuffer();
+
+	void RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor);
+	void RegisterDirectBinder(const char* Type, const char* BindType, DirectBinder_t pDirectBinder);
+	bool RegisterRoutine(const char* Name, Routine_t Routine);
+
+	JsonObject DirectBindContextTo(JsonObject Context, const ContextIndex& Idx);
+	JsonObject DirectBindTextTo(const char* Text, const ContextIndex& Idx);
+	JsonObject GetContextByIdx(const ContextIndex& Idx);
+	void DeleteContextByIdx(const ContextIndex& Idx);
+
+	RoutineHandle GetRoutine(const char* Name);
+	void InstantRunRoutine(RoutineHandle Routine);
+	void PauseRoutine(RoutineHandle Routine);
+	void ResumeRoutine(RoutineHandle Routine);
+	void DelayRoutine(RoutineHandle Routine, int Delay);
+	RoutineParam* GetRoutineParam(RoutineHandle Routine);
+	void DeleteRoutine(const char* Name);
+
+	bool MakeExecutor_BaseText(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Text, const char* Type, const char* ExecType, SwizzleExecutor_t Swizzle, FuncInfo* Destructor);
+	bool MakeExecutor_Base(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Type, const char* ExecType, JsonObject Context, FuncInfo* Destructor);
+	bool MakeExecutor_Trigger(GeneralExecutor& Target, FuncInfo* Condition, int Interval);
+	bool MakeExecutor_InfiniteTrigger(GeneralExecutor& Target, FuncInfo* Condition, int Interval);
+	bool MakeExecutor_Once(GeneralExecutor& Target);
+	bool MakeExecutor_InfiniteLoop(GeneralExecutor& Target, int Interval);
+	bool MakeExecutor_WhileLoop(GeneralExecutor& Target, FuncInfo* Condition, int Interval);
+	bool MakeExecutor_NLoop(GeneralExecutor& Target, int N, int Interval);
+	bool MakeExecutorEx_Trigger(GeneralExecutor& Target, const ExecutorBase& Base, FuncInfo* Condition, int Interval);
+	bool MakeExecutorEx_InfiniteTrigger(GeneralExecutor& Target, const ExecutorBase& Base, FuncInfo* Condition, int Interval);
+	bool MakeExecutorEx_Once(GeneralExecutor& Target, const ExecutorBase& Base);
+	bool MakeExecutorEx_InfiniteLoop(GeneralExecutor& Target, const ExecutorBase& Base, int Interval);
+	bool MakeExecutorEx_WhileLoop(GeneralExecutor& Target, const ExecutorBase& Base, FuncInfo* Condition, int Interval);
+	bool MakeExecutorEx_NLoop(GeneralExecutor& Target, const ExecutorBase& Base, int N, int Interval);
+
+	void AddExecutor(const GeneralExecutor& GenExec, const GeneratorParam& Param, bool DirectBind = true);
+	bool HasExecutor(const ContextIndex& Idx);
+	void RemoveExecutor(const ContextIndex& Idx);
+	RoutineParam* GetRoutineParam(RoutineHandle Routine);
+	void ResetGetFunctionBuffer();
+
+	bool RegisterRoutineSet(const char* Name, const RoutineSet& Routine, RoutineParam Param, bool Paused, int InitialDelay, bool ResetParam, CreateMode Mode);
+	LibData GetLib(const char* Name);
+	LibData GetAvailableLib(const char* Name);
+	FuncInfo* QueryFunction(BasicLibData* Lib, const char* Name, int Version);//DoNotCheckVersion还是匹配当前版本 但大部分检查都不会工作 甚至不检查传出的是不是FuncInfo*
+	void* CustomFunction(int FuncIdx);
+
+
+关于一些预设的调用位置：
+
+从GetFunc可以获取到的函数当中：
+（这个获取过程是会缓存的，一个名字只会从各个dll获取一次,可使用Ext::ResetGetFunctionBuffer清除这个缓存）
+注册名为IHCore::Reset的会在游戏开始时调用，要求类型为FuncType::Procedure ( void(__cdecl*)(void) )
+注册名为IHCore::FrameUpdate的会在每帧调用，要求类型为FuncType::Procedure ( void(__cdecl*)(void) )
+<此条暂时不可用 IHS 08/14>注册名为IHCore::Exit的会在游戏退出时调用，要求类型为FuncType::Procedure ( void(__cdecl*)(void) )
+可以在自己的接口处放置一个Ext::CallInterface来调用所有dll当中特定注册名的函数。
+
+Ext::CallInterface的使用方法：定义为全局变量或接口函数里面的静态变量，在接口里面Get或者Call。
+如：
+
+Ext::CallInterface A_Hook_Interface("A_Hook_Callback")
+DEFINE_HOOK(0x114514, A_Hook, 6)
+{
+	A_Hook_Interface.Call();
+}
+

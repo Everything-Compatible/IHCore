@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+/.vs/IHCore
+/Common/SIInterface
+/IHCore/Release/IHCore.tlog
+/IHCore/Release
+/IHCore/x64/Debug
+/IHLibList/Release
+/RAImGui/Release
+/RAImGui/x64/Debug
+/Release
+/SRC241007A
+/SRC241007A.zip
+/debug.log

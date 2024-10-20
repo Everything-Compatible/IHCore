@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{43cb2942-6f18-4e66-b3c7-55eaf03beb46}</ProjectGuid>
+    <RootNamespace>IHCore</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(WindowsSDK_IncludePath);$(VC_IncludePath);$(MSBuildProjectDirectory)\YRPP;$(SolutionDir)Common;$(SolutionDir)Common\IHCore;$(SolutionDir)Common\IHLoader</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;IHCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>IHCore;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;IHCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
+      <ExternalWarningLevel>Level2</ExternalWarningLevel>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;IHCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;IHCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\DataStructure.h" />
+    <ClInclude Include="..\Common\IHLoader\cJSON.h" />
+    <ClInclude Include="..\Common\IHLoader\ExtJson.h" />
+    <ClInclude Include="..\Common\IHLoader\LoaderLib.h" />
+    <ClInclude Include="..\Common\IHLoader\SyringeEx.h" />
+    <ClInclude Include="..\Common\LocalData.h" />
+    <ClInclude Include="..\Common\ToolFunc.h" />
+    <ClInclude Include="Command.h" />
+    <ClInclude Include="Debug.h" />
+    <ClInclude Include="ExtCD.h" />
+    <ClInclude Include="ExtCsf.h" />
+    <ClInclude Include="ExtFile.h" />
+    <ClInclude Include="ExtIni.h" />
+    <ClInclude Include="ExtLog.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="Global.h" />
+    <ClInclude Include="IHConfig.h" />
+    <ClInclude Include="InitialLoad.h" />
+    <ClInclude Include="Macro.h" />
+    <ClInclude Include="MiscFunc.h" />
+    <ClInclude Include="Patch.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="sha1.h" />
+    <ClInclude Include="SomeData.h" />
+    <ClInclude Include="StringManagerExt.h" />
+    <ClInclude Include="YRPP\AbstractClass.h" />
+    <ClInclude Include="YRPP\AbstractTypeClass.h" />
+    <ClInclude Include="YRPP\AircraftClass.h" />
+    <ClInclude Include="YRPP\AircraftTypeClass.h" />
+    <ClInclude Include="YRPP\AirstrikeClass.h" />
+    <ClInclude Include="YRPP\AITriggerTypeClass.h" />
+    <ClInclude Include="YRPP\AlphaLightingRemapClass.h" />
+    <ClInclude Include="YRPP\AlphaShapeClass.h" />
+    <ClInclude Include="YRPP\AnimClass.h" />
+    <ClInclude Include="YRPP\AnimTypeClass.h" />
+    <ClInclude Include="YRPP\ArrayClasses.h" />
+    <ClInclude Include="YRPP\ASMMacros.h" />
+    <ClInclude Include="YRPP\Audio.h" />
+    <ClInclude Include="YRPP\BasicStructures.h" />
+    <ClInclude Include="YRPP\BitFont.h" />
+    <ClInclude Include="YRPP\BitText.h" />
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlat.h" />
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlatAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlatZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitPlainXlatZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\Blitter.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransDarken.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransDarkenZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransDarkenZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25Alpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25AlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25AlphaZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25AlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25ZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25ZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent25ZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50Alpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50AlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50AlphaZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50AlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTranslucent50NonzeroAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTranslucent50ZeroAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50ZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50ZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent50ZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75Alpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75AlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75AlphaZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75AlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75ZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75ZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransLucent75ZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTranslucentWriteAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransRemapDest.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransRemapXlat.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlat.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatAlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatAlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatMultWriteAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatWriteAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransXlatZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlat.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatAlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatAlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatZRead.h" />
+    <ClInclude Include="YRPP\Blitters\BlitTransZRemapXlatZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransDarken.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransDarkenZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransDarkenZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25Alpha.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25AlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25AlphaZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25AlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25ZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25ZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent25ZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50Alpha.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50AlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50AlphaZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50AlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50ZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50ZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent50ZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75Alpha.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75AlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75AlphaZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75AlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75ZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75ZReadWarp.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransLucent75ZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapDest.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapDestZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapDestZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapXlat.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapXlatZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransRemapXlatZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlat.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatAlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatAlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransXlatZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlat.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatAlpha.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatAlphaZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatAlphaZReadWrite.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatZRead.h" />
+    <ClInclude Include="YRPP\Blitters\RLEBlitTransZRemapXlatZReadWrite.h" />
+    <ClInclude Include="YRPP\BombClass.h" />
+    <ClInclude Include="YRPP\BombListClass.h" />
+    <ClInclude Include="YRPP\BounceClass.h" />
+    <ClInclude Include="YRPP\BuildingClass.h" />
+    <ClInclude Include="YRPP\BuildingLightClass.h" />
+    <ClInclude Include="YRPP\BuildingTypeClass.h" />
+    <ClInclude Include="YRPP\BulletClass.h" />
+    <ClInclude Include="YRPP\BulletTypeClass.h" />
+    <ClInclude Include="YRPP\CampaignClass.h" />
+    <ClInclude Include="YRPP\CaptureManagerClass.h" />
+    <ClInclude Include="YRPP\CCFileClass.h" />
+    <ClInclude Include="YRPP\CCINIClass.h" />
+    <ClInclude Include="YRPP\CCToolTip.h" />
+    <ClInclude Include="YRPP\CD.h" />
+    <ClInclude Include="YRPP\CellClass.h" />
+    <ClInclude Include="YRPP\CellSpread.h" />
+    <ClInclude Include="YRPP\CheckListClass.h" />
+    <ClInclude Include="YRPP\ColorListClass.h" />
+    <ClInclude Include="YRPP\ColorScheme.h" />
+    <ClInclude Include="YRPP\CommandClass.h" />
+    <ClInclude Include="YRPP\ControlClass.h" />
+    <ClInclude Include="YRPP\Conversions.h" />
+    <ClInclude Include="YRPP\ConvertClass.h" />
+    <ClInclude Include="YRPP\CRC.h" />
+    <ClInclude Include="YRPP\CRT.h" />
+    <ClInclude Include="YRPP\Dir.h" />
+    <ClInclude Include="YRPP\DiscreteDistributionClass.h" />
+    <ClInclude Include="YRPP\DiscreteSelectionClass.h" />
+    <ClInclude Include="YRPP\DiskLaserClass.h" />
+    <ClInclude Include="YRPP\DisplayClass.h" />
+    <ClInclude Include="YRPP\Drawing.h" />
+    <ClInclude Include="YRPP\DriveLocomotionClass.h" />
+    <ClInclude Include="YRPP\DropListClass.h" />
+    <ClInclude Include="YRPP\EBolt.h" />
+    <ClInclude Include="YRPP\EditClass.h" />
+    <ClInclude Include="YRPP\EMPulseClass.h" />
+    <ClInclude Include="YRPP\EvadeClass.h" />
+    <ClInclude Include="YRPP\EventClass.h" />
+    <ClInclude Include="YRPP\Facing.h" />
+    <ClInclude Include="YRPP\FactoryClass.h" />
+    <ClInclude Include="YRPP\FileFormats\HVA.h" />
+    <ClInclude Include="YRPP\FileFormats\SHP.h" />
+    <ClInclude Include="YRPP\FileFormats\VXL.h" />
+    <ClInclude Include="YRPP\FileFormats\_Loader.h" />
+    <ClInclude Include="YRPP\FileSystem.h" />
+    <ClInclude Include="YRPP\FlyLocomotionClass.h" />
+    <ClInclude Include="YRPP\FootClass.h" />
+    <ClInclude Include="YRPP\FPSCounter.h" />
+    <ClInclude Include="YRPP\Fundamentals.h" />
+    <ClInclude Include="YRPP\GadgetClass.h" />
+    <ClInclude Include="YRPP\GameClasses.h" />
+    <ClInclude Include="YRPP\GameModeOptionsClass.h" />
+    <ClInclude Include="YRPP\GameOptionsClass.h" />
+    <ClInclude Include="YRPP\GameStrings.h" />
+    <ClInclude Include="YRPP\GaugeClass.h" />
+    <ClInclude Include="YRPP\GeneralDefinitions.h" />
+    <ClInclude Include="YRPP\GeneralStructures.h" />
+    <ClInclude Include="YRPP\GenericList.h" />
+    <ClInclude Include="YRPP\GetCDClass.h" />
+    <ClInclude Include="YRPP\GScreenClass.h" />
+    <ClInclude Include="YRPP\HeapClass.h" />
+    <ClInclude Include="YRPP\Helpers\Cast.h" />
+    <ClInclude Include="YRPP\Helpers\CompileTime.h" />
+    <ClInclude Include="YRPP\Helpers\ComPtr.h" />
+    <ClInclude Include="YRPP\Helpers\Enumerators.h" />
+    <ClInclude Include="YRPP\Helpers\EnumFlags.h" />
+    <ClInclude Include="YRPP\Helpers\Iterators.h" />
+    <ClInclude Include="YRPP\Helpers\Macro.h" />
+    <ClInclude Include="YRPP\Helpers\String.h" />
+    <ClInclude Include="YRPP\Helpers\Template.h" />
+    <ClInclude Include="YRPP\HouseClass.h" />
+    <ClInclude Include="YRPP\HouseTypeClass.h" />
+    <ClInclude Include="YRPP\IndexClass.h" />
+    <ClInclude Include="YRPP\InfantryClass.h" />
+    <ClInclude Include="YRPP\InfantryTypeClass.h" />
+    <ClInclude Include="YRPP\InputManagerClass.h" />
+    <ClInclude Include="YRPP\Interfaces.h" />
+    <ClInclude Include="YRPP\Ion.h" />
+    <ClInclude Include="YRPP\IonBlastClass.h" />
+    <ClInclude Include="YRPP\IPX.h" />
+    <ClInclude Include="YRPP\IPXManagerClass.h" />
+    <ClInclude Include="YRPP\IsometricTileClass.h" />
+    <ClInclude Include="YRPP\IsometricTileTypeClass.h" />
+    <ClInclude Include="YRPP\JumpjetLocomotionClass.h" />
+    <ClInclude Include="YRPP\Kamikaze.h" />
+    <ClInclude Include="YRPP\LaserDrawClass.h" />
+    <ClInclude Include="YRPP\LightSourceClass.h" />
+    <ClInclude Include="YRPP\LineTrail.h" />
+    <ClInclude Include="YRPP\LinkClass.h" />
+    <ClInclude Include="YRPP\ListClass.h" />
+    <ClInclude Include="YRPP\LoadOptionsClass.h" />
+    <ClInclude Include="YRPP\LoadProgressManager.h" />
+    <ClInclude Include="YRPP\LocomotionClass.h" />
+    <ClInclude Include="YRPP\MapClass.h" />
+    <ClInclude Include="YRPP\MapSeedClass.h" />
+    <ClInclude Include="YRPP\Matrix3D.h" />
+    <ClInclude Include="YRPP\MessageBox.h" />
+    <ClInclude Include="YRPP\MessageListClass.h" />
+    <ClInclude Include="YRPP\MissionClass.h" />
+    <ClInclude Include="YRPP\MixFileClass.h" />
+    <ClInclude Include="YRPP\MouseClass.h" />
+    <ClInclude Include="YRPP\MPGameModeClass.h" />
+    <ClInclude Include="YRPP\MPTeams.h" />
+    <ClInclude Include="YRPP\NeuronClass.h" />
+    <ClInclude Include="YRPP\Notifications.h" />
+    <ClInclude Include="YRPP\ObjectClass.h" />
+    <ClInclude Include="YRPP\ObjectTypeClass.h" />
+    <ClInclude Include="YRPP\OverlayClass.h" />
+    <ClInclude Include="YRPP\OverlayTypeClass.h" />
+    <ClInclude Include="YRPP\PacketClass.h" />
+    <ClInclude Include="YRPP\ParasiteClass.h" />
+    <ClInclude Include="YRPP\ParticleClass.h" />
+    <ClInclude Include="YRPP\ParticleSystemClass.h" />
+    <ClInclude Include="YRPP\ParticleSystemTypeClass.h" />
+    <ClInclude Include="YRPP\ParticleTypeClass.h" />
+    <ClInclude Include="YRPP\PCX.h" />
+    <ClInclude Include="YRPP\Pipes.h" />
+    <ClInclude Include="YRPP\PlanningTokenClass.h" />
+    <ClInclude Include="YRPP\PowerClass.h" />
+    <ClInclude Include="YRPP\Powerups.h" />
+    <ClInclude Include="YRPP\PreviewClass.h" />
+    <ClInclude Include="YRPP\ProgressScreenClass.h" />
+    <ClInclude Include="YRPP\Quaternion.h" />
+    <ClInclude Include="YRPP\RadarClass.h" />
+    <ClInclude Include="YRPP\RadarEventClass.h" />
+    <ClInclude Include="YRPP\RadBeam.h" />
+    <ClInclude Include="YRPP\RadioClass.h" />
+    <ClInclude Include="YRPP\RadSiteClass.h" />
+    <ClInclude Include="YRPP\Randomizer.h" />
+    <ClInclude Include="YRPP\RocketLocomotionClass.h" />
+    <ClInclude Include="YRPP\RulesClass.h" />
+    <ClInclude Include="YRPP\ScenarioClass.h" />
+    <ClInclude Include="YRPP\ScriptClass.h" />
+    <ClInclude Include="YRPP\ScriptTypeClass.h" />
+    <ClInclude Include="YRPP\SessionClass.h" />
+    <ClInclude Include="YRPP\ShapeButtonClass.h" />
+    <ClInclude Include="YRPP\ShipLocomotionClass.h" />
+    <ClInclude Include="YRPP\SidebarClass.h" />
+    <ClInclude Include="YRPP\SideClass.h" />
+    <ClInclude Include="YRPP\SlaveManagerClass.h" />
+    <ClInclude Include="YRPP\SliderClass.h" />
+    <ClInclude Include="YRPP\SmudgeClass.h" />
+    <ClInclude Include="YRPP\SmudgeTypeClass.h" />
+    <ClInclude Include="YRPP\SpawnManagerClass.h" />
+    <ClInclude Include="YRPP\SpecificStructures.h" />
+    <ClInclude Include="YRPP\SpotlightClass.h" />
+    <ClInclude Include="YRPP\StageClass.h" />
+    <ClInclude Include="YRPP\Straws.h" />
+    <ClInclude Include="YRPP\StringTable.h" />
+    <ClInclude Include="YRPP\SuperClass.h" />
+    <ClInclude Include="YRPP\SuperWeaponTypeClass.h" />
+    <ClInclude Include="YRPP\Surface.h" />
+    <ClInclude Include="YRPP\SwizzleManagerClass.h" />
+    <ClInclude Include="YRPP\Syringe.h" />
+    <ClInclude Include="YRPP\TacticalClass.h" />
+    <ClInclude Include="YRPP\TActionClass.h" />
+    <ClInclude Include="YRPP\TagClass.h" />
+    <ClInclude Include="YRPP\TagTypeClass.h" />
+    <ClInclude Include="YRPP\TargetClass.h" />
+    <ClInclude Include="YRPP\TaskForceClass.h" />
+    <ClInclude Include="YRPP\TeamClass.h" />
+    <ClInclude Include="YRPP\TeamTypeClass.h" />
+    <ClInclude Include="YRPP\TechnoClass.h" />
+    <ClInclude Include="YRPP\TechnoTypeClass.h" />
+    <ClInclude Include="YRPP\TeleportLocomotionClass.h" />
+    <ClInclude Include="YRPP\TemporalClass.h" />
+    <ClInclude Include="YRPP\TerrainClass.h" />
+    <ClInclude Include="YRPP\TerrainTypeClass.h" />
+    <ClInclude Include="YRPP\TEventClass.h" />
+    <ClInclude Include="YRPP\TextLabelClass.h" />
+    <ClInclude Include="YRPP\Theater.h" />
+    <ClInclude Include="YRPP\ThemeClass.h" />
+    <ClInclude Include="YRPP\TiberiumClass.h" />
+    <ClInclude Include="YRPP\Timer.h" />
+    <ClInclude Include="YRPP\ToggleClass.h" />
+    <ClInclude Include="YRPP\ToolTipManager.h" />
+    <ClInclude Include="YRPP\TransitionTimer.h" />
+    <ClInclude Include="YRPP\TriColorGaugeClass.h" />
+    <ClInclude Include="YRPP\TriggerClass.h" />
+    <ClInclude Include="YRPP\TriggerTypeClass.h" />
+    <ClInclude Include="YRPP\TunnelLocomotionClass.h" />
+    <ClInclude Include="YRPP\UDPInterfaceClass.h" />
+    <ClInclude Include="YRPP\UI.h" />
+    <ClInclude Include="YRPP\UnitClass.h" />
+    <ClInclude Include="YRPP\UnitTypeClass.h" />
+    <ClInclude Include="YRPP\Unsorted.h" />
+    <ClInclude Include="YRPP\Vault.h" />
+    <ClInclude Include="YRPP\VeinholeMonsterClass.h" />
+    <ClInclude Include="YRPP\VocClass.h" />
+    <ClInclude Include="YRPP\VoxClass.h" />
+    <ClInclude Include="YRPP\VoxelAnimClass.h" />
+    <ClInclude Include="YRPP\VoxelAnimTypeClass.h" />
+    <ClInclude Include="YRPP\VTables.h" />
+    <ClInclude Include="YRPP\WarheadTypeClass.h" />
+    <ClInclude Include="YRPP\WaveClass.h" />
+    <ClInclude Include="YRPP\WaypointPathClass.h" />
+    <ClInclude Include="YRPP\WeaponTypeClass.h" />
+    <ClInclude Include="YRPP\WinsockInterfaceClass.h" />
+    <ClInclude Include="YRPP\WOLAPIInterfaces.h" />
+    <ClInclude Include="YRPP\Wstring.h" />
+    <ClInclude Include="YRPP\WWMessageBox.h" />
+    <ClInclude Include="YRPP\WWMouseClass.h" />
+    <ClInclude Include="YRPP\YRAllocator.h" />
+    <ClInclude Include="YRPP\YRCom.h" />
+    <ClInclude Include="YRPP\YRDDraw.h" />
+    <ClInclude Include="YRPP\YRMath.h" />
+    <ClInclude Include="YRPP\YRMathVector.h" />
+    <ClInclude Include="YRPP\YRMemory.h" />
+    <ClInclude Include="YRPP\YRPP.h" />
+    <ClInclude Include="YRPP\YRPPCore.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\DataStructure.cpp" />
+    <ClCompile Include="..\Common\IHLoader\cJSON.c" />
+    <ClCompile Include="..\Common\IHLoader\ExtJson.cpp" />
+    <ClCompile Include="..\Common\IHLoader\LoaderLib.cpp" />
+    <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp" />
+    <ClCompile Include="..\Common\LocalData.cpp" />
+    <ClCompile Include="..\Common\LocalLibManager.cpp" />
+    <ClCompile Include="..\Common\ToolFunc.cpp" />
+    <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ExtCD.cpp" />
+    <ClCompile Include="ExtCsf.cpp" />
+    <ClCompile Include="ExtFile.cpp" />
+    <ClCompile Include="ExtFont.cpp" />
+    <ClCompile Include="ExtIni.cpp" />
+    <ClCompile Include="ExtLog.cpp" />
+    <ClCompile Include="ExtMix.cpp" />
+    <ClCompile Include="Global.cpp" />
+    <ClCompile Include="IHConfig.cpp" />
+    <ClCompile Include="InitialLoad.cpp" />
+    <ClCompile Include="InitSomewhere.cpp" />
+    <ClCompile Include="Load.cpp" />
+    <ClCompile Include="LocalLibFunc.cpp" />
+    <ClCompile Include="MiscFunc.cpp" />
+    <ClCompile Include="Optional.Hooks.cpp" />
+    <ClCompile Include="Patch.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StringManagerExt.cpp" />
+    <ClCompile Include="Syringe.cpp" />
+    <ClCompile Include="Tailor1.cpp" />
+    <ClCompile Include="Test.StableHooks.cpp" />
+    <ClCompile Include="Test1.cpp" />
+    <ClCompile Include="YRPP\StaticInits.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SkirmishDialog.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="YRPP\YRpp.props" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
