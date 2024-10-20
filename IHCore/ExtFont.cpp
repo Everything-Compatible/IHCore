@@ -227,10 +227,10 @@ struct DrawStyleList
     std::vector<CurrentDrawStyle> List;
     std::wstring NewStr;
     int Cur{ 0 };
-    wchar_t CurrentChar;
-    bool HasBitmap;
+    wchar_t CurrentChar{ 0 };
+    bool HasBitmap{ false };
     BYTE GlyphBuffer[80];
-    BYTE* TargetBuf;
+    BYTE* TargetBuf{ nullptr };
     void ChangeStyle()
     {
         ++Cur;
@@ -279,6 +279,7 @@ struct DrawStyleList
 namespace DrawStyle
 {
     int GlyphLineDelta;
+    char AtlasWidth;
     std::vector<BYTE*>GlyphByWidth[16];
     std::map<DWORD, std::unique_ptr<DrawStyleList>> TMap;
     std::mutex TMtx;
@@ -322,43 +323,37 @@ namespace DrawStyle
         if (Cur.HasStyle)
         {
             auto p = BitFont::Instance->GetCharacterBitmap(wc);
-            Debug::Log("[%s]", UnicodetoUTF8(std::wstring(wc, 1)).c_str());
+            //Debug::Log("[%s]", UnicodetoUTF8(std::wstring(wc, 1)).c_str());
             if (p)
             {
                 List.HasBitmap = true;
                 List.TargetBuf = p;
+                //Debug::Log("[IH] %X 1 TargetBuf = %X\n", GetCurrentThreadId(),  List.TargetBuf);
                 memcpy(List.GlyphBuffer, List.TargetBuf, BitFont::Instance->InternalPTR->SymbolDataSize);
                 if (Cur.HasStyle)
-                    List.TargetBuf[0]++;
+                    List.GlyphBuffer[0]++;
                 if (Cur.Bold)
                 {
                     for (int i = 0; i < BitFont::Instance->InternalPTR->FontHeight; i++)
                     {
-                        int& at = *(int*)(&List.TargetBuf[1 + i * DrawStyle::GlyphLineDelta]);
+                        int& at = *(int*)(&List.GlyphBuffer[1 + i * DrawStyle::GlyphLineDelta]);
                         auto u1 = at & 0x00FFFFFF;
-                        at = (~((u1 << 1) & (u1 >> 1))) & (u1 << 1) | u1 | (at & 0xFFFFFFFF);
+                        at = (~((u1 << 1) & (u1 >> 1))) & (u1 << 1) | u1 | (at & 0xFF000000);
                     }
                 }
                 if (Cur.StrikeThrough)
-                    *(int*)(&List.TargetBuf[1 + 7 * DrawStyle::GlyphLineDelta]) |= 0x00FFFFFF;
+                    *(int*)(&List.GlyphBuffer[1 + 7 * DrawStyle::GlyphLineDelta]) |= 0x00FFFFFF;
                 if (Cur.Underline)
-                    *(int*)(&List.TargetBuf[1 + 15 * DrawStyle::GlyphLineDelta]) |= 0x00FFFFFF;
+                    *(int*)(&List.GlyphBuffer[1 + 15 * DrawStyle::GlyphLineDelta]) |= 0x00FFFFFF;
             }
+            else List.HasBitmap = false;
         }
         return Cur.HasColor ? ((int)Cur.Col16 & 0x0000FFFF) : -1;
-    }
-    void RestoreGlyph()
-    {
-        auto& List = GetList();
-        if (List.HasBitmap)
-        {
-            List.HasBitmap = false;
-            if(List.TargetBuf)memcpy(List.TargetBuf, List.GlyphBuffer, BitFont::Instance->InternalPTR->SymbolDataSize);
-        }
     }
 };
 
 char Magic_Bitmap[80] = { (char)0 };
+char Magic_Bitmap_Alt[80] = { (char)2 };
 DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
 {
     GET_STACK(wchar_t, Char, 0x4);
@@ -380,6 +375,7 @@ DEFINE_HOOK(0x433DF, ResetFontTest, 6)
         if (pBitMap)DrawStyle::GlyphByWidth[pBitMap[0] & 0xF].push_back(pBitMap);
     }
     DrawStyle::GlyphLineDelta = (pFont->InternalPTR->SymbolDataSize - 1) / pFont->InternalPTR->FontHeight;
+    DrawStyle::AtlasWidth = pFont->GetCharacterBitmap(L'X')[0];
     //for (int i = 0; i < 16; i++)Debug::Log("[IH] Width %d Glyph N = %d\n", i, DrawStyle::GlyphByWidth[i].size());
     return 0;
 }
@@ -424,6 +420,11 @@ DEFINE_HOOK(0x43417A, BitFont_Blit_B, 6)
             }
         }
     }
+    else if (List.GetCur().HasStyle)
+    {
+        R->EAX(List.GlyphBuffer);
+        return 0x434194;
+    }
     return 0;
 }
 
@@ -431,14 +432,13 @@ DEFINE_HOOK(0x43417A, BitFont_Blit_B, 6)
 //»Ö¸´¸ñÊ½
 DEFINE_HOOK(0x4344E4, BitFont_Blit_C, 7)
 {
-    DrawStyle::RestoreGlyph();
-    //BitFont::Instance()
+    DrawStyle::GetList().HasBitmap = false;
     if (DrawStyle::GetCurStyle().HasStyle)
         R->EAX(R->EAX() - 1);
     return 0;
 }
 
-DEFINE_HOOK(0x433CF0, BitFont_GetTextDimension, 6)
+DEFINE_HOOK(0x433CF0, BitFont_GetTextDimension_A, 6)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
     Text = DrawStyle::MakeStringAlt(Text);
@@ -446,12 +446,23 @@ DEFINE_HOOK(0x433CF0, BitFont_GetTextDimension, 6)
     return 0;
 };
 
+DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
+{
+    GET(int, _Char, EDI);
+    if ((wchar_t)_Char == Magic_StyleAction)
+        *(char*)(BitFont::Instance->AtlasBuffer) = 0;
+    else 
+        *(char*)(BitFont::Instance->AtlasBuffer) = DrawStyle::AtlasWidth;
+    return 0;
+}
+
+
 
 DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
-    //Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
+    //Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
@@ -473,7 +484,7 @@ DEFINE_HOOK(0x434CD0, BitFont_Blit2, 5)
 {
     REF_STACK(const wchar_t*, Text, 0xC);
     Text = DrawStyle::MakeString(Text);
-    //Debug::Log("2 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    Debug::Log("2 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 }
 
