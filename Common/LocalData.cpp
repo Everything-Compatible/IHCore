@@ -78,6 +78,7 @@ namespace IHLibList
 	{
 		if (Available)return true;
 		LibListDLL = LoadLibraryW(L"Patches\\IHLibList.dll");
+		if (LibListDLL == NULL)LibListDLL = LoadLibraryW(L"IHLibList.dll");
 		if (LibListDLL == NULL)
 		{
 			Debug::Log("IHCore : Cannot initialize LibList\n");

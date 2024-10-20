@@ -30,6 +30,7 @@ void InitMix()
 	if (pIH)
 	{
 		JsonFile F; F.Parse(SyringeData::GetSettingText(*pIH));
+		if (!F.Available())return;
 		auto Obj = F.GetObj().GetObjectItem("CustomMix");
 		if (Obj.Available())
 			for (auto& s : Obj.GetArrayString())
