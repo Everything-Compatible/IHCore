@@ -241,6 +241,7 @@ struct DrawStyleList
     }
     const wchar_t* MakeString(const wchar_t* ws)
     {
+        if (MessageListClass::Instance->GetEditBuffer() == ws)return L"我测你的马";
         CurrentDrawStyle ds{};
         NewStr.clear();
         Cur = 0;
@@ -258,6 +259,7 @@ struct DrawStyleList
     }
     const wchar_t* MakeStringAlt(const wchar_t* ws)
     {
+        if (MessageListClass::Instance->GetEditBuffer() == ws)return L"我测你的马";
         CurrentDrawStyle ds{};
         NewStr.clear();
         for (auto p = ws; *p;)
@@ -366,7 +368,7 @@ DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
 }
 
 //DISABLED
-DEFINE_HOOK(0x433DF, ResetFontTest, 6)
+DEFINE_HOOK(0x4338DF, ResetFontTest, 6)
 {
     GET(BitFont*, pFont, ESI);
     for (int i = 0; i < 0x10000; i++)
@@ -441,8 +443,9 @@ DEFINE_HOOK(0x4344E4, BitFont_Blit_C, 7)
 DEFINE_HOOK(0x433CF0, BitFont_GetTextDimension_A, 6)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
+    Debug::Log("0 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeStringAlt(Text);
-    //Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    Debug::Log("0 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
@@ -461,8 +464,9 @@ DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
 DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
+    Debug::Log("1 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
-    //Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
@@ -483,6 +487,7 @@ DEFINE_HOOK(0x4346A6, BitFont_Blit1Ret2, 5)
 DEFINE_HOOK(0x434CD0, BitFont_Blit2, 5)
 {
     REF_STACK(const wchar_t*, Text, 0xC);
+    Debug::Log("2 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
     Debug::Log("2 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
