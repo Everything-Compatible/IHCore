@@ -9,7 +9,7 @@
 #include "Debug.h"
 
 
-const wchar_t Magic_StyleAction = 0xFC00; 
+const wchar_t Magic_StyleAction = 0xFFFF;// L'ÌÆ';
 
 void ColorConvertHSVtoRGB(float h, float s, float v, float& out_r, float& out_g, float& out_b)
 {
@@ -227,6 +227,7 @@ struct DrawStyleList
     std::vector<CurrentDrawStyle> List;
     std::wstring NewStr;
     int Cur{ 0 };
+    size_t CurCharIdx{ 0 };
     wchar_t CurrentChar{ 0 };
     bool HasBitmap{ false };
     BYTE GlyphBuffer[80];
@@ -270,10 +271,10 @@ struct DrawStyleList
                 NewStr.pop_back();
                 //NewStr += ds.GetWT();
             }
-            if (NewStr.back() == '\r' || NewStr.back() == '\n')
-                NewStr.push_back(Magic_StyleAction);
+            //if (NewStr.back() == '\r' || NewStr.back() == '\n')
+            //    NewStr.push_back(Magic_StyleAction);
         }
-        NewStr.push_back(Magic_StyleAction);
+        // NewStr.push_back(Magic_StyleAction);
         return NewStr.c_str();
     }
 };
@@ -281,7 +282,8 @@ struct DrawStyleList
 namespace DrawStyle
 {
     int GlyphLineDelta;
-    char AtlasWidth;
+    BYTE MagicGlyphWidth;
+    BYTE* MagicGlyphBuf;
     std::vector<BYTE*>GlyphByWidth[16];
     std::map<DWORD, std::unique_ptr<DrawStyleList>> TMap;
     std::mutex TMtx;
@@ -316,7 +318,7 @@ namespace DrawStyle
     {
         return GetList().MakeStringAlt(ws);
     }
-    int RedrawGlyph(wchar_t wc)
+    int RedrawGlyph(wchar_t wc, bool ExtendWidth)
     {
         auto& List = GetList();
         List.CurrentChar = wc;
@@ -332,7 +334,7 @@ namespace DrawStyle
                 List.TargetBuf = p;
                 //Debug::Log("[IH] %X 1 TargetBuf = %X\n", GetCurrentThreadId(),  List.TargetBuf);
                 memcpy(List.GlyphBuffer, List.TargetBuf, BitFont::Instance->InternalPTR->SymbolDataSize);
-                if (Cur.HasStyle)
+                if (Cur.HasStyle && ExtendWidth)
                     List.GlyphBuffer[0]++;
                 if (Cur.Bold)
                 {
@@ -355,7 +357,7 @@ namespace DrawStyle
 };
 
 char Magic_Bitmap[80] = { (char)0 };
-char Magic_Bitmap_Alt[80] = { (char)2 };
+char Magic_Bitmap_Alt[80] = { (char)0 };
 DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
 {
     GET_STACK(wchar_t, Char, 0x4);
@@ -377,8 +379,16 @@ DEFINE_HOOK(0x4338DF, ResetFontTest, 6)
         if (pBitMap)DrawStyle::GlyphByWidth[pBitMap[0] & 0xF].push_back(pBitMap);
     }
     DrawStyle::GlyphLineDelta = (pFont->InternalPTR->SymbolDataSize - 1) / pFont->InternalPTR->FontHeight;
-    DrawStyle::AtlasWidth = pFont->GetCharacterBitmap(L'X')[0];
-    //for (int i = 0; i < 16; i++)Debug::Log("[IH] Width %d Glyph N = %d\n", i, DrawStyle::GlyphByWidth[i].size());
+    DrawStyle::MagicGlyphBuf = pFont->GetCharacterBitmap(Magic_StyleAction);
+    if (DrawStyle::MagicGlyphBuf)
+    {
+        DrawStyle::MagicGlyphWidth = DrawStyle::MagicGlyphBuf[0];
+    }
+    else
+    {
+        DrawStyle::MagicGlyphBuf = (BYTE*)pFont->AtlasBuffer;
+        DrawStyle::MagicGlyphWidth = pFont->GetCharacterBitmap(L'X')[0];
+    }
     return 0;
 }
 
@@ -387,16 +397,17 @@ DEFINE_HOOK(0x434120, BitFont_Blit_A, 5)
 {
     GET_STACK(wchar_t, Char, 0x4);
     REF_STACK(int, Color16, 0x10);
-
+    auto& List = DrawStyle::GetList();
+    List.CurCharIdx++;
     if (Char == Magic_StyleAction)
     {
-        DrawStyle::GetList().CurrentChar = Magic_StyleAction;
+        List.CurrentChar = Magic_StyleAction;
         DrawStyle::ChangeStyle();
         return 0;// 0x4344FA;
     }
     else
     {
-        Color16 = DrawStyle::RedrawGlyph(Char);
+        Color16 = DrawStyle::RedrawGlyph(Char, List.CurCharIdx < List.NewStr.size());
         return 0;
     }
 }
@@ -434,8 +445,9 @@ DEFINE_HOOK(0x43417A, BitFont_Blit_B, 6)
 //»Ö¸´¸ñÊ½
 DEFINE_HOOK(0x4344E4, BitFont_Blit_C, 7)
 {
-    DrawStyle::GetList().HasBitmap = false;
-    if (DrawStyle::GetCurStyle().HasStyle)
+    auto& List = DrawStyle::GetList();
+    List.HasBitmap = false;
+    if (DrawStyle::GetCurStyle().HasStyle && List.CurCharIdx < List.NewStr.size())
         R->EAX(R->EAX() - 1);
     return 0;
 }
@@ -443,19 +455,16 @@ DEFINE_HOOK(0x4344E4, BitFont_Blit_C, 7)
 DEFINE_HOOK(0x433CF0, BitFont_GetTextDimension_A, 6)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
-    Debug::Log("0 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    //Debug::Log("0 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeStringAlt(Text);
-    Debug::Log("0 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    //Debug::Log("0 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
 DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
 {
     GET(int, _Char, EDI);
-    if ((wchar_t)_Char == Magic_StyleAction)
-        *(char*)(BitFont::Instance->AtlasBuffer) = 0;
-    else 
-        *(char*)(BitFont::Instance->AtlasBuffer) = DrawStyle::AtlasWidth;
+    ((BYTE*)(BitFont::Instance->AtlasBuffer))[0] = ((wchar_t)_Char == Magic_StyleAction) ? (BYTE)0 : DrawStyle::MagicGlyphWidth;
     return 0;
 }
 
@@ -464,9 +473,9 @@ DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
 DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
-    Debug::Log("1 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    //Debug::Log("1 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
-    Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    //Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
@@ -487,9 +496,9 @@ DEFINE_HOOK(0x4346A6, BitFont_Blit1Ret2, 5)
 DEFINE_HOOK(0x434CD0, BitFont_Blit2, 5)
 {
     REF_STACK(const wchar_t*, Text, 0xC);
-    Debug::Log("2 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    //Debug::Log("2 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
-    Debug::Log("2 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
+    //Debug::Log("2 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 }
 
