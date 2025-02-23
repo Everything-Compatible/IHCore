@@ -1,4 +1,4 @@
-#include "IHInitialLoad.h"
+#include "IH.Initial.h"
 #include "SyringeEx.h"
 
 //以下的InitialLoadParam及其派生类都是全局创建一次永不销毁

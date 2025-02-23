@@ -40,11 +40,11 @@
     <Filter Include="YRPP\FileFormats">
       <UniqueIdentifier>{aecd3dbb-68a0-4f78-bb2f-32b8791d7070}</UniqueIdentifier>
     </Filter>
-    <Filter Include="IHLoader">
-      <UniqueIdentifier>{40910ebb-52e9-4948-b1da-f1f9df9b9173}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Tailor">
       <UniqueIdentifier>{b8cc4068-89bc-4c88-b032-98d9dda04ae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EC SDK">
+      <UniqueIdentifier>{40910ebb-52e9-4948-b1da-f1f9df9b9173}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1063,13 +1063,13 @@
       <Filter>File</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\ExtJson.h">
-      <Filter>IHLoader</Filter>
+      <Filter>EC SDK</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\IHLoader\LoaderLib.h">
-      <Filter>IHLoader</Filter>
+    <ClInclude Include="..\Common\IHLoader\IH.Loader.h">
+      <Filter>EC SDK</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\SyringeEx.h">
-      <Filter>IHLoader</Filter>
+      <Filter>EC SDK</Filter>
     </ClInclude>
     <ClInclude Include="StringManagerExt.h">
       <Filter>File</Filter>
@@ -1091,6 +1091,63 @@
     </ClInclude>
     <ClInclude Include="sha1.h">
       <Filter>Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfData.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Config.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Misc.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Listener.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Initial.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Buff.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Define.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.ExampleBuff.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Interface.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Template.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Ext.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Transfer.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.LoadSave.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.LoadSaveImpl.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Stream.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.GameClass.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Swizzle.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.ObjBase.h">
+      <Filter>EC SDK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1161,16 +1218,16 @@
       <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\cJSON.c">
-      <Filter>IHLoader</Filter>
+      <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ExtJson.cpp">
-      <Filter>IHLoader</Filter>
+      <Filter>EC SDK</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\IHLoader\LoaderLib.cpp">
-      <Filter>IHLoader</Filter>
+    <ClCompile Include="..\Common\IHLoader\IH.Loader.cpp">
+      <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp">
-      <Filter>IHLoader</Filter>
+      <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="InitSomewhere.cpp">
       <Filter>Test</Filter>
@@ -1198,6 +1255,45 @@
     </ClCompile>
     <ClCompile Include="ExtFont_Tailor.cpp">
       <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="Exception.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtScenario.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.Misc.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.Initial.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.Buff.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.ExampleBuff.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.Ext.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.LoadSave.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.GameClass.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.ObjBase.cpp">
+      <Filter>EC SDK</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

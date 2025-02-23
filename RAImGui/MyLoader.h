@@ -1,7 +1,7 @@
 #pragma once
 
-#include <LoaderLib.h>
-#include <SyringeEx.h>
+
+#include <EC.h>
 #include "Version.h"
 #include <unordered_map>
 #include <YRPP.h>

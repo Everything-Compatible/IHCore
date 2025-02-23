@@ -19,15 +19,15 @@ namespace SITool
 	void SI_API AddFlyingString_B(const CoordStruct 坐标, Point2D 像素偏移, int 持续时间, double 浮动速度, ConvertClass* 色盘, SHPStruct* 图像, const int* 字符数据列表, int 字符数据总数);
 	void SI_API AddFlyingString_Money(CoordStruct 坐标, int 金额, HouseClass* 所属作战方, int 作战方归属);
 
-	void SI_API ForEach(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Cell(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Object(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Techno(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Animation(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Bullet(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Terrain(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_Overlay(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
-	void SI_API ForEach_House(void* 参数集, bool (*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Cell(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Object(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Techno(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Animation(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Bullet(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Terrain(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_Overlay(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
+	void SI_API ForEach_House(void* 参数集, bool (CALLBACK*处理函数)(void* 参数集, SIInterface_ExtendData* 接口)); // [处理函数] 返回 true 会立刻终止遍历
 
 }
 
@@ -36,8 +36,13 @@ namespace SIClassManager
 	//通过AbstractClass*找到对应的SIInterface_ExtendData*以进行更多的操作。
 	//若对应对象无SIInterface_ExtendData配套或对象不存在/不合法，则返回nullptr。
 	SIInterface_ExtendData* SI_API GetExtendData(const AbstractClass* const 实体);// 返回值可能为空
+	//通过HouseClass*找到对应的SIHouse_ExtendData*以进行更多的操作。
+	//若对应对象无SIHouse_ExtendData配套或对象不存在/不合法，则返回nullptr。
+	SIHouse_ExtendData* SI_API GetHouseExtendData(const HouseClass* const 实体);// 返回值可能为空
 	//获取WIC内部对象的接口
 	//以下函数的返回值都可能为空，请自行检查
+	//Find为空是未找到
+	//FindOrAllocate为空是出现错误，如果希望发生错误时崩溃则无需检查是否为空
 	SIBuffTypeClass* SI_API BuffType_Find(const char* 名称);
 	SIBuffTypeClass* SI_API BuffType_FindOrAllocate(const char* 名称);
 	SIPackTypeClass_BuffSetting* SI_API BuffSetting_Find(const char* 名称);
@@ -64,6 +69,67 @@ namespace SIClassManager
 		return RegisterEffectType(效果类型名称, *reinterpret_cast<DWORD*>(&Buff));
 	}
 }
+
+class SIHouse_ExtendData
+{
+public:
+	//获取对应的HouseClass指针
+	HouseClass* OwnerObject();
+
+	//单位来源计数器
+	void Counter_AddOriginTechnoType(TechnoTypeClass* 单位类型);
+	void Counter_RemoveOriginTechnoType(TechnoTypeClass* 单位类型);
+
+	//图标显示
+	bool AlwaysShowCameo(const TechnoTypeClass* const 单位类型, bool 包括正在建造的单位) const;
+	
+	//产能工厂的控制
+	void Factory_CalculateProduction();
+	void Factory_MergeProduction(TechnoClass* 单位);
+	void Factory_RemoveProduction(TechnoClass* 单位);
+
+	//作战方的经验总控制
+	void EXP_Init();
+	void EXP_Get(TechnoClass* 单位, SIValues_HouseInitEXP* 国家经验值参数包);
+	bool EXP_MergeAcademy(TechnoClass* 单位, TechnoTypeClass* 单位类型);//可能会失败，失败返回false
+	bool EXP_RemoveAcademy(TechnoClass* 单位, TechnoTypeClass* 单位类型);//可能会失败，失败返回false
+	bool EXP_UpdateSpyEffect(BuildingClass* 建筑单位, BuildingTypeClass* 建筑单位类型);//可能会失败，失败返回false
+	void EXPPool_Add(double 额外经验值);
+	double EXPPool_Pop(double 需求的额外经验值);
+
+	//作战方变量的操作
+	void SetHouseVar(int 索引值, double 数值);
+	double GetHouseVar(int 索引值);
+	void DeleteHouseVar(int 索引值);
+	void ForEach_HouseVar(void* 参数集, void (CALLBACK* 处理函数)(void* 参数集, int 索引, double& 值));
+
+	//指定频道的广播控制
+	void FreshBroadcastPower(int 频道, double 广播强度, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	void PostBroadcast(int 频道, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	int GetBroadcastListenerCount(int 频道, bool 无视限制条件, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	double GetBroadcastPower(int 频道);
+	void AddBroadcastListener(int 频道, SIBuffClass* 监听Buff);
+	void RemoveBroadcastListener(int 频道, SIBuffClass* 监听Buff);
+	void ForEach_Broadcast(void* 参数集, void (CALLBACK* 处理函数)(void* 参数集, int 频道, SIBroadcastClass* 值));
+	SIBroadcastClass* Broadcast_FindOrAllocate(int 频道);// 返回值可能为空，为空是未找到
+	SIBroadcastClass* Broadcast_Find(int 频道);// 返回值可能为空，为空是出现错误，如果希望发生错误时崩溃则无需检查是否为空
+};
+
+class SIBroadcastClass
+{
+public:
+	static const SIConstVector<SIBroadcastClass*>& GetArray();
+	// 功能函数
+	void FreshBroadcastPower(double 广播强度, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	void PostBroadcast(bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	int GetBroadcastListenerCount(bool 无视限制条件, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	void AddListener(SIBuffClass* 要添加的监听Buff);
+	void RemoveListener(SIBuffClass* 要移除的监听Buff);
+	bool IsEmpty();
+	HouseClass* OwnerObject();
+	double GetBroadcastPower();
+	const SIDataList<SIBuffClass*>& GetListenerBuffList();
+};
 
 // 与单位一一对应的操作接口
 class SIInterface_ExtendData

@@ -1,8 +1,9 @@
 
 #include "LocalData.h"
+#include "ToolFunc.h"
 #include <YRPP.h>
 #include <locale>
-#include <LoaderLib.h>
+#include <IH.Loader.h>
 #include "..\IHCore\Debug.h"
 #include "..\IHCore\Patch.h"
 #include <SyringeEx.h>
@@ -36,8 +37,8 @@ namespace Local
 	std::vector<BasicLibData> BasicLibs;
 	std::unordered_map<std::string, LibType*> LibMap;
 	std::unordered_map<std::string, VClass> IHFileStreamer;
-	std::unordered_map<std::string, std::string> IHFileBinder;
-	std::unordered_map<std::string, FuncHandle> IHFileFilter;
+	std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;
+	std::unordered_map<std::string, FuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
 	std::unordered_map<std::string, std::vector<FuncInfo*>> NamedFunc;
 	std::unordered_map<std::string, ContextFunc_t> ContextMap;
 	std::unordered_map<std::string, BinderType> BinderMap;
@@ -47,6 +48,7 @@ namespace Local
 	char IHExcBuf[10000];
 	std::vector<LibType*> RingStack;
 	int RingCheckIdx = 0;
+	int ECInitStage{ 0 };
 	std::vector<std::string> InitOrder;
 
 
@@ -176,6 +178,7 @@ namespace Local
 				AddDependency(*p.second, d.Data[i]);
 			}
 		}
+		ECInitStage = 20;
 		for (auto& p : LibMap)
 		{
 			if (!p.second)continue;
@@ -211,6 +214,7 @@ namespace Local
 			auto fn = (InitFunc_t)InitFn.Data[i];
 			Libs[i].Tbl = IHCoreFnTable;
 			Libs[i].In.FunctionTable = &Libs[i].Tbl;
+			Libs[i].In.ECInitializeStage = &ECInitStage;
 			Libs[i].Out = fn(&Libs[i].In);
 			Libs[i].Available = true;
 			if (!Libs[i].Out)Libs[i].Available = false;
@@ -238,9 +242,11 @@ namespace Local
 				BasicLibs[i].ReservedB = (void*)Libs[i].Out->Info->LibName;
 		}
 
+		ECInitStage = 10;
 		try
 		{
 			InitOrder = GetInitOrder();
+			ECInitStage = 50;
 			for (auto& s : InitOrder)
 			{
 				auto it = LibMap.find(s);
@@ -249,6 +255,7 @@ namespace Local
 				Debug::Log("IHCore :  Call in the dependency order :\"%s\"\n", it->second->Out->Info->LibName);
 				if (it->second->Out->OrderedInit)it->second->Out->OrderedInit();
 			}
+			ECInitStage = 100;
 		}
 		catch (IHException& e)
 		{

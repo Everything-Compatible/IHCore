@@ -111,6 +111,8 @@ namespace SyringeData
 		{
 			return (BYTE*)HookDataAddr;
 		}
+
+		size_t GetOpSize() const;
 	};
 	struct HookRemoteData
 	{

@@ -290,8 +290,6 @@ namespace SyringeData
 		else return nullptr;
 	}
 
-	
-
 	struct AddrHiddenHeader
 	{
 		DWORD ActiveHookCount;
@@ -299,6 +297,14 @@ namespace SyringeData
 		DWORD OverriddenCount;
 		DWORD dwReserved;
 	};
+
+	size_t AddrRemoteData::GetOpSize() const
+	{
+		return sizeof(SyringeData::AddrHiddenHeader) + HookCount * pHeader->HookOpCodeSize
+			+ pHeader->JmpBackCodeSize + OverriddenCount;
+	}
+
+	
 	SyrPArray<BYTE> GetOpCode(DWORD Addr)
 	{
 		auto pAddr = GetAddrData(Addr);

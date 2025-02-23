@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include "ToolFunc.h"
+#include "Debug.h"
 
 
 class IHExtCSF
@@ -19,6 +20,7 @@ class IHExtCSF
 public:
 	uint32_t Version, LblN, StrN, Language, Reserved;
 
+	inline size_t Size() { return CsfMap.size(); }
 	template<typename FileLoader>
 	bool Load(const char* name);
 	template<typename FileLoader>
@@ -79,7 +81,9 @@ bool IHExtCSF::Load(FileLoader& fp)
 	static char gbuf[100000];
 	gbuf[4] = 0;
 	fp.Read(gbuf, 1, 4);
+	//Debug::Log("IHCore:A\n");
 	if (std::string(gbuf) != " FSC")return Loaded = false;
+	//Debug::Log("IHCore:B\n");
 	fp.Read(&Version, 4, 1);
 	fp.Read(&LblN, 4, 1);
 	fp.Read(&StrN, 4, 1);
@@ -94,7 +98,11 @@ bool IHExtCSF::Load(FileLoader& fp)
 	{
 		gbuf[4] = 0;
 		fp.Read(gbuf, 1, 4);
-		if (std::string(gbuf) != " LBL")return Loaded = false;
+		if (std::string(gbuf) != " LBL")
+		{
+			//Debug::Log("IHCore:C\n");
+			return Loaded = false;
+		}
 		fp.Read(&NLblStr, 4, 1);
 		fp.Read(&StrLen, 4, 1);
 		gbuf[StrLen] = 0;
@@ -104,7 +112,11 @@ bool IHExtCSF::Load(FileLoader& fp)
 
 		gbuf[4] = 0;
 		fp.Read(gbuf, 1, 4);
-		if (std::string(gbuf) != " RTS" && std::string(gbuf) != "WRTS")return Loaded = false;
+		if (std::string(gbuf) != " RTS" && std::string(gbuf) != "WRTS")
+		{
+			//Debug::Log("IHCore:D\n");
+			return Loaded = false;
+		}
 		HasExt = (std::string(gbuf) == "WRTS");
 		fp.Read(&StrLen, 4, 1);
 		gbuf[StrLen << 1] = gbuf[StrLen << 1 | 1] = 0;
@@ -128,6 +140,7 @@ bool IHExtCSF::Load(FileLoader& fp)
 
 		CsfMap[Key] = { Value,Ext };
 	}
+	//Debug::Log("IHCore:E\n");
 	return Loaded = true;
 }
 

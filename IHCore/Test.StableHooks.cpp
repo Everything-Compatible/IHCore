@@ -134,7 +134,7 @@ DEFINE_HOOK(0x735060, SimpleANSItoUTF16, 5)
 	GET(char*, Src, EDX);
 	GET(int, Len, ESI);
 	//IH_ENTER_FN_LOG(SimpleANSItoUTF16, SimpleMBToWC_Ex);
-	Debug::Log(__FUNCTION__": Src \"%s\"\n", Src);
+	//Debug::Log(__FUNCTION__": Src \"%s\"\n", Src);
 	R->AL(SimpleMBToWC_Ex(Dest,Src,Len));
 	//IH_EXIT_FN_LOG(SimpleANSItoUTF16, SimpleMBToWC_Ex);
 	return 0x73508C;

@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <random>
 #define EXPORT __declspec(dllexport)
 
 using HPHandle = void*;

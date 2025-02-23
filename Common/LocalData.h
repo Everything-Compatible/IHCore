@@ -3,8 +3,8 @@
 #include <vector>
 #include <unordered_map>
 #include "DataStructure.h"
-#include <LoaderLib.h>
-#include <CustomFile.h>
+#include "ToolFunc.h"
+#include <IH.h>
 #include <YRPPCore.h>
 #include <memory>
 
@@ -148,8 +148,8 @@ namespace Local
 	extern std::vector<LibType> Libs;
 	extern std::unordered_map<std::string, LibType*> LibMap;
 	extern std::unordered_map<std::string, VClass> IHFileStreamer;
-	extern std::unordered_map<std::string, std::string> IHFileBinder;//name to stream
-	extern std::unordered_map<std::string, FuncHandle> IHFileFilter;
+	extern std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;//name to stream
+	extern std::unordered_map<std::string, FuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
 	extern std::unordered_map<std::string, std::vector<FuncInfo*>> NamedFunc;
 	extern std::unordered_map<std::string, ContextFunc_t> ContextMap;
 	extern std::unordered_map<std::string, BinderType> BinderMap;

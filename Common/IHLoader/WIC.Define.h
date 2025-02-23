@@ -5,7 +5,7 @@
 */
 
 
-#include "LoaderLib.h"
+#include "IH.Ext.h"
 
 #define WIC_LIBRARY_VERSION 9
 
@@ -37,6 +37,14 @@ SIInterface_ExtendDataTable__InitFunction__STR( WIC.Buff.##FunctionName )
 	SIInterfaceDecl(SIInterface_Buff__InitFunction__Prefix(Function), Function)
 #define SIBuffDecl_void(Function) \
 	SIInterfaceDecl_void(SIInterface_Buff__InitFunction__Prefix(Function), Function)
+
+#define SIInterface_HouseExt__InitFunction__Prefix( FunctionName ) \
+SIInterface_ExtendDataTable__InitFunction__STR( WIC.HExt.##FunctionName )
+#define SIHouseExtDecl(Function) \
+	SIInterfaceDecl(SIInterface_HouseExt__InitFunction__Prefix(Function), Function)
+#define SIHouseExtDecl_void(Function) \
+	SIInterfaceDecl_void(SIInterface_HouseExt__InitFunction__Prefix(Function), Function)
+
 
 extern Ext::LibData WIC;
 
@@ -75,6 +83,12 @@ class SIDataPackTypeClass;
 class SIPackTypeClass_OffsetMotion;
 class SIStreamReader;
 class SIStreamWriter;
+class SIBroadcastClass;
+template<typename T>
+class SIConstVector;
+template <typename T>
+class SIDataList;
+class SIHouse_ExtendData;//Actually SIExtend_House::ExtendData
 
 enum SIEXPSourceType : unsigned int
 {
@@ -1043,12 +1057,70 @@ public:
 	{}
 };
 
+// 染色参数包
+struct SIValues_CustomTint
+{
+	int 染色颜色;
+	int 染色强度;
+	int 作战方归属;
+};
+
+// 国家经验值参数包
+struct SIValues_HouseInitEXP
+{
+	double 经验值_国家能力;
+	double 经验等级_国家能力;
+	double 经验值_训练所;
+	double 经验等级_训练所;
+	double 经验值_间谍渗透;
+	double 经验等级_间谍渗透;
+
+	SIValues_HouseInitEXP()
+		: 经验值_国家能力(0.0)
+		, 经验等级_国家能力(0.0)
+		, 经验值_训练所(0.0)
+		, 经验等级_训练所(0.0)
+		, 经验值_间谍渗透(0.0)
+		, 经验等级_间谍渗透(0.0)
+	{}
+
+	bool IsEmpty()
+	{
+		return this->经验值_国家能力 == 0
+			&& this->经验等级_国家能力 == 0
+			&& this->经验值_训练所 == 0
+			&& this->经验等级_训练所 == 0
+			&& this->经验值_间谍渗透 == 0
+			&& this->经验等级_间谍渗透 == 0;
+	}
+
+	void Reset()
+	{
+		this->经验值_国家能力 = 0.0;
+		this->经验等级_国家能力 = 0.0;
+		this->经验值_训练所 = 0.0;
+		this->经验等级_训练所 = 0.0;
+		this->经验值_间谍渗透 = 0.0;
+		this->经验等级_间谍渗透 = 0.0;
+	}
+
+	void Merge(SIValues_HouseInitEXP* 国家经验值参数包)
+	{
+		this->经验值_国家能力 = 国家经验值参数包->经验值_国家能力;
+		this->经验等级_国家能力 = 国家经验值参数包->经验等级_国家能力;
+		this->经验值_训练所 = 国家经验值参数包->经验值_训练所;
+		this->经验等级_训练所 = 国家经验值参数包->经验等级_训练所;
+		this->经验值_间谍渗透 = 国家经验值参数包->经验值_间谍渗透;
+		this->经验等级_间谍渗透 = 国家经验值参数包->经验等级_间谍渗透;
+	}
+};
+
 #define SI_API __stdcall
 /*
 	这部分是SI的原始接口，不建议直接调用，请通过SIInterface_ExtendData类操控！
 	谨记：类的静态函数的调用约定是__stdcall！！
 
-	备注：此处和SI已经确认了稳定存在的API及其形式，所以直接通过只有最小限度检查的LibData::QueryInterface实现
+	备注：此处已经确认了稳定存在的API及其形式，所以直接通过只有最小限度检查的LibData::QueryInterface实现
 		  如果对一些检查无法完全确认，请使用Ext::DispatchInterface来连接上对方的接口
 		  例如：
 		char* SomeFunc(int Param)
@@ -1338,6 +1410,51 @@ namespace SIBuff
 	void SI_API DigitalButtonData_Init(SIBuffClass* Buff, int 单位数量);
 	
 
+}
+
+namespace SIBroadcast
+{
+	void SI_API FreshBroadcastPower(SIBroadcastClass* 接口, double 广播强度, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	void SI_API PostBroadcast(SIBroadcastClass* 接口, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	int SI_API GetBroadcastListenerCount(SIBroadcastClass* 接口, bool 无视限制条件, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	void SI_API AddListener(SIBroadcastClass* 接口, SIBuffClass* 要添加的监听Buff);
+	void SI_API RemoveListener(SIBroadcastClass* 接口, SIBuffClass* 要移除的监听Buff);
+	bool SI_API IsEmpty(SIBroadcastClass* 接口);
+	SIConstVector<SIBroadcastClass*>& SI_API GetBroadcastArray();
+	HouseClass* SI_API OwnerObject(SIBroadcastClass* 接口);
+	double SI_API GetBroadcastPower(SIBroadcastClass* 接口);
+	const SIDataList<SIBuffClass*>& SI_API GetListenerBuffList(SIBroadcastClass* 接口);
+}
+
+namespace SIHouseExt
+{
+	void SI_API Counter_AddOriginTechnoType(SIHouse_ExtendData* 接口, TechnoTypeClass* 单位类型);
+	void SI_API Counter_RemoveOriginTechnoType(SIHouse_ExtendData* 接口, TechnoTypeClass* 单位类型);
+	bool SI_API AlwaysShowCameo(const SIHouse_ExtendData* const 接口, const TechnoTypeClass* const 单位类型, bool 包括正在建造的单位);// const;
+	void SI_API Factory_CalculateProduction(SIHouse_ExtendData* 接口);
+	void SI_API Factory_MergeProduction(SIHouse_ExtendData* 接口, TechnoClass* 单位);
+	void SI_API Factory_RemoveProduction(SIHouse_ExtendData* 接口, TechnoClass* 单位);
+	void SI_API EXP_Init(SIHouse_ExtendData* 接口);
+	void SI_API EXP_Get(SIHouse_ExtendData* 接口, TechnoClass* 单位, SIValues_HouseInitEXP* 国家经验值参数包);
+	bool SI_API EXP_MergeAcademy(SIHouse_ExtendData* 接口, TechnoClass* 单位, TechnoTypeClass* 单位类型);//可能会失败，失败返回false
+	bool SI_API EXP_RemoveAcademy(SIHouse_ExtendData* 接口, TechnoClass* 单位, TechnoTypeClass* 单位类型);//可能会失败，失败返回false
+	bool SI_API EXP_UpdateSpyEffect(SIHouse_ExtendData* 接口, BuildingClass* 建筑单位, BuildingTypeClass* 建筑单位类型);//可能会失败，失败返回false
+	void SI_API SetHouseVar(SIHouse_ExtendData* 接口, int 索引值, double 数值);
+	double SI_API GetHouseVar(SIHouse_ExtendData* 接口, int 索引值);
+	void SI_API DeleteHouseVar(SIHouse_ExtendData* 接口, int 索引值);
+	void SI_API FreshBroadcastPower(SIHouse_ExtendData* 接口, int 频道, double 广播强度, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	void SI_API PostBroadcast(SIHouse_ExtendData* 接口, int 频道, bool 触发被动监听, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	int SI_API GetBroadcastListenerCount(SIHouse_ExtendData* 接口, int 频道, bool 无视限制条件, CoordStruct 发布坐标, TechnoClass* 发布单位, AbstractClass* 指向目标);
+	double SI_API GetBroadcastPower(SIHouse_ExtendData* 接口, int 频道);
+	void SI_API AddBroadcastListener(SIHouse_ExtendData* 接口, int 频道, SIBuffClass* 监听Buff);
+	void SI_API RemoveBroadcastListener(SIHouse_ExtendData* 接口, int 频道, SIBuffClass* 监听Buff);
+	void SI_API EXPPool_Add(SIHouse_ExtendData* 接口, double 额外经验值);
+	double SI_API EXPPool_Pop(SIHouse_ExtendData* 接口, double 需求的额外经验值);
+	void SI_API ForEach_HouseVar(SIHouse_ExtendData* 接口, void* 参数集, void (CALLBACK* 处理函数)(void* 参数集, int 索引, double& 值));
+	void SI_API ForEach_Broadcast(SIHouse_ExtendData* 接口, void* 参数集, void (CALLBACK* 处理函数)(void* 参数集, int 频道, SIBroadcastClass* 值));
+	SIBroadcastClass* SI_API Broadcast_FindOrAllocate(SIHouse_ExtendData* 接口, int 频道);// 返回值可能为空
+	SIBroadcastClass* SI_API Broadcast_Find(SIHouse_ExtendData* 接口, int 频道);// 返回值可能为空
+	HouseClass* SI_API OwnerObject(SIHouse_ExtendData* 接口);
 }
 
 namespace SIClassManager

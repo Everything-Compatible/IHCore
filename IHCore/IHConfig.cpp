@@ -7,7 +7,9 @@ IHConfigClass IHInstConfig;
 
 bool IHConfig_Initialize()
 {
-	auto ErrorString = IHConfig.ParseTmpChecked(GetStringFromFile<ExtCCFile>("IHConfig.json"), "<SYNTAX ERROR>", nullptr);
+	auto String = GetStringFromFile<ExtCCFile>("IHConfig.json");
+	if (String.empty())return false;
+	auto ErrorString = IHConfig.ParseTmpChecked(std::move(String), "<SYNTAX ERROR>", nullptr);
 	if (!ErrorString.empty())
 	{
 		Debug::Log("IHCore : Error on Initializing IHConfig.json. Error : \"\n%s\"", ErrorString.c_str());

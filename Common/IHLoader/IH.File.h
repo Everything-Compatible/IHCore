@@ -1,10 +1,11 @@
 #pragma once
 #include <CCFileClass.h>
 #include "SyringeEx.h"
-#include "IHInitialLoad.h"
+#include "IH.Initial.h"
 
 //所有的派生类应派生自 IHFileClass 或 IHReadOnlyFileClass 
 //并具有接受noinit_t的构造函数
+//实现所有虚函数并挂载即可
 
 class IHFileClass :public FileClass
 {
@@ -26,7 +27,7 @@ public:
 	virtual int WriteBytes(void* pBuffer, int nNumBytes) = 0; //Returns number of bytes written.
 	virtual void Close() = 0;//OK
 	virtual void CDCheck(DWORD errorCode, bool bUnk, const char* pFilename);
-
+	virtual void Initialize() = 0;
 
 protected:
 	explicit __forceinline IHFileClass(noinit_t _):FileClass(_)
@@ -54,6 +55,7 @@ public:
 	virtual int GetFileSize() = 0;
 	virtual int WriteBytes(void* pBuffer, int nNumBytes); //Returns number of bytes written.
 	virtual void Close() = 0;
+	virtual void Initialize() = 0;
 protected:
 	explicit __forceinline IHReadOnlyFileClass(noinit_t _) :IHFileClass(_)
 	{ }

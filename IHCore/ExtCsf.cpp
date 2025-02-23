@@ -232,6 +232,7 @@ std::unordered_map<std::string, const wchar_t*> RegStrMap;
 
 bool AddRegStr(std::string&& s, const wchar_t* ss)
 {
+	//Debug::Log("[IH]%s = \"%s\"\n", s.c_str(), UnicodetoUTF8(ss));
 	RegStrMap[std::move(s)] = ss;
 	return true;
 }

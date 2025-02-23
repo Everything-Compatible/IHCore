@@ -1,128 +1,4 @@
-#include "LoaderLib.h"
-#include "SyringeEx.h"
-#include <Windows.h>
-#include <string_view>
-
-
-#ifndef IHCore
-void MyInit(InitResult& Result);
-#endif
-
-namespace SyringeData
-{
-	void InitRemoteData();
-}
-
-namespace Init
-{
-	bool InitAvailable{ false };
-	bool VeryFirst{ true };
-	HMODULE LibListDLL;
-	InitInput* LibInput;
-	InitResult Result;
-
-	int(__cdecl* _GetNLibs)(void);
-	int(__cdecl* _GetMaxLibs)(void);
-	bool(__cdecl* _RegisterEntry)(LibFuncHandle);
-	const LibFuncHandle* (__cdecl* _GetEntries)(void);
-	void(__cdecl* _ServiceRequest)(IHInitialLoadService);
-	void(__cdecl* _QueryServiceRequest)(const char*, PArray<IHInitialLoadService>&);
-
-	bool IsSyringeReadingHooks()
-	{
-		char Buf[1000];
-		return GetEnvironmentVariableA("HERE_IS_SYRINGE", Buf, 1000) ? true : false;
-	}
-
-
-#ifndef IHCore
-	InitResult* __cdecl InitFn(InitInput* Input)
-	{
-		LibInput = Input;
-		MyInit(Result);
-		return &Result;
-	}
-
-	bool Initialize()
-	{
-		if (IsSyringeReadingHooks())return false;
-		
-		SyringeData::InitRemoteData();
-		
-		if (InitAvailable)return true;
-
-		LibListDLL = LoadLibraryW(L"Patches\\IHLibList.dll");
-		if (LibListDLL == NULL)return false;
-
-#define ____GetFunc(x) {_ ## x=(decltype(_ ## x))GetProcAddress(LibListDLL, #x);\
-			if(_ ## x==nullptr)return false;}
-		____GetFunc(GetNLibs);
-		____GetFunc(GetMaxLibs);
-		____GetFunc(RegisterEntry);
-		____GetFunc(GetEntries);
-		____GetFunc(ServiceRequest);
-		____GetFunc(QueryServiceRequest);
-#undef ____GetFunc
-
-		InitAvailable = true;
-		RegisterEntry(InitFn);
-		return true;
-	}
-#else
-	bool Initialize()
-	{
-		if (IsSyringeReadingHooks())return false;
-
-		SyringeData::InitRemoteData();
-
-		if (InitAvailable)return true;
-
-		LibListDLL = LoadLibraryW(L"Patches\\IHLibList.dll");
-		if (LibListDLL == NULL)return false;
-
-#define ____GetFunc(x) {_ ## x=(decltype(_ ## x))GetProcAddress(LibListDLL, #x);\
-			if(_ ## x==nullptr)return false;}
-		____GetFunc(ServiceRequest);
-		____GetFunc(QueryServiceRequest);
-#undef ____GetFunc
-
-		InitAvailable = true;
-		return true;
-	}
-#endif
-	bool __cdecl RegisterEntry(LibFuncHandle Entry)
-	{
-		if (InitAvailable)return _RegisterEntry(Entry);
-		else return false;
-	}
-
-	PArray<IHInitialLoadService> __cdecl QueryServiceRequest(const char* Name)
-	{
-		if (InitAvailable)
-		{
-			PArray<IHInitialLoadService> pa;
-			_QueryServiceRequest(Name, pa);
-			return pa;
-		}
-		else return PArray<IHInitialLoadService>();
-	}
-}
-
-namespace InitialLoad
-{
-	void ServiceRequest(IHInitialLoadService IService)
-	{
-		if (Init::InitAvailable)Init::_ServiceRequest(IService);
-	}
-
-}
-
-
-
-bool IHAvailable()
-{
-	return Init::InitAvailable;
-}
+#include "IH.Ext.h"
 
 namespace Ext
 {
@@ -131,7 +7,7 @@ namespace Ext
 		return *Init::LibInput->FunctionTable->CSFClass_pITable;
 	}
 
-	CallInterface::CallInterface(const std::string& FuncName):FunctionName(FuncName),Funcs({ 0, nullptr }){}
+	CallInterface::CallInterface(const std::string& FuncName) :FunctionName(FuncName), Funcs({ 0, nullptr }) {}
 	CallInterface::CallInterface(const char* FuncName) : FunctionName(FuncName), Funcs({ 0, nullptr }) {}
 	void CallInterface::Reload(const std::string& FuncName) { FunctionName = FuncName; Funcs.N = 0; Funcs.Data = nullptr; }
 	void CallInterface::Reload(const char* FuncName) { FunctionName = FuncName; Funcs.N = 0; Funcs.Data = nullptr; }
@@ -188,12 +64,12 @@ namespace Ext
 		CurContext = DirectBindTextTo(Text, Idx);
 	}
 
-	ActiveRoutine::ActiveRoutine(ActiveRoutine&& rhs):_Name(std::move(rhs._Name)),Handle(nullptr),_Routine(nullptr)
+	ActiveRoutine::ActiveRoutine(ActiveRoutine&& rhs) :_Name(std::move(rhs._Name)), Handle(nullptr), _Routine(nullptr)
 	{
 		std::swap(Handle, rhs.Handle);
 		std::swap(_Routine, rhs._Routine);
 	}
-	ActiveRoutine::ActiveRoutine(const char* Str, Routine_t Fn, const RoutineParam& Param): _Name(Str), Handle(nullptr), _Routine(Fn)
+	ActiveRoutine::ActiveRoutine(const char* Str, Routine_t Fn, const RoutineParam& Param) : _Name(Str), Handle(nullptr), _Routine(Fn)
 	{
 		if (RegisterRoutine(Str, Fn, Param))
 			Handle = GetRoutine(Str);
@@ -260,7 +136,7 @@ namespace Ext
 	}
 
 	ActiveExecutor::ActiveExecutor(noinit_t) :Running(false) {}
-	ActiveExecutor::ActiveExecutor(const GeneralExecutor& Executor): Exec(Executor), Running(false)
+	ActiveExecutor::ActiveExecutor(const GeneralExecutor& Executor) : Exec(Executor), Running(false)
 	{
 		Idx.Type = Executor.Base.Type;
 		Idx.ExecType = Executor.Base.ExecType;
@@ -359,7 +235,7 @@ namespace Ext
 			real_null = nullptr;
 			return real_null;
 		}
-		return *((&Tbl.Custom_1)+FuncIdx);
+		return *((&Tbl.Custom_1) + FuncIdx);
 	}
 	LibData::LibData(BasicLibData* _Lib) :Lib(_Lib) {}
 	bool LibData::Available()
@@ -465,6 +341,21 @@ namespace Ext
 		CSFClass_GetITable().Clear(this);
 	}
 
+	ECLoadStage GetLoadStage()
+	{
+		if (!Init::LibInput)return ECLoadStage::FailedToQuery;
+		auto pStage = Init::LibInput->ECInitializeStage;
+		if (!pStage)return ECLoadStage::FailedToQuery;
+		switch (*pStage)
+		{
+		case 0:return ECLoadStage::InitialLoading;
+		case 10:return ECLoadStage::InitialLoadComplete;
+		case 20:
+		case 50:return ECLoadStage::InitOrderChecked;
+		case 100:return ECLoadStage::InitComplete;
+		default:return ECLoadStage::FailedToQuery;
+		}
+	}
 
 	FuncInfo* GetFuncFromLib(const char* pLib, const char* pFunc, int Version)
 	{

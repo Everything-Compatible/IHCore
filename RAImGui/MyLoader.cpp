@@ -141,6 +141,8 @@ int __cdecl YouShouldNotSelect(RoutineParam*)
 					Interface->Buff_CreateOrMerge(ty, &Pack, Interface->OwnerEntity(), p->GetOwningHouse());
 					//WWMessageBox::Instance->Process(L"ÎÒ²âÄãµÄÂí");
 					DbgLog("ExampleSIBuff has created\n");
+					//char* p = nullptr;
+					//p[1] = 2;
 				}
 				else
 				{
@@ -355,3 +357,4 @@ const std::unordered_map<std::string, FuncInfo>Funcs
 	{"IHCore::Exit",FuncInfo(WEX, FuncType::Procedure)},
 };
 
+//DEFINE_HOOKEX(0x679CAF, YourRules_LoadAfterTypeData, 0x5, 200000, "")

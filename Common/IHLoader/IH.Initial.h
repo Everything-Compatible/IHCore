@@ -77,3 +77,16 @@ struct InitialLoadParam_RegisterFunction : public InitialLoadParam
 	InitialLoadParam_RegisterFunction() = delete;
 	explicit InitialLoadParam_RegisterFunction(const char* _Name, void* _Hd);
 };
+
+template<typename T>
+struct InitialLoadParam_RegisterObject : public InitialLoadParam
+{
+	const char* Name{ nullptr };
+	size_t ObjSize{ 0 };
+	T* Handle{ nullptr };
+
+	InitialLoadParam_RegisterObject() = delete;
+	explicit InitialLoadParam_RegisterObject(const char* _Name, T& _Object)
+		: Name(_Name), ObjSize(sizeof(T)), Handle(new T{ _Object }),
+		InitialLoadParam(sizeof(InitialLoadParam_RegisterObject)) {}
+};

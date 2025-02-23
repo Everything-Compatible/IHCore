@@ -196,3 +196,26 @@ DEFINE_HOOK(0x6D4684, TacticalClass_Draw_FlyingStrings, 6)
 	//Test::FrameUpdate();
 	return 0;
 }
+
+BSurface::BSurface(VoxelCacheStruct& Cache) :XSurface(Cache.Width, Cache.Height), Buffer(Cache.Buffer, (size_t)Cache.Width* Cache.Height)
+{ BytesPerPixel = 1; ((int*)this)[0] = 0x7E2070; };
+
+DEFINE_HOOK(0x707480, SubmitVoxelToSurface, 5)
+{
+	GET_STACK(VoxelCacheStruct*, pCache, 0x4);
+	BSurface BS(*(VoxelCacheStruct*)0xB78824);
+	BS.LockLevel = 0;
+	BS.Fill(0xFFFFFF);
+	BSurface::VoxelSurface->Fill(0xFFFFFF);
+	return 0;
+}
+
+void DbgLog(const char* pFormat, ...);
+
+DEFINE_HOOK(0x4741F0, RecordINI, 6)
+{
+	//GET(int*, pFile, EDX);
+	GET(CCFileClass*, pFile, EDX);
+	if (pFile && *(int*)pFile==0x7E16B0)DbgLog("FILENAME = \"%s\"\n", pFile->GetFileName());
+	return 0;
+}

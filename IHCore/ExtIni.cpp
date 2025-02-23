@@ -343,6 +343,7 @@ size_t __fastcall CacheStraw_GetLineEx(CacheStraw* Straw, char* pBuffer, size_t 
 	}
 	else
 	{
+		//Debug::Log("[IH]\"%s\"\n", BBuf);
 		BBuf[size - 1] = 0;
 		strncpy(pBuffer, BBuf, size);
 		return size - 1;
@@ -446,9 +447,9 @@ struct CCFakeINI
 
 void ExtIni_InitBeforeEverything()
 {
-	Patch::Apply_CALL(0x526070, StrDupKey);
+	//Patch::Apply_CALL(0x526070, StrDupKey);
 	Patch::Apply_CALL(0x526062, StrDupValue);
-	Patch::Apply_CALL(0x525E07, StrDupSection);
+	//Patch::Apply_CALL(0x525E07, StrDupSection);
 	//Patch::Apply_CALL(0x525C6E, CacheStraw_GetLineEx);
 	Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
 	//Patch::Apply_CALL(0x47422B, union_cast<void*>(&CCFakeINI::INIClass_ReadFile));

@@ -3,6 +3,7 @@
 #include "ToolFunc.h"
 #include "ExtFile.h"
 #include "InitialLoad.h"
+#include "..\Common\IHLoader\EC.Listener.h"
 
 //DEFINE_HOOK(0x734F50, StringManeger_InitialLoadString, 5)
 //DEFINE_HOOK(0x734F80, StringManeger_SetUseCSFString, 5)
@@ -94,6 +95,7 @@ namespace StringManagerExt
 		SessionClass::Instance->GetUIString();
 		MapSeedClass::Instance->GetUIString_RandomMap();
 		StringTable::IsLoaded = Ra2MD.Available();
+		Debug::Log("IHCore : Value Count: %d\n", Ra2MD.Size());
 		return Ra2MD.Available();
 	}
 
@@ -113,6 +115,20 @@ namespace StringManagerExt
 	const wchar_t* __fastcall LoadCSFString(const char* pLabel, const char** pOutExtraData, 
 		const char* pSourceCodeFileName, int nSourceCodeFileLine)
 	{
+		//static std::unordered_map<std::string, std::wstring> wk;
+		//auto& w = wk[pLabel] = ANSItoUnicode(pLabel)+L'@';
+		//return w.c_str();
+		for (auto hd : ECListener::GetAll("EC::OnLoadCSFString"))
+		{
+			auto R = AsType<const wchar_t* CALLBACK(const char* pLabel)>(hd)(pLabel);
+			if (R)
+			{
+				if (pOutExtraData)*pOutExtraData = 0;
+				return R;
+			}
+		}
+		
+		
 		if (!FormattedOriginal && StringTable::LabelCount)
 		{
 			for (int i = 0; i < StringTable::LabelCount(); i++)

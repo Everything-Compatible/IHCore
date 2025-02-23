@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include <ArrayClasses.h>
 
-#define UTF8 //Used in code to mark a utf8 string
+#define _UTF8 //Used in code to mark a utf8 string
 
 using Version_t = unsigned;
 using LoadID_t = unsigned;

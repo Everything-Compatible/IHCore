@@ -161,10 +161,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IHLoader\cJSON.h" />
-    <ClInclude Include="..\Common\IHLoader\CustomFile.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Listener.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Misc.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Ext.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.File.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.h" />
     <ClInclude Include="..\Common\IHLoader\ExtJson.h" />
-    <ClInclude Include="..\Common\IHLoader\IHInitialLoad.h" />
-    <ClInclude Include="..\Common\IHLoader\LoaderLib.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Initial.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.InitialService.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Loader.h" />
     <ClInclude Include="..\Common\IHLoader\SyringeEx.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Buff.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Template.h" />
@@ -180,12 +186,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\IHLoader\cJSON.c" />
-    <ClCompile Include="..\Common\IHLoader\CustomFile.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.Misc.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.Ext.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.File.cpp" />
     <ClCompile Include="..\Common\IHLoader\ExtJson.cpp" />
-    <ClCompile Include="..\Common\IHLoader\IHInitialLoad.cpp" />
-    <ClCompile Include="..\Common\IHLoader\LoaderLib.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.Initial.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.Loader.cpp" />
     <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Buff.cpp" />
+    <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.ExampleBuff.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp" />
     <ClCompile Include="dllmain.cpp" />

@@ -1,5 +1,5 @@
 #pragma once
-#include <LoaderLib.h>
+#include <IH.h>
 
 extern InitialLoad::Service<InitialLoadParam_CustomPath>
 	Service_CustomPathListHead,
@@ -21,4 +21,5 @@ extern InitialLoad::Service<InitialLoadParam_RegisterVTable>
 	Service_RegisterIHFile;
 
 extern InitialLoad::Service<InitialLoadParam_RegisterFunction>
-	Service_RegisterIHFileFilter;// bool(__cdecl*)(const char*)
+	Service_RegisterIHFileFilter,// bool(__cdecl*)(const char*)
+	Service_RegisterListenerAccess;// FuncHandle (__cdecl*)(const char*) FOR INTERNAL USE

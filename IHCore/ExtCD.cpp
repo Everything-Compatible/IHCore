@@ -1,6 +1,7 @@
 #include "ExtCD.h"
 #include "Debug.h"
 #include "Patch.h"
+#include "ConfData.h"
 #include "ToolFunc.h"
 #include "InitialLoad.h"
 #include "..\Common\LocalData.h"
@@ -54,6 +55,7 @@ const char* CDExt::TryRedirect(const char* Name)
 
 void SetName_Impl(CDFileClass* This, const std::string& Str,const char* pFileName)
 {
+	//Debug::Log("IHCore : Query File Stream %s for File %s\n", Str.c_str(), pFileName);
 	auto jt = Local::IHFileStreamer.find(Str);
 	if (jt != Local::IHFileStreamer.end())
 	{
@@ -61,49 +63,66 @@ void SetName_Impl(CDFileClass* This, const std::string& Str,const char* pFileNam
 		This->IHExtPtr = CRT::_new(jt->second.Size);
 		memset(This->IHExtPtr, 0, jt->second.Size);
 		VTABLE_SET((This->IHExtPtr), jt->second.vptr);
+		((IHFileClass*)This->IHExtPtr)->Initialize();
 		((FileClass*)This->IHExtPtr)->SetFileName(pFileName);
 	}
 }
 
-const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
+void ClearPrevName_Impl(CDFileClass* This)
 {
-	auto This = reinterpret_cast<CDFileClass*>(this);
-	const char* pFileName = CDExt_Instance.TryRedirect(pOriginalFileName);
 	if (This->IHExtPtr)
 	{
-		bool OK = false;
-		auto it = Local::IHFileBinder.find(pFileName);
-		if (it != Local::IHFileBinder.end())
-		{
-			((FileClass*)This->IHExtPtr)->~FileClass();
-			CRT::_delete(This->IHExtPtr);
-			This->IHExtPtr = nullptr;
-			SetName_Impl(This, it->second, pFileName);
-		}
-		for (auto& p : Local::IHFileFilter)
-			if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
-				SetName_Impl(This, p.first, pFileName);
-		
-		return ((FileClass*)This->IHExtPtr)->SetFileName(pFileName);
+		((FileClass*)This->IHExtPtr)->~FileClass();
+		CRT::_delete(This->IHExtPtr);
+		This->IHExtPtr = nullptr;
 	}
+}
 
-	char v5[260]; 
+JsonObject GetIHCoreJson();
 
+const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
+{
 	static bool First = true;
 	if (First)
 	{
+		auto cfg = GetIHCoreJson();
+		if (cfg.Available())
+		{
+			auto Obj = cfg.GetObjectItem("ExtraPath_First");
+			if (Obj.Available() && Obj.IsNotEmptyArray())
+				for (const auto& s : Obj.GetArrayString())
+				{
+					CDExt_Instance.PushCustomPathToFirst(SyringeData::ExecutableDirectoryPath() + s);
+					Debug::Log("IHCore : Adding Path From Config \"%hs%hs\"\n", SyringeData::ExecutableDirectoryPath().c_str(), s.c_str());
+				}
+			Obj = cfg.GetObjectItem("ExtraPath_Last");
+			if (Obj.Available() && Obj.IsNotEmptyArray())
+				for (const auto& s : Obj.GetArrayString())
+				{
+					CDExt_Instance.PushCustomPathToTail(SyringeData::ExecutableDirectoryPath() + s);
+					Debug::Log("IHCore : Adding Path From Config \"%hs%hs\"\n", SyringeData::ExecutableDirectoryPath().c_str(), s.c_str());
+				}
+			Obj = cfg.GetObjectItem("FileRedirect");
+			if (Obj.Available() && Obj.IsTypeObject())
+				for (const auto& [Original,Target] : Obj.GetMapString())
+				{
+					CDExt_Instance.AddRedirect(Original.c_str(), Target.c_str());
+					Debug::Log("IHCore : Adding Redirection From Config \"%hs\"->\"%hs\"\n", Original.c_str(), Target.c_str());
+				}
+		}
+
 		Service_RegisterIHFile.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Register File Stream \"%hs\"\n", Param.Name);
-			Local::RegisterIHFileStream(Param.Name, { Param.vptr, Param.Size }); });
+		Local::RegisterIHFileStream(Param.Name, { Param.vptr, Param.Size }); });
 		Service_BindToStream.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Register File \"%hs\" Binding to \"%hs\"\n", Param.OriginalName, Param.TargetName);
-			Local::IHFileBinder.insert({ Param.OriginalName, Param.TargetName }); });
+		Local::IHFileBinder.insert({ Param.OriginalName, Param.TargetName }); });
 		Service_RegisterIHFileFilter.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Register File Stream \"%hs\"\n", Param.Name);
-			Local::IHFileFilter.insert({ Param.Name, Param.Handle }); });
+		Local::IHFileFilter.insert({ Param.Name, Param.Handle }); });
 		Service_RedirectFile.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Adding Redirection \"%hs\"->\"%hs\"\n", Param.OriginalName, Param.TargetName);
-			CDExt_Instance.AddRedirect(Param.OriginalName, Param.TargetName); });
+		CDExt_Instance.AddRedirect(Param.OriginalName, Param.TargetName); });
 		Service_CustomPathListHead.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Adding Path \"%hs\"\n", Param.Path); CDExt_Instance.PushCustomPathToHead(Param.Path); });
 		Service_CustomPathListTail.RefreshAndProcess([](const auto& Param)
@@ -114,12 +133,27 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 	}
 	//Debug::Log("[IH] Requesting \"%s\"\n", pOriginalFileName);
 
-	auto it = Local::IHFileBinder.find(pFileName);
-	if (it != Local::IHFileBinder.end())
-		SetName_Impl(This, it->second, pFileName);
-	for (auto& p : Local::IHFileFilter)
-		if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
-			SetName_Impl(This, p.first, pFileName);
+
+	
+	auto This = reinterpret_cast<CDFileClass*>(this);
+	const char* pFileName = CDExt_Instance.TryRedirect(pOriginalFileName);
+	char v5[MAX_PATH];
+
+	if (!UseOriginalFileClass())
+	{
+		//if (pOriginalFileName != pFileName)
+		//	Debug::Log("[IH] %s->%s", pOriginalFileName, pFileName);
+		//Debug::Log("[IH] Requesting \"%s\"\n", pFileName);
+		ClearPrevName_Impl(This);
+		auto it = Local::IHFileBinder.find(pFileName);
+		if (it != Local::IHFileBinder.end())
+			SetName_Impl(This, it->second, pFileName);
+		for (auto& p : Local::IHFileFilter)
+			if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
+				SetName_Impl(This, p.first, pFileName);
+		if (This->IHExtPtr)return ((FileClass*)This->IHExtPtr)->GetFileName();
+	}
+	
 
 	for (auto& p : CDExt_Instance.PathFirst)
 	{
@@ -137,6 +171,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 		for (auto& p : CDExt_Instance.PathHead)
 		{
 			This->BufferIOFileClass::SetFileName((p + pFileName).c_str());
+			//不会悬垂，BufferIOFileClass::SetFileName会调用strdup复制一份
 			if (This->BufferIOFileClass::Exists(0))
 				return This->GetFileName();
 		}
@@ -169,7 +204,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 const char* FileClassExt::RawFileClass_GetFileName()
 {
 	auto This = reinterpret_cast<RawFileClass*>(this);
-	if (This->IHExtPtr)return ((FileClass*)This->IHExtPtr)->GetFileName();
+	if (This->IHExtPtr && !UseOriginalFileClass())return ((FileClass*)This->IHExtPtr)->GetFileName();
 	return This->FileName;
 }
 
@@ -185,7 +220,7 @@ DEFINE_HOOK(0x473C50, CCFileClass_Exists, 9)
 	GET(RawFileClass*, This, ECX);
 	GET_STACK(BOOL, WriteShared, 0x4);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->Exists((bool)WriteShared));
 		return 0x473CC0;
@@ -196,7 +231,7 @@ DEFINE_HOOK(0x473CD0, CCFileClass_HasHandle, 5)
 {
 	GET(RawFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->HasHandle());
 		return 0x473CD9;
@@ -208,7 +243,7 @@ DEFINE_HOOK(0x473D10, CCFileClass_Open, 5)
 	GET(CCFileClass*, This, ECX);
 	GET_STACK(FileAccessMode, Access, 0x4);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->Open(Access));
 		return 0x473DF3;
@@ -221,7 +256,7 @@ DEFINE_HOOK(0x473B10, CCFileClass_ReadBytes, 5)
 	GET_STACK(LPVOID, Buffer, 0x4);
 	GET_STACK(size_t, Size, 0x8);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->ReadBytes(Buffer,Size));
 		return 0x473B9B;
@@ -234,7 +269,7 @@ DEFINE_HOOK(0x473BA0, CCFileClass_Seek, 5)
 	GET_STACK(int, Offset, 0x4);
 	GET_STACK(FileSeekMode , Mode, 0x8);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->Seek(Offset, Mode));
 		return 0x473BF8;
@@ -245,7 +280,7 @@ DEFINE_HOOK(0x473C00, CCFileClass_GetFileSize, 7)
 {
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->GetFileSize());
 		return 0x473C10;
@@ -258,7 +293,7 @@ DEFINE_HOOK(0x473AE0, CCFileClass_WriteBytes, 6)
 	GET_STACK(LPVOID, Buffer, 0x4);
 	GET_STACK(size_t, Size, 0x8);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->WriteBytes(Buffer, Size));
 		return 0x473B0D;
@@ -273,7 +308,7 @@ DEFINE_HOOK(0x65D150, RawFileClass_CreateFile, 5)
 {
 	GET(RawFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->CreateFile());
 		return 0x65D187;
@@ -284,7 +319,7 @@ DEFINE_HOOK(0x65D190, RawFileClass_DeleteFile, 5)
 {
 	GET(RawFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		R->EAX(((FileClass*)This->IHExtPtr)->DeleteFile());
 		return 0x65D1EE;
@@ -295,7 +330,7 @@ DEFINE_HOOK(0x473CE0, CCFileClass_Close, 6)
 {
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		((FileClass*)This->IHExtPtr)->Close();
 		return 0x473D02;
@@ -306,7 +341,7 @@ DEFINE_HOOK(0x4019A0, CCFileClass_Destructor_III, 6)
 {
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		((FileClass*)This->IHExtPtr)->~FileClass();
 		CRT::_delete(This->IHExtPtr);
@@ -318,7 +353,7 @@ DEFINE_HOOK(0x535A60, CCFileClass_Destructor_II, 6)
 {
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		((FileClass*)This->IHExtPtr)->~FileClass();
 		CRT::_delete(This->IHExtPtr);
@@ -330,7 +365,7 @@ DEFINE_HOOK(0x535A70, CCFileClass_Destructor, 6)
 {
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr)
+	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
 		((FileClass*)This->IHExtPtr)->~FileClass();
 		CRT::_delete(This->IHExtPtr);

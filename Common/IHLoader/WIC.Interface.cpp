@@ -1,6 +1,6 @@
 
 #include "WIC.Interface.h"
-
+#include "WIC.Template.h"
 
 SIException::SIException(const char* info) : Info(info) {};
 const char* SIException::what() const noexcept
@@ -1074,1088 +1074,167 @@ void SIInterface_ExtendData::UpdateOwningHouse(const HouseClass* const ¾ÉµÄµ¥Î»Ë
 	SI::UpdateOwningHouse(this, ¾ÉµÄµ¥Î»ËùÊô×÷Õ½·½, ĞÂµÄµ¥Î»ËùÊô×÷Õ½·½);
 }
 
-Ext::LibData WIC(nullptr);
+const SIConstVector<SIBroadcastClass*>& SIBroadcastClass::GetArray()
+{
+	return SIBroadcast::GetBroadcastArray();
+}
+// ¹¦ÄÜº¯Êı
+void SIBroadcastClass::FreshBroadcastPower(double ¹ã²¥Ç¿¶È, bool ´¥·¢±»¶¯¼àÌı, CoordStruct ·¢²¼×ø±ê, TechnoClass* ·¢²¼µ¥Î», AbstractClass* Ö¸ÏòÄ¿±ê)
+{
+	SIBroadcast::FreshBroadcastPower(this, ¹ã²¥Ç¿¶È, ´¥·¢±»¶¯¼àÌı, ·¢²¼×ø±ê, ·¢²¼µ¥Î», Ö¸ÏòÄ¿±ê);
+}
+void SIBroadcastClass::PostBroadcast(bool ´¥·¢±»¶¯¼àÌı, CoordStruct ·¢²¼×ø±ê, TechnoClass* ·¢²¼µ¥Î», AbstractClass* Ö¸ÏòÄ¿±ê)
+{
+	SIBroadcast::PostBroadcast(this, ´¥·¢±»¶¯¼àÌı, ·¢²¼×ø±ê, ·¢²¼µ¥Î», Ö¸ÏòÄ¿±ê);
+}
+int SIBroadcastClass::GetBroadcastListenerCount(bool ÎŞÊÓÏŞÖÆÌõ¼ş, CoordStruct ·¢²¼×ø±ê, TechnoClass* ·¢²¼µ¥Î», AbstractClass* Ö¸ÏòÄ¿±ê)
+{
+	return SIBroadcast::GetBroadcastListenerCount(this, ÎŞÊÓÏŞÖÆÌõ¼ş, ·¢²¼×ø±ê, ·¢²¼µ¥Î», Ö¸ÏòÄ¿±ê);
+}
+void SIBroadcastClass::AddListener(SIBuffClass* ÒªÌí¼ÓµÄ¼àÌıBuff)
+{
+	SIBroadcast::AddListener(this, ÒªÌí¼ÓµÄ¼àÌıBuff);
+}
+void SIBroadcastClass::RemoveListener(SIBuffClass* ÒªÒÆ³ıµÄ¼àÌıBuff)
+{
+	SIBroadcast::RemoveListener(this, ÒªÒÆ³ıµÄ¼àÌıBuff);
+}
+bool SIBroadcastClass::IsEmpty()
+{
+	return SIBroadcast::IsEmpty(this);
+}
+HouseClass* SIBroadcastClass::OwnerObject()
+{
+	return SIBroadcast::OwnerObject(this);
+}
+double SIBroadcastClass::GetBroadcastPower()
+{
+	return SIBroadcast::GetBroadcastPower(this);
+}
+const SIDataList<SIBuffClass*>& SIBroadcastClass::GetListenerBuffList()
+{
+	return SIBroadcast::GetListenerBuffList(this);
+}
+
+
+void SIHouse_ExtendData::Counter_AddOriginTechnoType(TechnoTypeClass* µ¥Î»ÀàĞÍ)
+{
+	SIHouseExt::Counter_AddOriginTechnoType(this, µ¥Î»ÀàĞÍ);
+}
+void SIHouse_ExtendData::Counter_RemoveOriginTechnoType(TechnoTypeClass* µ¥Î»ÀàĞÍ)
+{
+	SIHouseExt::Counter_RemoveOriginTechnoType(this, µ¥Î»ÀàĞÍ);
+}
+bool SIHouse_ExtendData::AlwaysShowCameo(const TechnoTypeClass* const µ¥Î»ÀàĞÍ, bool °üÀ¨ÕıÔÚ½¨ÔìµÄµ¥Î») const
+{
+	return SIHouseExt::AlwaysShowCameo(this, µ¥Î»ÀàĞÍ, °üÀ¨ÕıÔÚ½¨ÔìµÄµ¥Î»);
+}
+void SIHouse_ExtendData::Factory_CalculateProduction()
+{
+	SIHouseExt::Factory_CalculateProduction(this);
+}
+void SIHouse_ExtendData::Factory_MergeProduction(TechnoClass* µ¥Î»)
+{
+	SIHouseExt::Factory_MergeProduction(this, µ¥Î»);
+}
+void SIHouse_ExtendData::Factory_RemoveProduction(TechnoClass* µ¥Î»)
+{
+	SIHouseExt::Factory_RemoveProduction(this, µ¥Î»);
+}
+void SIHouse_ExtendData::EXP_Init()
+{
+	SIHouseExt::EXP_Init(this);
+}
+void SIHouse_ExtendData::EXP_Get(TechnoClass* µ¥Î», SIValues_HouseInitEXP* ¹ú¼Ò¾­ÑéÖµ²ÎÊı°ü)
+{
+	SIHouseExt::EXP_Get(this, µ¥Î», ¹ú¼Ò¾­ÑéÖµ²ÎÊı°ü);
+}
+bool SIHouse_ExtendData::EXP_MergeAcademy(TechnoClass* µ¥Î», TechnoTypeClass* µ¥Î»ÀàĞÍ)//¿ÉÄÜ»áÊ§°Ü£¬Ê§°Ü·µ»Øfalse
+{
+	return SIHouseExt::EXP_MergeAcademy(this, µ¥Î», µ¥Î»ÀàĞÍ);
+}
+bool SIHouse_ExtendData::EXP_RemoveAcademy(TechnoClass* µ¥Î», TechnoTypeClass* µ¥Î»ÀàĞÍ)//¿ÉÄÜ»áÊ§°Ü£¬Ê§°Ü·µ»Øfalse
+{
+	return SIHouseExt::EXP_RemoveAcademy(this, µ¥Î», µ¥Î»ÀàĞÍ);
+}
+bool SIHouse_ExtendData::EXP_UpdateSpyEffect(BuildingClass* ½¨Öşµ¥Î», BuildingTypeClass* ½¨Öşµ¥Î»ÀàĞÍ)//¿ÉÄÜ»áÊ§°Ü£¬Ê§°Ü·µ»Øfalse
+{
+	return SIHouseExt::EXP_UpdateSpyEffect(this, ½¨Öşµ¥Î», ½¨Öşµ¥Î»ÀàĞÍ);
+}
+void SIHouse_ExtendData::SetHouseVar(int Ë÷ÒıÖµ, double ÊıÖµ)
+{
+	SIHouseExt::SetHouseVar(this, Ë÷ÒıÖµ, ÊıÖµ);
+}
+double SIHouse_ExtendData::GetHouseVar(int Ë÷ÒıÖµ)
+{
+	return SIHouseExt::GetHouseVar(this, Ë÷ÒıÖµ);
+}
+void SIHouse_ExtendData::DeleteHouseVar(int Ë÷ÒıÖµ)
+{
+	SIHouseExt::DeleteHouseVar(this, Ë÷ÒıÖµ);
+}
+SIBroadcastClass* SIHouse_ExtendData::Broadcast_FindOrAllocate(int ÆµµÀ)// ·µ»ØÖµ¿ÉÄÜÎª¿Õ
+{
+	return SIHouseExt::Broadcast_FindOrAllocate(this, ÆµµÀ);
+}
+SIBroadcastClass* SIHouse_ExtendData::Broadcast_Find(int ÆµµÀ)// ·µ»ØÖµ¿ÉÄÜÎª¿Õ
+{
+	return SIHouseExt::Broadcast_Find(this, ÆµµÀ);
+}
+void SIHouse_ExtendData::FreshBroadcastPower(int ÆµµÀ, double ¹ã²¥Ç¿¶È, bool ´¥·¢±»¶¯¼àÌı, CoordStruct ·¢²¼×ø±ê, TechnoClass* ·¢²¼µ¥Î», AbstractClass* Ö¸ÏòÄ¿±ê)
+{
+	SIHouseExt::FreshBroadcastPower(this, ÆµµÀ, ¹ã²¥Ç¿¶È, ´¥·¢±»¶¯¼àÌı, ·¢²¼×ø±ê, ·¢²¼µ¥Î», Ö¸ÏòÄ¿±ê);
+}
+void SIHouse_ExtendData::PostBroadcast(int ÆµµÀ, bool ´¥·¢±»¶¯¼àÌı, CoordStruct ·¢²¼×ø±ê, TechnoClass* ·¢²¼µ¥Î», AbstractClass* Ö¸ÏòÄ¿±ê)
+{
+	SIHouseExt::PostBroadcast(this, ÆµµÀ, ´¥·¢±»¶¯¼àÌı, ·¢²¼×ø±ê, ·¢²¼µ¥Î», Ö¸ÏòÄ¿±ê);
+}
+int SIHouse_ExtendData::GetBroadcastListenerCount(int ÆµµÀ, bool ÎŞÊÓÏŞÖÆÌõ¼ş, CoordStruct ·¢²¼×ø±ê, TechnoClass* ·¢²¼µ¥Î», AbstractClass* Ö¸ÏòÄ¿±ê)
+{
+	return SIHouseExt::GetBroadcastListenerCount(this, ÆµµÀ, ÎŞÊÓÏŞÖÆÌõ¼ş, ·¢²¼×ø±ê, ·¢²¼µ¥Î», Ö¸ÏòÄ¿±ê);
+}
+double SIHouse_ExtendData::GetBroadcastPower(int ÆµµÀ)
+{
+	return SIHouseExt::GetBroadcastPower(this, ÆµµÀ);
+}
+void SIHouse_ExtendData::AddBroadcastListener(int ÆµµÀ, SIBuffClass* ¼àÌıBuff)
+{
+	SIHouseExt::AddBroadcastListener(this, ÆµµÀ, ¼àÌıBuff);
+}
+void SIHouse_ExtendData::RemoveBroadcastListener(int ÆµµÀ, SIBuffClass* ¼àÌıBuff)
+{
+	SIHouseExt::RemoveBroadcastListener(this, ÆµµÀ, ¼àÌıBuff);
+}
+void SIHouse_ExtendData::EXPPool_Add(double ¶îÍâ¾­ÑéÖµ)
+{
+	SIHouseExt::EXPPool_Add(this, ¶îÍâ¾­ÑéÖµ);
+}
+double SIHouse_ExtendData::EXPPool_Pop(double ĞèÇóµÄ¶îÍâ¾­ÑéÖµ)
+{
+	return SIHouseExt::EXPPool_Pop(this, ĞèÇóµÄ¶îÍâ¾­ÑéÖµ);
+}
+void SIHouse_ExtendData::ForEach_HouseVar(void* ²ÎÊı¼¯, void (CALLBACK* ´¦Àíº¯Êı)(void* ²ÎÊı¼¯, int Ë÷Òı, double& Öµ))
+{
+	SIHouseExt::ForEach_HouseVar(this, ²ÎÊı¼¯, ´¦Àíº¯Êı);
+}
+void SIHouse_ExtendData::ForEach_Broadcast(void* ²ÎÊı¼¯, void (CALLBACK* ´¦Àíº¯Êı)(void* ²ÎÊı¼¯, int ÆµµÀ, SIBroadcastClass* Öµ))
+{
+	SIHouseExt::ForEach_Broadcast(this, ²ÎÊı¼¯, ´¦Àíº¯Êı);
+}
+HouseClass* SIHouse_ExtendData::OwnerObject()
+{
+	return SIHouseExt::OwnerObject(this);
+}
+
+
+extern Ext::LibData WIC;
+
 namespace SI
 {
-	
-	/*
-	±¸×¢£º´Ë´¦ºÍSidoupiarÈ·ÈÏÁËÎÈ¶¨´æÔÚµÄAPI¼°ÆäĞÎÊ½£¬ËùÒÔÖ±½ÓÍ¨¹ıÖ»ÓĞ×îĞ¡ÏŞ¶È¼ì²éµÄLibData::QueryFunctionÊµÏÖ
-		  Èç¹û¶ÔÒ»Ğ©¼ì²éÎŞ·¨ÍêÈ«È·ÈÏ£¬ÇëÊ¹ÓÃExt::DispatchInterfaceÀ´Á¬½ÓÉÏ¶Ô·½µÄ½Ó¿Ú
-		  ÀıÈç£º
-		char* SomeFunc(int Param)
-		{
-			static Ext::DispatchInterface Interface("RegName of the Lib", "RegName of the function", DoNotCheckVersion);
-			auto fn = Interface.Func<decltype(SomeFunc)>();
-			if (fn)return fn(Param);
-			else
-			{
-				//´íÎó´¦Àí
-			}
-		}
-	*/
-
 	SIInterface_ExtendData* SI_API GetInterface(const AbstractClass* const ÊµÌå)
 	{
 		SIInterface(GetInterface)(ÊµÌå);
 	}
-
-	char* SI_API GetName(SIInterface_ExtendData* ½Ó¿Ú) // ÀàĞÍ ID Ãû³Æ
-	{
-		SIInterface(GetName)(½Ó¿Ú);
-	}
-
-	AbstractClass* SI_API OwnerEntity(SIInterface_ExtendData* ½Ó¿Ú) // ·µ»ØÖµ¿ÉÄÜÎª¿Õ
-	{
-		SIInterface(OwnerEntity)(½Ó¿Ú);
-	}
-
-	AbstractType  SI_API WhatAmI(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(WhatAmI)(½Ó¿Ú);
-	}
-
-	int  SI_API GetArrayIndex(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(GetArrayIndex)(½Ó¿Ú);
-	}
-
-	bool  SI_API IsSelected(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(IsSelected)(½Ó¿Ú);
-	}
-
-	void  SI_API GetCoords(SIInterface_ExtendData* ½Ó¿Ú, CoordStruct* ËùÔÚ×ø±ê)
-	{
-		SIInterface_void(GetCoords)(½Ó¿Ú, ËùÔÚ×ø±ê);
-	}
-
-	void  SI_API SetForceFireWeapon(SIInterface_ExtendData* ½Ó¿Ú, WeaponTypeClass* ÎäÆ÷ÀàĞÍ)
-	{
-		SIInterface_void(SetForceFireWeapon)(½Ó¿Ú, ÎäÆ÷ÀàĞÍ);
-	}
-
-	void  SI_API SetForceDeathWeapon(SIInterface_ExtendData* ½Ó¿Ú, WeaponTypeClass* ÎäÆ÷ÀàĞÍ)
-	{
-		SIInterface_void(SetForceDeathWeapon)(½Ó¿Ú, ÎäÆ÷ÀàĞÍ);
-	}
-
-	CoordStruct SI_API Calculate_FireCoord(SIInterface_ExtendData* ½Ó¿Ú, CoordStruct ÎäÆ÷×ø±ê, double Ëõ·Å±¶ÂÊ)
-	{
-		SIInterface(Calculate_FireCoord)(½Ó¿Ú, ÎäÆ÷×ø±ê, Ëõ·Å±¶ÂÊ);
-	}
-
-	int SI_API GetStaticEXPLevel(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(GetStaticEXPLevel)(½Ó¿Ú);
-	}
-
-	double  SI_API GetLevelTotalEXPCost(SIInterface_ExtendData* ½Ó¿Ú, double ¹Ì¶¨¾­ÑéÖµ»ùÊı, bool Ê¹ÓÃĞÂ¾­ÑéÏµÍ³)
-	{
-		SIInterface(GetLevelTotalEXPCost)(½Ó¿Ú, ¹Ì¶¨¾­ÑéÖµ»ùÊı, Ê¹ÓÃĞÂ¾­ÑéÏµÍ³);
-	}
-
-	double SI_API Calculate_PropertyGroup_Speed(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼ÒÆ¶¯ËÙ¶È)
-	{
-		SIInterface(Calculate_PropertyGroup_Speed)(½Ó¿Ú, Ô­Ê¼ÒÆ¶¯ËÙ¶È);
-	}
-	double SI_API Calculate_PropertyGroup_Defence(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼ÉËº¦)
-	{
-		SIInterface(Calculate_PropertyGroup_Defence)(½Ó¿Ú, Ô­Ê¼ÉËº¦);
-	}
-
-	double SI_API Calculate_PropertyGroup_Attack(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼ÉËº¦)
-	{
-		SIInterface(Calculate_PropertyGroup_Attack)(½Ó¿Ú, Ô­Ê¼ÉËº¦);
-	}
-
-	double SI_API Calculate_PropertyGroup_ROF(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼ÉäËÙ)
-	{
-		SIInterface(Calculate_PropertyGroup_ROF)(½Ó¿Ú, Ô­Ê¼ÉäËÙ);
-	}
-
-	double SI_API Calculate_PropertyGroup_EXP(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼»ñµÃµÄ¾­ÑéÖµ)
-	{
-		SIInterface(Calculate_PropertyGroup_EXP)(½Ó¿Ú, Ô­Ê¼»ñµÃµÄ¾­ÑéÖµ);
-	}
-
-	double SI_API Calculate_PropertyGroup_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼Ìá¹©µÄ¾­ÑéÖµ)
-	{
-		SIInterface(Calculate_PropertyGroup_EXPProvide)(½Ó¿Ú, Ô­Ê¼Ìá¹©µÄ¾­ÑéÖµ);
-	}
-
-	double SI_API Calculate_PropertyGroup_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double µ¥Î»Éı¼¶ËùĞèµÄ¾­ÑéÖµ)
-	{
-		SIInterface(Calculate_PropertyGroup_EXPCost)(½Ó¿Ú, µ¥Î»Éı¼¶ËùĞèµÄ¾­ÑéÖµ);
-	}
-
-	double SI_API Calculate_PropertyGroup_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼ÎäÆ÷Éä³Ì)
-	{
-		SIInterface(Calculate_PropertyGroup_RangeWeapon)(½Ó¿Ú, Ô­Ê¼ÎäÆ÷Éä³Ì);
-	}
-
-	double SI_API Calculate_PropertyGroup_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double Ô­Ê¼µ¯Í·½¦Éä·¶Î§)
-	{
-		SIInterface(Calculate_PropertyGroup_CellSpread)(½Ó¿Ú, Ô­Ê¼µ¯Í·½¦Éä·¶Î§);
-	}
-
-	int SI_API GetTintColor(SIInterface_ExtendData* ½Ó¿Ú, bool ÌúÄ»È¾É«, bool ¿ÕÏ®È¾É«, bool ¿ñ±©È¾É«)
-	{
-		SIInterface(GetTintColor)(½Ó¿Ú, ÌúÄ»È¾É«, ¿ÕÏ®È¾É«, ¿ñ±©È¾É«);
-	}
-
-	void SI_API Calculate_CustomTintValues(SIInterface_ExtendData* ½Ó¿Ú, int& È¾É«ÑÕÉ«, int& È¾É«Ç¿¶È)
-	{
-		SIInterface_void(Calculate_CustomTintValues)(½Ó¿Ú, È¾É«ÑÕÉ«, È¾É«Ç¿¶È);
-	}
-
-	int SI_API Calculate_CustomTintValues_Color(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(Calculate_CustomTintValues_Color)(½Ó¿Ú);
-	}
-
-	int SI_API Calculate_CustomTintValues_Intensity(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(Calculate_CustomTintValues_Intensity)(½Ó¿Ú);
-	}
-
-	double SI_API Property_Merge_Multiplier_Speed(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_Speed)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_Armor(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_Armor)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_Versus(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_Versus)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_Attack(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_Attack)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_ROF(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_ROF)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_EXP(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_EXP)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_EXPProvide)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_EXPCost)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_RangeWeapon)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Multiplier_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Multiplier_CellSpread)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_Speed(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_Speed)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_Armor(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_Armor)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_Versus(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_Versus)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_Attack(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_Attack)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_ROF(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_ROF)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_EXP(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_EXP)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_EXPProvide)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_EXPCost)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_RangeWeapon)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_ExtraMultiplier_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_ExtraMultiplier_CellSpread)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_Speed(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_Speed)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_Damage(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_Damage)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_Attack(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_Attack)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_ROF(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_ROF)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_EXP(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_EXP)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_EXPProvide)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_EXPCost)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	// µ¥Î»ÊÇ¸ñµã
-	double SI_API Property_Merge_Addon_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_RangeWeapon)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_Addon_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_Addon_CellSpread)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_Speed(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_Speed)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_Damage(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_Damage)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_Attack(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_Attack)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_ROF(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_ROF)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_EXP(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_EXP)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_EXPProvide)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_EXPCost)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	// µ¥Î»ÊÇ¸ñµã
-	double SI_API Property_Merge_FinalAddon_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_RangeWeapon)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	double SI_API Property_Merge_FinalAddon_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÔö¼ÓÁ¿, double ĞÂµÄÔö¼ÓÁ¿)
-	{
-		SIInterface(Property_Merge_FinalAddon_CellSpread)(½Ó¿Ú, ¾ÉµÄÔö¼ÓÁ¿, ĞÂµÄÔö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_Speed(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_Speed)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_Armor(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_Armor)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_Versus(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_Versus)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_Attack(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_Attack)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_ROF(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_ROF)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_EXP(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_EXP)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_EXPProvide)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_EXPCost)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_RangeWeapon)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Multiplier_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Multiplier_CellSpread)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_Speed(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_Speed)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_Armor(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_Armor)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_Versus(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_Versus)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_Attack(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_Attack)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_ROF(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_ROF)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_EXP(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_EXP)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_EXPProvide)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_EXPCost)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_RangeWeapon)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_ExtraMultiplier_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_ExtraMultiplier_CellSpread)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_Speed(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_Speed)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_Damage(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_Damage)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_Attack(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_Attack)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_ROF(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_ROF)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_EXP(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_EXP)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_EXPProvide)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_EXPCost)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	// µ¥Î»ÊÇ¸ñµã
-	int SI_API Property_Register_Addon_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_RangeWeapon)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_Addon_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_Addon_CellSpread)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_Speed(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_Speed)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_Damage(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_Damage)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_Attack(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_Attack)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_ROF(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_ROF)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_EXP(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_EXP)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_EXPProvide)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_EXPCost)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	// µ¥Î»ÊÇ¸ñµã
-	int SI_API Property_Register_FinalAddon_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_RangeWeapon)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	int SI_API Property_Register_FinalAddon_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, double Ôö¼ÓÁ¿)
-	{
-		SIInterface(Property_Register_FinalAddon_CellSpread)(½Ó¿Ú, Ôö¼ÓÁ¿);
-	}
-
-	void SI_API Property_Unregister_Multiplier_Speed(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_Speed)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_Armor(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_Armor)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_Versus(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_Versus)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_Attack(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_Attack)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_ROF(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_ROF)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_EXP(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_EXP)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_EXPProvide)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_EXPCost)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_RangeWeapon)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Multiplier_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Multiplier_CellSpread)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_Speed(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_Speed)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_Armor(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_Armor)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_Versus(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_Versus)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_Attack(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_Attack)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_ROF(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_ROF)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_EXP(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_EXP)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_EXPProvide)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_EXPCost)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_RangeWeapon)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_ExtraMultiplier_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_ExtraMultiplier_CellSpread)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_Speed(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_Speed)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_Damage(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_Damage)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_Attack(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_Attack)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_ROF(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_ROF)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_EXP(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_EXP)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_EXPProvide)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_EXPCost)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_RangeWeapon)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_Addon_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_Addon_CellSpread)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_Speed(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_Speed)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_Damage(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_Damage)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_Attack(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_Attack)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_ROF(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_ROF)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_EXP(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_EXP)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_EXPProvide(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_EXPProvide)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_EXPCost(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_EXPCost)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_RangeWeapon(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_RangeWeapon)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Unregister_FinalAddon_CellSpread(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_FinalAddon_CellSpread)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	void SI_API Property_Merge_Ability_ImmuneCrush(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmuneCrush)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmuneCrushAdvance(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmuneCrushAdvance)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmuneRadiation(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmuneRadiation)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmunePsionicDamage(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmunePsionicDamage)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmunePsionic(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmunePsionic)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmuneBerzerk(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmuneBerzerk)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmunePoison(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmunePoison)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmuneWarp(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmuneWarp)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_ImmuneEMP(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_ImmuneEMP)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_SelfHealing(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_SelfHealing)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_SelfHealing_Percent(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÄÜÁ¦Ç¿¶È, double ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_SelfHealing_Percent)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_SelfHealing_Cap(SIInterface_ExtendData* ½Ó¿Ú, double ¾ÉµÄÄÜÁ¦Ç¿¶È, double ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_SelfHealing_Cap)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_SelfHealing_Delay(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_SelfHealing_Delay)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	void SI_API Property_Merge_Ability_SelfHealing_CombatDelay(SIInterface_ExtendData* ½Ó¿Ú, int ¾ÉµÄÄÜÁ¦Ç¿¶È, int ĞÂµÄÄÜÁ¦Ç¿¶È)
-	{
-		SIInterface_void(Property_Merge_Ability_SelfHealing_CombatDelay)(½Ó¿Ú, ¾ÉµÄÄÜÁ¦Ç¿¶È, ĞÂµÄÄÜÁ¦Ç¿¶È);
-	}
-
-	int SI_API Property_Register_CustomTintValues_A(SIInterface_ExtendData* ½Ó¿Ú, ColorStruct È¾É«ÑÕÉ«, int È¾É«Ç¿¶È, int ×÷Õ½·½¹éÊô)
-	{
-		SIInterface(Property_Register_CustomTintValues_A)(½Ó¿Ú, È¾É«ÑÕÉ«, È¾É«Ç¿¶È, ×÷Õ½·½¹éÊô);
-	}
-
-	int SI_API Property_Register_CustomTintValues_B(SIInterface_ExtendData* ½Ó¿Ú, int È¾É«ÑÕÉ«, int È¾É«Ç¿¶È, int ×÷Õ½·½¹éÊô)
-	{
-		SIInterface(Property_Register_CustomTintValues_B)(½Ó¿Ú, È¾É«ÑÕÉ«, È¾É«Ç¿¶È, ×÷Õ½·½¹éÊô);
-	}
-
-	void SI_API Property_Unregister_CustomTintValues(SIInterface_ExtendData* ½Ó¿Ú, int ×¢²áË÷Òı)
-	{
-		SIInterface_void(Property_Unregister_CustomTintValues)(½Ó¿Ú, ×¢²áË÷Òı);
-	}
-
-	// ¿Û³ı¾­ÑéÊ¹ÓÃ¸ºÊı
-	void SI_API EXP_Add(SIInterface_ExtendData* ½Ó¿Ú, const double Ìá¹©µÄ¾­ÑéÖµ, SIEXPSourceType ¾­ÑéÖµÀ´Ô´, SIValues_EXPMerge* ºÏ²¢¾­ÑéÖµ²ÎÊı°ü)
-	{
-		SIInterface_void(EXP_Add)(½Ó¿Ú, Ìá¹©µÄ¾­ÑéÖµ, ¾­ÑéÖµÀ´Ô´, ºÏ²¢¾­ÑéÖµ²ÎÊı°ü);
-	}
-
-	bool SI_API Buff_IsPowerOffline(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(Buff_IsPowerOffline)(½Ó¿Ú);
-	}
-
-	bool SI_API Buff_IsNeedHide(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(Buff_IsNeedHide)(½Ó¿Ú);
-	}
-
-	int SI_API Buff_GetEffectDuration(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, int Ô­Ê¼µÄ¹ÒÔØ³ÖĞøÊ±¼ä)
-	{
-		SIInterface(Buff_GetEffectDuration)(½Ó¿Ú, BuffÀàĞÍ, Ô­Ê¼µÄ¹ÒÔØ³ÖĞøÊ±¼ä);
-	}
-
-	double SI_API Buff_GetEffectHealth(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, double Ô­Ê¼µÄÉúÃüÖµ)
-	{
-		SIInterface(Buff_GetEffectHealth)(½Ó¿Ú, BuffÀàĞÍ, Ô­Ê¼µÄÉúÃüÖµ);
-	}
-
-	double SI_API Buff_GetEffectPower(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, double Ô­Ê¼µÄÇ¿¶ÈÖµ)
-	{
-		SIInterface(Buff_GetEffectPower)(½Ó¿Ú, BuffÀàĞÍ, Ô­Ê¼µÄÇ¿¶ÈÖµ);
-	}
-
-	SIBuffClass* SI_API Buff_CreateOrMerge(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü, AbstractClass* À´Ô´, HouseClass* À´Ô´ËùÊô×÷Õ½·½)
-	{
-		SIInterface(Buff_CreateOrMerge)(½Ó¿Ú, BuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü, À´Ô´, À´Ô´ËùÊô×÷Õ½·½);
-	}
-
-	void SI_API Buff_TryActive_A(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü)
-	{
-		SIInterface_void(Buff_TryActive_A)(½Ó¿Ú, BuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü);
-	}
-
-	void SI_API Buff_TryActive_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü, SIPackTypeClass_CheckTechno* ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü)
-	{
-		SIInterface_void(Buff_TryActive_B)(½Ó¿Ú, BuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü, ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü);
-	}
-
-	// [ÅĞ¶Ï´¦Àíº¯Êı] ·µ»Ø true Ôò¶Ô Buff ½øĞĞ´¦Àí
-	void SI_API Buff_TryActive_C(SIInterface_ExtendData* ½Ó¿Ú, void* À´Ô´, bool(*ÅĞ¶Ï´¦Àíº¯Êı)(void* À´Ô´, SIBuffClass* Buff, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü))
-	{
-		SIInterface_void(Buff_TryActive_C)(½Ó¿Ú, À´Ô´, ÅĞ¶Ï´¦Àíº¯Êı);
-	}
-
-	void SI_API Buff_TryAfter_A(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ)
-	{
-		SIInterface_void(Buff_TryAfter_A)(½Ó¿Ú, BuffÀàĞÍ);
-	}
-
-	void SI_API Buff_TryAfter_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPackTypeClass_CheckTechno* ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü)
-	{
-		SIInterface_void(Buff_TryAfter_B)(½Ó¿Ú, BuffÀàĞÍ, ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü);
-	}
-
-	// [ÅĞ¶Ï´¦Àíº¯Êı] ·µ»Ø true Ôò¶Ô Buff ½øĞĞ´¦Àí
-	void SI_API Buff_TryAfter_C(SIInterface_ExtendData* ½Ó¿Ú, void* À´Ô´, bool( *ÅĞ¶Ï´¦Àíº¯Êı)( void* À´Ô´, SIBuffClass* Buff) )
-	{
-		SIInterface_void(Buff_TryAfter_C)(½Ó¿Ú, À´Ô´, ÅĞ¶Ï´¦Àíº¯Êı);
-	}
-
-	void SI_API Buff_TryRemove_A(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ)
-	{
-		SIInterface_void(Buff_TryRemove_A)(½Ó¿Ú, BuffÀàĞÍ);
-	}
-
-	void SI_API Buff_TryRemove_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPackTypeClass_CheckTechno* ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü)
-	{
-		SIInterface_void(Buff_TryRemove_B)(½Ó¿Ú, BuffÀàĞÍ, ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü);
-	}
-
-	// [ÅĞ¶Ï´¦Àíº¯Êı] ·µ»Ø true Ôò¶Ô Buff ½øĞĞ´¦Àí
-	void SI_API Buff_TryRemove_C(SIInterface_ExtendData* ½Ó¿Ú, void* À´Ô´, bool(*ÅĞ¶Ï´¦Àíº¯Êı)(void* À´Ô´, SIBuffClass* Buff) )
-	{
-		SIInterface_void(Buff_TryRemove_C)(½Ó¿Ú, À´Ô´, ÅĞ¶Ï´¦Àíº¯Êı);
-	}
-
-	void SI_API Buff_TryMergeSetting_A(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü)
-	{
-		SIInterface_void(Buff_TryMergeSetting_A)(½Ó¿Ú, BuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü);
-	}
-
-	void SI_API Buff_TryMergeSetting_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü, SIPackTypeClass_CheckTechno* ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü)
-	{
-		SIInterface_void(Buff_TryMergeSetting_B)(½Ó¿Ú, BuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü, ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü);
-	}
-
-	// [ÅĞ¶Ï´¦Àíº¯Êı] ·µ»Ø true Ôò¶Ô Buff ½øĞĞ´¦Àí
-	void SI_API Buff_TryMergeSetting_C(SIInterface_ExtendData* ½Ó¿Ú, void* À´Ô´, bool(*ÅĞ¶Ï´¦Àíº¯Êı)(void* À´Ô´, SIBuffClass* Buff, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü) )
-	{
-		SIInterface_void(Buff_TryMergeSetting_C)(½Ó¿Ú, À´Ô´, ÅĞ¶Ï´¦Àíº¯Êı);
-	}
-
-	void SI_API Buff_TryChange_A(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* ¾ÉBuffÀàĞÍ, SIBuffTypeClass* ĞÂBuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü, int »ù´¡¹ÒÔØ³ÖĞøÊ±¼äÔö¼ÓÁ¿, double Ç¿¶ÈÖµÔö¼ÓÁ¿, AbstractClass* À´Ô´, HouseClass* À´Ô´ËùÊô×÷Õ½·½)
-	{
-		SIInterface_void(Buff_TryChange_A)(½Ó¿Ú, ¾ÉBuffÀàĞÍ, ĞÂBuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü, »ù´¡¹ÒÔØ³ÖĞøÊ±¼äÔö¼ÓÁ¿, Ç¿¶ÈÖµÔö¼ÓÁ¿, À´Ô´, À´Ô´ËùÊô×÷Õ½·½);
-	}
-
-	void SI_API Buff_TryChange_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* ¾ÉBuffÀàĞÍ, SIBuffTypeClass* ĞÂBuffÀàĞÍ, SIPack_BuffSetting_FromStatic* Buff²ÎÊıÉèÖÃ°ü, int »ù´¡¹ÒÔØ³ÖĞøÊ±¼äÔö¼ÓÁ¿, double Ç¿¶ÈÖµÔö¼ÓÁ¿, AbstractClass* À´Ô´, HouseClass* À´Ô´ËùÊô×÷Õ½·½, SIPackTypeClass_CheckTechno* ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü)
-	{
-		SIInterface_void(Buff_TryChange_B)(½Ó¿Ú, ¾ÉBuffÀàĞÍ, ĞÂBuffÀàĞÍ, Buff²ÎÊıÉèÖÃ°ü, »ù´¡¹ÒÔØ³ÖĞøÊ±¼äÔö¼ÓÁ¿, Ç¿¶ÈÖµÔö¼ÓÁ¿, À´Ô´, À´Ô´ËùÊô×÷Õ½·½, ¼ì²éµ¥Î»ÊôĞÔ²ÎÊı°ü);
-	}
-
-	bool SI_API Buff_HasBuffed_A(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface(Buff_HasBuffed_A)(½Ó¿Ú);
-	}
-
-	bool SI_API Buff_HasBuffed_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ)
-	{
-		SIInterface(Buff_HasBuffed_B)(½Ó¿Ú, BuffÀàĞÍ);
-	}
-
-	bool SI_API Buff_HasBuffed_C(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, SIBuffClass_State Buff×´Ì¬)
-	{
-		SIInterface(Buff_HasBuffed_C)(½Ó¿Ú, BuffÀàĞÍ, Buff×´Ì¬);
-	}
-
-	bool SI_API Buff_HasBuffed_D(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, AbstractClass* ÅÅ³ıµÄÀ´Ô´)
-	{
-		SIInterface(Buff_HasBuffed_D)(½Ó¿Ú, BuffÀàĞÍ, ÅÅ³ıµÄÀ´Ô´);
-	}
-
-	bool SI_API Buff_HasBuffed_E(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ, AbstractClass* ĞèÇóµÄÀ´Ô´, bool Ã»ÓÃµÄ±êÊ¶)
-	{
-		SIInterface(Buff_HasBuffed_E)(½Ó¿Ú, BuffÀàĞÍ, ĞèÇóµÄÀ´Ô´, Ã»ÓÃµÄ±êÊ¶);
-	}
-
-	bool SI_API Buff_HasBuffed_F(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass_EffectType Ğ§¹ûÖÖÀà)
-	{
-		SIInterface(Buff_HasBuffed_F)(½Ó¿Ú, Ğ§¹ûÖÖÀà);
-	}
-
-	bool SI_API Buff_HasBuffed_G(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass_EffectType Ğ§¹ûÖÖÀà, SIBuffClass_State Buff×´Ì¬)
-	{
-		SIInterface(Buff_HasBuffed_G)(½Ó¿Ú, Ğ§¹ûÖÖÀà, Buff×´Ì¬);
-	}
-
-	// ´Ë´¦²»»áÁ¢¼´ÒÆ³ıÎŞĞ§µÄ Buff
-	void SI_API Buff_LookUp(SIInterface_ExtendData* ½Ó¿Ú, void* À´Ô´, void(*±éÀúº¯Êı)(void* À´Ô´, SIBuffClass* Buff))
-	{
-		SIInterface_void(Buff_LookUp)(½Ó¿Ú, À´Ô´, ±éÀúº¯Êı);
-	}
-
-	void SI_API Buff_Update(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(Buff_Update)(½Ó¿Ú);
-	}
-
-	bool SI_API Buff_TriggerFire(SIInterface_ExtendData* ½Ó¿Ú, AbstractClass* Ä¿±ê, int ÎäÆ÷Ë÷Òı, WeaponStruct* ÎäÆ÷Êı¾İ, CoordStruct ±¾Ìå¿ª»ğ×ø±ê, bool ËÀÍöÎäÆ÷)
-	{
-		SIInterface(Buff_TriggerFire)(½Ó¿Ú, Ä¿±ê, ÎäÆ÷Ë÷Òı, ÎäÆ÷Êı¾İ, ±¾Ìå¿ª»ğ×ø±ê, ËÀÍöÎäÆ÷);
-	}
-
-	double SI_API Buff_TriggerAttacker(SIInterface_ExtendData* ½Ó¿Ú, TechnoClass* Ä¿±êµ¥Î», args_ReceiveDamage* ÉËº¦²ÎÊı, double µ±Ç°ÉËº¦)
-	{
-		SIInterface(Buff_TriggerAttacker)(½Ó¿Ú, Ä¿±êµ¥Î», ÉËº¦²ÎÊı, µ±Ç°ÉËº¦);
-	}
-
-	double SI_API Buff_TriggerDefender(SIInterface_ExtendData* ½Ó¿Ú, args_ReceiveDamage* ÉËº¦²ÎÊı, double µ±Ç°ÉËº¦)
-	{
-		SIInterface(Buff_TriggerDefender)(½Ó¿Ú, ÉËº¦²ÎÊı, µ±Ç°ÉËº¦);
-	}
-
-	double SI_API Buff_TriggerDefender_Final(SIInterface_ExtendData* ½Ó¿Ú, args_ReceiveDamage* ÉËº¦²ÎÊı, double µ±Ç°ÉËº¦)
-	{
-		SIInterface(Buff_TriggerDefender_Final)(½Ó¿Ú, ÉËº¦²ÎÊı, µ±Ç°ÉËº¦);
-	}
-
-	void SI_API Buff_TriggerDeath(SIInterface_ExtendData* ½Ó¿Ú, args_ReceiveDamage* ÉËº¦²ÎÊı)
-	{
-		SIInterface_void(Buff_TriggerDeath)(½Ó¿Ú, ÉËº¦²ÎÊı);
-	}
-
-	void SI_API Buff_TriggerKiller(SIInterface_ExtendData* ½Ó¿Ú, TechnoClass* Ä¿±êµ¥Î», args_ReceiveDamage* ÉËº¦²ÎÊı)
-	{
-		SIInterface_void(Buff_TriggerKiller)(½Ó¿Ú, Ä¿±êµ¥Î», ÉËº¦²ÎÊı);
-	}
-
-	double SI_API Buff_TriggerSelf(SIInterface_ExtendData* ½Ó¿Ú, double µ±Ç°ÉËº¦)
-	{
-		SIInterface(Buff_TriggerSelf)(½Ó¿Ú, µ±Ç°ÉËº¦);
-	}
-
-	void SI_API Buff_DoDamages(SIInterface_ExtendData* ½Ó¿Ú, double ×¼±¸Ôì³ÉµÄÉËº¦)
-	{
-		SIInterface_void(Buff_DoDamages)(½Ó¿Ú, ×¼±¸Ôì³ÉµÄÉËº¦);
-	}
-
-	void SI_API Element_Merge_ResistanceType(SIInterface_ExtendData* ½Ó¿Ú, SIElementResistanceTypeClass* ÔªËØ¿¹ĞÔÀàĞÍ, int ²ãÊı¼ÆÊı)
-	{
-		SIInterface_void(Element_Merge_ResistanceType)(½Ó¿Ú, ÔªËØ¿¹ĞÔÀàĞÍ, ²ãÊı¼ÆÊı);
-	}
-
-	void SI_API Element_Merge_ImmuneElementType(SIInterface_ExtendData* ½Ó¿Ú, SIElementTypeClass* ÔªËØÀàĞÍ, int ²ãÊı¼ÆÊı)
-	{
-		SIInterface_void(Element_Merge_ImmuneElementType)(½Ó¿Ú, ÔªËØÀàĞÍ, ²ãÊı¼ÆÊı);
-	}
-
-	void SI_API Update(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(Update)(½Ó¿Ú);
-	}
-
-	void SI_API UpdateBar_UpdateAllow(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(UpdateBar_UpdateAllow)(½Ó¿Ú);
-	}
-
-	void SI_API UpdateDrawBar(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(UpdateDrawBar)(½Ó¿Ú);
-	}
-
-	bool SI_API UpdateClickBar_Hover(SIInterface_ExtendData* ½Ó¿Ú, HouseClass* µã»÷µÄ×÷Õ½·½, Point2D* µã»÷ÏñËØÆ«ÒÆ)
-	{
-		SIInterface(UpdateClickBar_Hover)(½Ó¿Ú, µã»÷µÄ×÷Õ½·½, µã»÷ÏñËØÆ«ÒÆ);
-	}
-
-	void SI_API UpdateClickBar_TryClick(SIInterface_ExtendData* ½Ó¿Ú, HouseClass* µã»÷µÄ×÷Õ½·½, Point2D* µã»÷ÏñËØÆ«ÒÆ, int& BuffË÷Òı, SIDigitalClickBarIndex& µã»÷Ë÷Òı, double& µ±Ç°Öµ, bool& ½ûÓÃ±êÊ¶)
-	{
-		SIInterface_void(UpdateClickBar_TryClick)(½Ó¿Ú, µã»÷µÄ×÷Õ½·½, µã»÷ÏñËØÆ«ÒÆ, BuffË÷Òı, µã»÷Ë÷Òı, µ±Ç°Öµ, ½ûÓÃ±êÊ¶);
-	}
-
-	void SI_API UpdateClickBar_Effect(SIInterface_ExtendData* ½Ó¿Ú, int BuffË÷Òı, SIDigitalClickBarIndex µã»÷Ë÷Òı, HouseClass* µã»÷µÄ×÷Õ½·½, double µ±Ç°Öµ)
-	{
-		SIInterface_void(UpdateClickBar_Effect)(½Ó¿Ú, BuffË÷Òı, µã»÷Ë÷Òı, µã»÷µÄ×÷Õ½·½, µ±Ç°Öµ);
-	}
-
-	bool SI_API UpdateKeyExecuteBar_TryExecute(SIInterface_ExtendData* ½Ó¿Ú, HouseClass* µã»÷µÄ×÷Õ½·½, SICommandCode ¿ì½İ¼ü´úÂë)
-	{
-		SIInterface(UpdateKeyExecuteBar_TryExecute)(½Ó¿Ú, µã»÷µÄ×÷Õ½·½, ¿ì½İ¼ü´úÂë);
-	}
-
-	void SI_API UpdateKeyExecuteBar_Effect(SIInterface_ExtendData* ½Ó¿Ú, HouseClass* µã»÷µÄ×÷Õ½·½, SICommandCode ¿ì½İ¼ü´úÂë)
-	{
-		SIInterface_void(UpdateKeyExecuteBar_Effect)(½Ó¿Ú, µã»÷µÄ×÷Õ½·½, ¿ì½İ¼ü´úÂë);
-	}
-
-	SIBuffClass* SI_API Buff_GetBuff_A(SIInterface_ExtendData* ½Ó¿Ú, int BuffË÷Òı) // ·µ»ØÖµ¿ÉÄÜÎª¿Õ
-	{
-		SIInterface(Buff_GetBuff_A)(½Ó¿Ú, BuffË÷Òı);
-	}
-	SIBuffClass* SI_API Buff_GetBuff_B(SIInterface_ExtendData* ½Ó¿Ú, SIBuffTypeClass* BuffÀàĞÍ) // ·µ»ØÖµ¿ÉÄÜÎª¿Õ
-	{
-		SIInterface(Buff_GetBuff_B)(½Ó¿Ú, BuffÀàĞÍ);
-	}
-	void SI_API Init(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(Init)(½Ó¿Ú);
-	}
-	void SI_API UnInit(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(UnInit)(½Ó¿Ú);
-	}
-	void SI_API UpdateTechnoType(SIInterface_ExtendData* ½Ó¿Ú, TechnoTypeClass* ¾ÉµÄµ¥Î»ÀàĞÍ)
-	{
-		SIInterface_void(UpdateTechnoType)(½Ó¿Ú, ¾ÉµÄµ¥Î»ÀàĞÍ);
-	}
-	void SI_API UpdateOwningHouse(SIInterface_ExtendData* ½Ó¿Ú, const HouseClass* const ¾ÉµÄµ¥Î»ËùÊô×÷Õ½·½, const HouseClass* const ĞÂµÄµ¥Î»ËùÊô×÷Õ½·½)
-	{
-		SIInterface_void(UpdateOwningHouse)(½Ó¿Ú, ¾ÉµÄµ¥Î»ËùÊô×÷Õ½·½, ĞÂµÄµ¥Î»ËùÊô×÷Õ½·½);
-	}
-	void SI_API AvailableEffect(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(AvailableEffect)(½Ó¿Ú);
-	}
-	void SI_API UnavailableEffect(SIInterface_ExtendData* ½Ó¿Ú)
-	{
-		SIInterface_void(UnavailableEffect)(½Ó¿Ú);
-	}
-
 }
 
 namespace SITool
@@ -2190,39 +1269,39 @@ namespace SITool
 		return wic.Available();
 	}
 
-	void SI_API ForEach(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Cell(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Cell(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_Cell)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Object(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Object(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_Object)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Techno(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Techno(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_Techno)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Animation(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Animation(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Bullet(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Bullet(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_Bullet)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Terrain(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Terrain(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_Terrain)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_Overlay(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_Overlay(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_Overlay)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
-	void SI_API ForEach_House(void* ²ÎÊı¼¯, bool (*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
+	void SI_API ForEach_House(void* ²ÎÊı¼¯, bool (CALLBACK*´¦Àíº¯Êı)(void* ²ÎÊı¼¯, SIInterface_ExtendData* ½Ó¿Ú)) // [´¦Àíº¯Êı] ·µ»Ø true »áÁ¢¿ÌÖÕÖ¹±éÀú
 	{
 		SIInterface_void(ForEach_House)(²ÎÊı¼¯, ´¦Àíº¯Êı);
 	}
@@ -2236,6 +1315,12 @@ namespace SIClassManager
 	SIInterface_ExtendData* SI_API GetExtendData(const AbstractClass* const ÊµÌå)
 	{
 		return SI::GetInterface(ÊµÌå);
+	}
+	//Í¨¹ıHouseClass*ÕÒµ½¶ÔÓ¦µÄSIHouse_ExtendData*ÒÔ½øĞĞ¸ü¶àµÄ²Ù×÷¡£
+	//Èô¶ÔÓ¦¶ÔÏóÎŞSIHouse_ExtendDataÅäÌ×»ò¶ÔÏó²»´æÔÚ/²»ºÏ·¨£¬Ôò·µ»Ønullptr¡£
+	SIHouse_ExtendData* SI_API GetHouseExtendData(const HouseClass* const ÊµÌå)
+	{
+		SIHouseExtDecl(GetHouseExtendData)(ÊµÌå);
 	}
 	//»ñÈ¡WICÄÚ²¿¶ÔÏóµÄ½Ó¿Ú
 	//ÒÔÏÂº¯ÊıµÄ·µ»ØÖµ¶¼¿ÉÄÜÎª¿Õ£¬Çë×ÔĞĞ¼ì²é
