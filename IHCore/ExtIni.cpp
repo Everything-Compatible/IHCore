@@ -318,7 +318,7 @@ size_t __fastcall CacheStraw_GetLineEx(CacheStraw* Straw, char* pBuffer, size_t 
 {
 	auto len = CacheStraw_GetLine(Straw, BBuf, 200000, pEndOfFile);
 	BBuf[len] = 0;
-	if (pEndOfFile && *pEndOfFile && len)*pEndOfFile = 0;
+	//if (pEndOfFile && *pEndOfFile && len)*pEndOfFile = 0;
 	if (!len)
 	{
 		memset(pBuffer, 0, size);
