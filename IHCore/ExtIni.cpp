@@ -448,10 +448,10 @@ struct CCFakeINI
 void ExtIni_InitBeforeEverything()
 {
 	//Patch::Apply_CALL(0x526070, StrDupKey);
-	Patch::Apply_CALL(0x526062, StrDupValue);
+	// ---TEMPORARILY UNUSED--- Patch::Apply_CALL(0x526062, StrDupValue);
 	//Patch::Apply_CALL(0x525E07, StrDupSection);
 	//Patch::Apply_CALL(0x525C6E, CacheStraw_GetLineEx);
-	Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
+	// ---TEMPORARILY UNUSED--- Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
 	//Patch::Apply_CALL(0x47422B, union_cast<void*>(&CCFakeINI::INIClass_ReadFile));
 }
 

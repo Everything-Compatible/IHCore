@@ -7,7 +7,7 @@
 
 #include "IH.Ext.h"
 
-#define WIC_LIBRARY_VERSION 9
+#define WIC_LIBRARY_VERSION 10
 
 #define WIC_LibName "SIWinterIsComing"
 #define SIInterfaceDecl_Impl(Name) \

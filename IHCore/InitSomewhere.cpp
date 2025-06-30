@@ -3,7 +3,6 @@
 #include "..\Common\IHLoader\EC.h"
 
 void ExtIni_InitBeforeEverything();
-void ExtFont_InitBeforeEverything();
 void ConfigJson_InitBeforeEverything();
 
 void InitBeforeEverything()

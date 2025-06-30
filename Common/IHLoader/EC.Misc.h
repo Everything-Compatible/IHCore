@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <unordered_set>
+#include <functional>
 
 
 //下面的Redirect系列是更改了原有请求位置的请求目标

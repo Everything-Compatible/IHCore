@@ -10,7 +10,6 @@
 #include "SyringeEx.h"
 #include <map>
 #include "ToolFunc.h"
-#include "EC.Transfer.h"
 #include "EC.Listener.h"
 
 #if 0
@@ -580,15 +579,30 @@ DEFINE_HOOK(0x4C8FE0, ExceptionHandlerEx, 9)
 
 
 
-void CALLBACK Export_AnalyzeAddr(DWORD /*In*/ Addr, DWORD& /*Out*/ RelAddr, ECString& /*Out GBK*/ BaseDesc)
+void CALLBACK Export_AnalyzeAddr(DWORD /*In*/ Addr, size_t /*In*/ BaseDescBufSize, DWORD& /*Out*/ RelAddr, char* /*Out GBK*/ BaseDesc)
 {
 	auto P = AnalyzeAddr(Addr);
 	RelAddr = P.first;
-	BaseDesc = P.second;
+	if (P.second.size() >= BaseDescBufSize)
+	{
+		strncpy_s(BaseDesc, BaseDescBufSize, P.second.c_str(), BaseDescBufSize - 1);
+	}
+	else
+	{
+		strcpy_s(BaseDesc, BaseDescBufSize, P.second.c_str());
+	}
 }
-void CALLBACK Export_AccessStr(LPVOID /*In*/ Addr, ECString& /*Out GBK*/ AccessStr)
+void CALLBACK Export_AccessStr(LPVOID /*In*/ Addr, size_t /*In*/ BaseDescBufSize, char* /*Out GBK*/ AccessStr)
 {
-	AccessStr = GetAccessStr(GetCurrentProcess(), Addr);
+	auto Access = GetAccessStr(GetCurrentProcess(), Addr);
+	if (Access.size() >= BaseDescBufSize)
+	{
+		strncpy_s(AccessStr, BaseDescBufSize, Access.c_str(), BaseDescBufSize - 1);
+	}
+	else
+	{
+		strcpy_s(AccessStr, BaseDescBufSize, Access.c_str());
+	}
 }
 bool CALLBACK Export_IsAddrExecutable(LPVOID /*In*/ Addr)
 {

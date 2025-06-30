@@ -46,6 +46,9 @@
     <Filter Include="EC SDK">
       <UniqueIdentifier>{40910ebb-52e9-4948-b1da-f1f9df9b9173}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debug">
+      <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1128,9 +1131,6 @@
     <ClInclude Include="..\Common\IHLoader\IH.Ext.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\IHLoader\EC.Transfer.h">
-      <Filter>EC SDK</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\IHLoader\EC.LoadSave.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
@@ -1249,12 +1249,6 @@
     </ClCompile>
     <ClCompile Include="IHConfig.cpp">
       <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Tailor1.cpp">
-      <Filter>Tailor</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtFont_Tailor.cpp">
-      <Filter>File</Filter>
     </ClCompile>
     <ClCompile Include="Exception.cpp">
       <Filter>Util</Filter>

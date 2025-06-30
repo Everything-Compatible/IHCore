@@ -391,12 +391,12 @@ namespace SyringeData
 	{
 		return Lib.SettingText;
 	}
-
+	/*
 	JsonObject GetSettingJson(const LibRemoteData& Lib)
 	{
 		UpdateJson(Lib.LibName, Lib.SettingText);
 		return GetJson(Lib.LibName);
-	}
+	}*/
 
 	void ReplaceCallFunctionAt(DWORD Address, DWORD Func)
 	{

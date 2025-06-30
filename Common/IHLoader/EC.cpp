@@ -56,6 +56,11 @@ namespace ECListener
 		return Result;
 	}
 
+	void Listen_InitBeforeEverything(Listener_InitBeforeEverything Func)
+	{
+		Set("EC::InitBeforeEverything", Func);
+	}
+
 	void Listen_LoadBeforeTypeData(Listener_OnLoadGame Func)
 	{
 		Set("EC::OnReadingRules", Func);
@@ -93,5 +98,121 @@ namespace ECListener
 	void Listen_ClearScenario(Listener_ClearScenario Func)
 	{
 		Set("EC::ClearScenario", Func);
+	}
+}
+
+FuncInfo* __cdecl NullGetFunc(const char* Name, int Version)
+{
+	return nullptr;
+}
+
+using UTF8_SString = std::basic_string< UTF8_CharType, std::char_traits<UTF8_CharType>, std::allocator<UTF8_CharType> >;
+
+std::string Temp_LibraryName;
+int Temp_Version;
+UTF8_SString Temp_Description;
+std::function<void()> Temp_OnFirstInit;
+std::function<void()> Temp_OnOrderedInit;
+std::vector<InitDependency> Temp_Dependencies;
+LibVersionInfo Temp_VersionInfo;
+GetFunc_t Temp_GetFunc;
+
+
+std::unordered_map<std::string, FuncInfo> Temp_FuncList;
+FuncInfo* __cdecl GetFuncFromList(const char* Name, int Version)
+{
+	if (Version != DoNotCheckVersion && Temp_Version < Version)return nullptr;
+	auto it = Temp_FuncList.find(Name);
+	if (it == Temp_FuncList.end())return nullptr;
+	else return &it->second;
+}
+
+void StoreInitConfig(
+	const char* LibraryName, //库名
+	int Version,
+	int LowestSupportedVersion,
+	UTF8_CString Description,
+	const std::function<void()>& OnFirstInit,
+	const std::function<void()>& OnOrderedInit,
+	std::initializer_list<InitDependency> Dependencies
+)
+{
+	Temp_LibraryName = LibraryName ? LibraryName : "";
+	Temp_Description = Description ? UTF8_SString(Description) : UTF8_SString();
+	Temp_OnFirstInit = OnFirstInit;
+	Temp_OnOrderedInit = OnOrderedInit;
+	Temp_Dependencies.assign(Dependencies);
+	Temp_Version = Version;
+	
+	Temp_VersionInfo.LibName = Temp_LibraryName.c_str();
+	Temp_VersionInfo.Version = Version;
+	Temp_VersionInfo.LowestSupportedVersion = LowestSupportedVersion;
+	Temp_VersionInfo.Description = Temp_Description.c_str();
+}
+
+bool ECInitLibrary(
+	const char* LibraryName, //库名
+	int Version,
+	int LowestSupportedVersion,
+	UTF8_CString Description,
+	const std::function<void()>& OnFirstInit,
+	const std::function<void()>& OnOrderedInit,
+	std::initializer_list<InitDependency> Dependencies
+)
+{
+	StoreInitConfig(LibraryName, Version, LowestSupportedVersion, Description, OnFirstInit, OnOrderedInit, Dependencies);
+	Temp_GetFunc = NullGetFunc;
+	return Init::Initialize();
+}
+
+bool ECInitLibrary(
+	const char* LibraryName, //库名
+	int Version,
+	int LowestSupportedVersion,
+	UTF8_CString Description,
+	const std::function<void()>& OnFirstInit,
+	const std::function<void()>& OnOrderedInit,
+	GetFunc_t GetFunc,
+	std::initializer_list<InitDependency> Dependencies
+)
+{
+	StoreInitConfig(LibraryName, Version, LowestSupportedVersion, Description, OnFirstInit, OnOrderedInit, Dependencies);
+	Temp_GetFunc = GetFunc;
+	return Init::Initialize();
+}
+
+bool ECInitLibrary(
+	const char* LibraryName, //库名
+	int Version,
+	int LowestSupportedVersion,
+	UTF8_CString Description,
+	const std::function<void()>& OnFirstInit,
+	const std::function<void()>& OnOrderedInit,
+	const std::unordered_map<std::string, LibFuncHandle>& ExportFuncs,
+	std::initializer_list<InitDependency> Dependencies
+)
+{
+	StoreInitConfig(LibraryName, Version, LowestSupportedVersion, Description, OnFirstInit, OnOrderedInit, Dependencies);
+	Temp_GetFunc = GetFuncFromList;
+	for (const auto& p : ExportFuncs)
+		Temp_FuncList.insert({ p.first, FuncInfo(p.second , FuncType::Default) });
+	return Init::Initialize();
+}
+
+void __cdecl MyOrderedInit()
+{
+	if (Temp_OnOrderedInit)Temp_OnOrderedInit();
+}
+
+void MyInit(InitResult& Result)
+{
+	Result.Info = &Temp_VersionInfo;
+	Result.GetFunc = Temp_GetFunc;
+	Result.Dependencies = PArray<InitDependency>(Temp_Dependencies);
+	Result.OrderedInit = MyOrderedInit;
+
+	if (Temp_OnFirstInit)
+	{
+		Temp_OnFirstInit();
 	}
 }

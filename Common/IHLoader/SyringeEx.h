@@ -190,7 +190,6 @@ namespace SyringeData
 	SyrPArray<BYTE> GetOpCode(DWORD Addr);
 	int GetValidHookCount(DWORD Addr);
 	const char* GetSettingText(const LibRemoteData& Lib);
-	JsonObject GetSettingJson(const LibRemoteData& Lib);
 	void ReplaceHookFunction(DWORD Address, const std::string& Lib, const std::string& Proc, DWORD pFunc);
 	void RestoreHookFunction(DWORD Address, const std::string& Lib, const std::string& Proc);
 	void DisableOpCode(DWORD Addr);

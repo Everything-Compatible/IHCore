@@ -167,7 +167,6 @@
     <ClInclude Include="..\Common\IHLoader\EC.ObjBase.h" />
     <ClInclude Include="..\Common\IHLoader\EC.Stream.h" />
     <ClInclude Include="..\Common\IHLoader\EC.Swizzle.h" />
-    <ClInclude Include="..\Common\IHLoader\EC.Transfer.h" />
     <ClInclude Include="..\Common\IHLoader\EC.Listener.h" />
     <ClInclude Include="..\Common\IHLoader\EC.Misc.h" />
     <ClInclude Include="..\Common\IHLoader\ExtJson.h" />
@@ -555,7 +554,6 @@
     <ClCompile Include="ExtCsf.cpp" />
     <ClCompile Include="ExtFile.cpp" />
     <ClCompile Include="ExtFont.cpp" />
-    <ClCompile Include="ExtFont_Tailor.cpp" />
     <ClCompile Include="ExtIni.cpp" />
     <ClCompile Include="ExtLog.cpp" />
     <ClCompile Include="ExtMix.cpp" />
@@ -577,7 +575,6 @@
     </ClCompile>
     <ClCompile Include="StringManagerExt.cpp" />
     <ClCompile Include="Syringe.cpp" />
-    <ClCompile Include="Tailor1.cpp" />
     <ClCompile Include="Test.StableHooks.cpp" />
     <ClCompile Include="Test1.cpp" />
     <ClCompile Include="YRPP\StaticInits.cpp" />

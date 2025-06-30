@@ -76,6 +76,42 @@ inline Ext::ECLoadStage GetECLoadStage()
     return Ext::GetLoadStage();
 }
 
+
+/*
+
+初始化函数 在DllMain的DLL_PROCESS_ATTACH阶段调用
+
+*/
+bool ECInitLibrary(
+    const char* LibraryName, //库名
+    int Version,
+    int LowestSupportedVersion,
+    UTF8_CString Description,
+    const std::function<void()>& OnFirstInit,
+    const std::function<void()>& OnOrderedInit,
+    std::initializer_list<InitDependency> Dependencies = {}
+);
+bool ECInitLibrary(
+    const char* LibraryName, //库名
+    int Version,
+    int LowestSupportedVersion,
+    UTF8_CString Description,
+    const std::function<void()>& OnFirstInit,
+    const std::function<void()>& OnOrderedInit,
+    GetFunc_t GetFunc,
+	std::initializer_list<InitDependency> Dependencies = {}
+);
+bool ECInitLibrary(
+    const char* LibraryName, //库名
+    int Version,
+    int LowestSupportedVersion,
+    UTF8_CString Description,
+    const std::function<void()>& OnFirstInit,
+    const std::function<void()>& OnOrderedInit,
+    const std::unordered_map<std::string, LibFuncHandle>& ExportFuncs,
+    std::initializer_list<InitDependency> Dependencies = {}
+);
+
 /*
 结构：
 现有的头文件

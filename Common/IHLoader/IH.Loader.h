@@ -150,6 +150,9 @@ struct ContextIndex
 	GeneratorParam Param;
 };
 
+using UTF8_CString = std::decay_t<decltype(u8"")>;
+using UTF8_CharType = std::remove_cv_t<std::remove_pointer_t<UTF8_CString>>;
+
 struct LibVersionInfo
 {
 	static const int GClassVersion{ 1 };
@@ -158,8 +161,7 @@ struct LibVersionInfo
 	const char* LibName;
 	int Version;
 	int LowestSupportedVersion;
-	const char8_t* Description;//UTF8
-	//For C++ Version Lower than C++20 ,replace it with const char*
+	UTF8_CString Description;
 
 	int Reserved[3];
 };

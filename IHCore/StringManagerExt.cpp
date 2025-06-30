@@ -31,6 +31,7 @@ namespace StringManagerExt
 		StringMD.Load_ForCCINI<ExtCCFile>(pStringMD);
 		if (StringMD.Available())
 		{
+			Debug::Log("IHCore : Found Stringmd.ini\n");
 			MergeStringTable(pStringMD);
 			auto Sec = StringMD.GetSection("StringTable");
 			if (StringMD.IsFound(Sec))
@@ -52,7 +53,7 @@ namespace StringManagerExt
 		}
 		else
 		{
-			Debug::Log("IHCore : CANNOT Open Stringmd.ini\n");
+			//Debug::Log("IHCore : CANNOT Open Stringmd.ini\n");
 		}
 	}
 

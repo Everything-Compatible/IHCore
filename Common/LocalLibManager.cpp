@@ -202,7 +202,7 @@ namespace Local
 
 	void InitLibs()
 	{
-		Debug::Log("IHCore : Initialize Libs\n");
+		Debug::Log("[EC] Initialize Libs\n");
 
 		if (!IHLibList::Initialize())return;
 		//IHLibList::RegisterToLibList(HPLocalData::LoadIFunction);
@@ -225,11 +225,11 @@ namespace Local
 			LibMap[Libs[i].Out->Info->LibName] = &Libs[i];
 			if (Libs[i].Available)
 			{
-				Debug::Log("IHCore : Loading Library \"%s\" Successfully\n", Libs[i].Out->Info->LibName);
+				Debug::Log("[EC] Loading Library \"%s\" Successfully\n", Libs[i].Out->Info->LibName);
 			}
 			else
 			{
-				Debug::Log("IHCore : Failed to Load Library");
+				Debug::Log("[EC] Failed to Load Library");
 			}
 
 			Libs[i].Basic = &BasicLibs[i];
@@ -252,14 +252,14 @@ namespace Local
 				auto it = LibMap.find(s);
 				if (it == LibMap.end())continue;
 				if (!it->second->Available)continue;
-				Debug::Log("IHCore :  Call in the dependency order :\"%s\"\n", it->second->Out->Info->LibName);
+				Debug::Log("[EC]  Call in the dependency order :\"%s\"\n", it->second->Out->Info->LibName);
 				if (it->second->Out->OrderedInit)it->second->Out->OrderedInit();
 			}
 			ECInitStage = 100;
 		}
 		catch (IHException& e)
 		{
-			MessageBoxA(NULL, e.what(), "IHCore ERROR", MB_OK);
+			MessageBoxA(NULL, e.what(), "[EC] ERROR", MB_OK);
 		}
 	}
 

@@ -1,13 +1,12 @@
 #pragma once
 #include "IH.Loader.h"
-#include "EC.Transfer.h"
 
 
 struct ExceptionAnalyzer
 {
 	//行为受SyringeIH是否存在影响，可以通过 HasSyringeIH() 确定是否存在。
-	void (CALLBACK* AnalyzeAddr)(DWORD /*In*/ Addr, DWORD& /*Out*/ RelAddr, ECString& /*Out GBK*/ BaseDesc);
-	void (CALLBACK* GetAccessStr)(LPVOID /*In*/ Addr, ECString& /*Out GBK*/ AccessStr);
+	void (CALLBACK* AnalyzeAddr)(DWORD /*In*/ Addr, size_t /*In*/ BaseDescBufSize, DWORD& /*Out*/ RelAddr, char* /*Out GBK*/ BaseDesc);
+	void (CALLBACK* GetAccessStr)(LPVOID /*In*/ Addr, size_t /*In*/ BaseDescBufSize, char* /*Out GBK*/ AccessStr);
 	bool (CALLBACK* IsAddrExecutable)(LPVOID /*In*/ Addr);
 	void (CALLBACK* WriteToExceptIH)(const char* /*In GBK*/ Format, ...);
 
