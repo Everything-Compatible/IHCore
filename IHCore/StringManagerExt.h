@@ -15,12 +15,17 @@ namespace StringManagerExt
 	const wchar_t* __fastcall LoadCSFString(const char* pLabel, const char** pOutExtraData,
 		const char* pSourceCodeFileName, int nSourceCodeFileLine);
 
+	const wchar_t* __cdecl GetCSFString(const char* pLabel);
+
 	void Apply();
 	void MergeFromIni(CCINIClass* pINI);
 	void MergeStringTable(const char* Name);
 };
 
-
+inline const wchar_t* __cdecl GetCSFString(const char* pLabel)
+{
+	return StringManagerExt::GetCSFString(pLabel);
+}
 
 
 class CSFFile

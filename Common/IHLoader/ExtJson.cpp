@@ -85,26 +85,80 @@ std::vector<JsonObject> JsonObject::ItemArrayObject(const std::string& Str) cons
 JsonObject JsonObject::GetObjectItem(const std::string& Str) const
 {
     auto pObj = cJSON_GetObjectItem(Object, Str.c_str());
-/*
-    if (EnableLogEx)
-    {
-        GlobalLogB.AddLog_CurTime(false);
-        sprintf_s(LogBufB, "JsonFile::GetObjectItem <- std::string Str=%s", Str.c_str());
-        GlobalLogB.AddLog(LogBufB);
-        GlobalLogB.AddLog_CurTime(false);
-        sprintf_s(LogBufB, "JsonFile::GetObjectItem : Object Data : \n\"%s\"", GetText().c_str());
-        GlobalLogB.AddLog(LogBufB);
-    }
-*/
     return { pObj }; 
 }
 
 std::string JsonObject::GetText() const
 {
+	if (Object == nullptr) return "";
     char* CStr = cJSON_Print(Object);
     std::string Str = CStr;
     cJSON_Free(CStr);
     return Str;
+}
+
+std::string ProcessJsonText(const std::string& json) 
+{
+    std::string result = "\033[1;33m";
+    bool inString = false; // 是否在字符串内部
+    int backslashCount = 0; // 连续反斜杠的数量
+
+    for (size_t i = 0; i < json.size(); ++i) {
+        char current = json[i];
+
+        // 处理反斜杠转义
+        if (current == '\\') {
+            if (inString) {
+                backslashCount++;
+            }
+            result.push_back(current);
+            continue;
+        }
+
+        // 重置反斜杠计数（只有在字符串内部时才考虑转义）
+        if (inString) {
+            backslashCount = backslashCount % 2 == 0 ? backslashCount / 2 : (backslashCount + 1) / 2;
+        }
+        else {
+            backslashCount = 0;
+        }
+
+        // 处理引号
+        if (current == '"') {
+            // 检查是否被转义（奇数个反斜杠表示被转义）
+            if (backslashCount % 2 == 0) {
+                // 未被转义的引号
+                if (!inString) {
+                    // 左引号
+                    result += "\033[1;34m";
+                    inString = true;
+                }
+                else {
+                    // 右引号
+                    inString = false;
+                    result += current;
+                    result += "\033[1;33m";
+                    backslashCount = 0; // 重置反斜杠计数
+                    continue; // 跳过添加当前引号
+                }
+            }
+            else {
+                // 被转义的引号
+                backslashCount = 0; // 重置反斜杠计数
+            }
+        }
+
+        result.push_back(current);
+        backslashCount = 0; // 重置反斜杠计数
+    }
+    result += "\033[0m";
+    return result;
+}
+
+
+std::string JsonObject::GetTextEx() const
+{
+	return ProcessJsonText(GetText());
 }
 
 std::vector<JsonObject> JsonObject::GetArrayObject() const
@@ -419,6 +473,10 @@ void JsonObject::AddObjectItem(const std::string& Str, JsonObject Child, bool Ne
 {
     cJSON_AddItemToObject(Object, Str.c_str(), (NeedsCopy ? cJSON_Duplicate(Child.GetRaw(), true) : Child.GetRaw()));
 }
+void JsonObject::AddObjectItem(const std::string& Str, JsonFile&& File) const
+{
+	cJSON_AddItemToObject(Object, Str.c_str(), File.Release());
+}
 void JsonObject::AddNull(const std::string& Str) const
 {
     cJSON_AddNullToObject(Object, Str.c_str());
@@ -451,43 +509,43 @@ JsonFile JsonObject::SwapNull() const
 }
 JsonFile JsonObject::SwapInt(int Val) const
 {
-    JsonFile F(JsonObject(cJSON_CreateInteger(Val)));
+    JsonFile F(cJSON_CreateInteger(Val));
     cJson_SwapData(F.GetRaw(), Object);
     return F;
 }
 JsonFile JsonObject::SwapDouble(double Val) const
 {
-    JsonFile F(JsonObject(cJSON_CreateNumber(Val)));
+    JsonFile F(cJSON_CreateNumber(Val));
     cJson_SwapData(F.GetRaw(), Object);
     return F;
 }
 JsonFile JsonObject::SwapString(const std::string& Val) const
 {
-    JsonFile F(JsonObject(cJSON_CreateString(Val.c_str())));
+    JsonFile F(cJSON_CreateString(Val.c_str()));
     cJson_SwapData(F.GetRaw(), Object);
     return F;
 }
 JsonFile JsonObject::SwapBool(bool Val) const
 {
-    JsonFile F(JsonObject(cJSON_CreateBool(Val)));
+    JsonFile F(cJSON_CreateBool(Val));
     cJson_SwapData(F.GetRaw(), Object);
     return F;
 }
 JsonFile JsonObject::SwapStrBool(bool Val, StrBoolType Type) const
 {
-    JsonFile F(JsonObject(cJSON_CreateString(CStrBoolImpl(Val, Type))));
+    JsonFile F(cJSON_CreateString(CStrBoolImpl(Val, Type)));
     cJson_SwapData(F.GetRaw(), Object);
     return F;
 }
 JsonFile JsonObject::CopyAndSwap(JsonObject Obj, bool Recurse) const
 {
-    JsonFile F(JsonObject(cJSON_Duplicate(Obj.GetRaw(), Recurse)));
+    JsonFile F(cJSON_Duplicate(Obj.GetRaw(), Recurse));
     cJson_SwapData(F.GetRaw(), Object);
     return F;
 }
 JsonFile JsonObject::RedirectAndSwap(JsonObject Obj)
 {
-    JsonFile F(*this);
+    JsonFile F(this->GetRaw());
     Object = Obj.GetRaw();
     return F;
 }
@@ -509,6 +567,12 @@ void JsonObject::CopyObject(JsonObject Obj, bool Recurse) const
     { CopyAndSwap(Obj, Recurse); }
 void JsonObject::RedirectObject(JsonObject Obj) 
     { RedirectAndSwap(Obj); }
+void JsonObject::SetObject()
+{
+    JsonFile F(cJSON_CreateObject());
+    cJson_SwapData(F.GetRaw(), Object);
+}
+    
 
 //给空节点的非const函数
 void JsonObject::CreateNull()
@@ -538,6 +602,10 @@ void JsonObject::CreateStrBool(bool Val, StrBoolType Type)
 void JsonObject::CreateCopy(JsonObject Obj, bool Recurse)
 {
     Object = cJSON_Duplicate(Obj.GetRaw(), Recurse);
+}
+void JsonObject::CreateObject()
+{
+    Object = cJSON_CreateObject();
 }
 
 // 不知道是否为空的函数 
@@ -576,6 +644,11 @@ void JsonObject::SetOrCreateCopy(JsonObject Obj, bool Recurse)
     if (Available())CopyObject(Obj, Recurse);
     else CreateCopy(Obj, Recurse);
 }
+void JsonObject::SetOrCreateObject()
+{
+    if (Available())SetObject();
+    else CreateObject();
+}
 
 JsonFile JsonObject::DetachObjectItem(const std::string& Str) { return cJSON_DetachItemFromObject(Object, Str.c_str()); }
 JsonFile JsonObject::DetachArrayItem(int Index) { return cJSON_DetachItemFromArray(Object, Index); }
@@ -605,4 +678,22 @@ void JsonObject::Merge(JsonObject Obj)
             Node = Node.GetNextItem();
         }
     }
+}
+
+extern "C" char* print_string_raw(const char* str);
+
+std::string EscapeString(const std::string& str)
+{
+    auto cs = print_string_raw(str.c_str());
+    std::string ret;
+    if (cs)
+    {
+        ret = cs;
+        cJSON_Free(cs);
+    }
+    else
+    {
+        ret = str;
+    }
+    return ret;
 }

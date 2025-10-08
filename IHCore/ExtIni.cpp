@@ -1,4 +1,4 @@
-#include"ExtIni.h"
+﻿#include"ExtIni.h"
 #include"ExtFile.h"
 #include <YRPP.h>
 #include <Straws.h>
@@ -10,6 +10,8 @@
 #include "ExtCsf.h"
 #include "ToolFunc.h"
 
+bool ResolveWICConflict = true;
+
 hash_t StrHash(const char* str)
 {
 	return StrHash(std::string(str));
@@ -19,29 +21,7 @@ hash_t StrHash(const std::string& str)
 	std::hash<std::string> hash_str;
 	return hash_str(str);
 }
-void CStringTrimFront(char*& str)
-{
-	
-	if (!str)return;
-	while (*str == ' ' || *str == '\t')
-	{
-		if (!(*str))break;
-		++str;
-	}
-}
-void CStringTrimBack(char* str)
-{
-	if (!str)return;
-	char* res = str;
-	--res; while (*(++res)); --res;
-	while (res >= str &&( *res == ' ' || *res == '\t' || *res == '\r' || *res == '\n'))--res;
-	*(res + 1) = 0;
-}
-void CStringTrim(char*& str)
-{
-	CStringTrimFront(str);
-	CStringTrimBack(str);
-}
+
 const char* BoolCStr(bool a)
 {
 	return a ? "true" : "false";
@@ -318,7 +298,10 @@ size_t __fastcall CacheStraw_GetLineEx(CacheStraw* Straw, char* pBuffer, size_t 
 {
 	auto len = CacheStraw_GetLine(Straw, BBuf, 200000, pEndOfFile);
 	BBuf[len] = 0;
-	//if (pEndOfFile && *pEndOfFile && len)*pEndOfFile = 0;
+	if (!ResolveWICConflict)
+	{
+		if (pEndOfFile && *pEndOfFile && len)*pEndOfFile = 0;
+	}
 	if (!len)
 	{
 		memset(pBuffer, 0, size);
@@ -394,9 +377,10 @@ public:
 		return 0;
 	}
 };
-
+*/
 struct CCFakeINI
 {
+	/*
 	BOOL INIClass_OriginalReadFile(Straw* pFile, bool bLoadComments)
 	{
 		JMP_THIS(0x525A60);
@@ -438,12 +422,19 @@ struct CCFakeINI
 		else return INIClass_OriginalReadFile(pFile, bLoadComments);
 	}
 
+	*/
 
+	bool WriteString(const char* pSection, const char* pKey, const char* pString)
+	{
+		CCINIClass* This = reinterpret_cast<CCINIClass*>(this);
+		return This->WriteString(pSection, pKey, StrDupValue(pString));
+	}
 };
-*/
+
 
 
 #include "Patch.h"
+JsonObject GetIHCoreJson();
 
 void ExtIni_InitBeforeEverything()
 {
@@ -453,6 +444,25 @@ void ExtIni_InitBeforeEverything()
 	//Patch::Apply_CALL(0x525C6E, CacheStraw_GetLineEx);
 	// ---TEMPORARILY UNUSED--- Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
 	//Patch::Apply_CALL(0x47422B, union_cast<void*>(&CCFakeINI::INIClass_ReadFile));
+	auto Obj = GetIHCoreJson();
+	if (Obj.Available())
+	{
+		auto it = Obj.GetObjectItem("ResolveWICConflict");
+		if (it.Available() && it.IsTypeBool())
+		{
+			ResolveWICConflict = it.GetBool();
+			Debug::Log("IHCore : ResolveWICConflict = %s\n", BoolCStr(ResolveWICConflict));
+		}
+	}
+
+	if (!ResolveWICConflict)
+	{
+		Patch::Apply_CALL(0x526062, StrDupValue);
+		Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
+		Patch::Apply_CALL(0x525D33, union_cast<void*>(&CCFakeINI::WriteString));
+		Patch::Apply_CALL(0x525C6E, CacheStraw_GetLineEx);
+		//Patch::Apply_CALL(0x525AFA, CacheStraw_GetLineEx);
+	}
 }
 
 

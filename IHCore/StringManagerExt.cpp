@@ -1,4 +1,4 @@
-#include "StringManagerExt.h"
+ï»¿#include "StringManagerExt.h"
 #include "ExtIni.h"
 #include "ToolFunc.h"
 #include "ExtFile.h"
@@ -113,12 +113,8 @@ namespace StringManagerExt
 		return (CSFString *)StringTable::LastLoadedString().Header;
 	}
 
-	const wchar_t* __fastcall LoadCSFString(const char* pLabel, const char** pOutExtraData, 
-		const char* pSourceCodeFileName, int nSourceCodeFileLine)
+	const wchar_t* LoadCSFString_PreProcess(const char* pLabel, const char** pOutExtraData)
 	{
-		//static std::unordered_map<std::string, std::wstring> wk;
-		//auto& w = wk[pLabel] = ANSItoUnicode(pLabel)+L'@';
-		//return w.c_str();
 		for (auto hd : ECListener::GetAll("EC::OnLoadCSFString"))
 		{
 			auto R = AsType<const wchar_t* CALLBACK(const char* pLabel)>(hd)(pLabel);
@@ -128,18 +124,49 @@ namespace StringManagerExt
 				return R;
 			}
 		}
-		
-		
 		if (!FormattedOriginal && StringTable::LabelCount)
 		{
 			for (int i = 0; i < StringTable::LabelCount(); i++)
 				Ra2MD.Merge(StringTable::Labels[i].Name, StringTable::Values[StringTable::Labels[i].FirstValueIndex]);
 			FormattedOriginal = true;
 		}
-		
-		//Debug::Log("[IH] Load String %s , Ext %p, SRC %s, Line %d\n", pLabel, pOutExtraData, pSourceCodeFileName, nSourceCodeFileLine);
-		if (!Ra2MD.Available())return pFatal();
 		if (pOutExtraData)*pOutExtraData = 0;
+		if (!Ra2MD.Available())
+		{
+			return pFatal();
+		}
+		return nullptr;
+	}
+
+	const wchar_t* __cdecl GetCSFString(const char* pLabel)
+	{
+		auto PreprocessedStr = LoadCSFString_PreProcess(pLabel, nullptr);
+		if (PreprocessedStr)return PreprocessedStr;
+
+		bool Missing = false;
+		auto psd = Ra2MD.GetStr_DefaultOpt(pLabel, Missing);
+		if (Missing) return nullptr;
+		return psd->str.c_str();
+	}
+
+	UTF8_CString __cdecl TextDrawRouter_CSF(const char* Key)
+	{
+		static std::u8string Ret;
+		Ret.clear();
+		auto ws = GetCSFString(Key);
+		if (!ws)return nullptr;
+		Ret = ~UnicodetoUTF8(ws);
+		return Ret.c_str();
+	}
+
+	const wchar_t* __fastcall LoadCSFString(const char* pLabel, const char** pOutExtraData, 
+		const char* pSourceCodeFileName, int nSourceCodeFileLine)
+	{
+		
+		auto PreprocessedStr = LoadCSFString_PreProcess(pLabel, pOutExtraData);
+		if (PreprocessedStr)return PreprocessedStr;
+
+		//Debug::Log("[IH] Load String %s , Ext %p, SRC %s, Line %d\n", pLabel, pOutExtraData, pSourceCodeFileName, nSourceCodeFileLine);
 		bool Missing = false;
 		auto psd = Ra2MD.GetStr_DefaultOpt(pLabel,Missing);
 		if (Missing)Debug::Log("***NO_STRING*** '%s' -> file:%s line:%d\n", pLabel, pSourceCodeFileName, nSourceCodeFileLine);
@@ -162,6 +189,8 @@ namespace StringManagerExt
 		Patch::Apply_LJMP(0x734990, ReadFile);
 		Patch::Apply_LJMP(0x734D30, Unload);
 		Patch::Apply_LJMP(0x734E60, LoadCSFString);
+
+		IH::SetTextDrawRouter("CSF", TextDrawRouter_CSF);
 	}
 
 	void MergeStringTable(const char* Name)
@@ -186,7 +215,7 @@ namespace StringManagerExt
 			else
 			{
 				auto Obj = Ext.GetObj();
-				auto Sec = Obj.GetObjectItem("CSF£º");
+				auto Sec = Obj.GetObjectItem("CSFï¼š");
 				if (Sec.Available())
 				{
 					for (auto& p : Sec.GetMapString())
@@ -197,7 +226,7 @@ namespace StringManagerExt
 					}
 				}
 
-				Sec = Obj.GetObjectItem((const char*)u8"CSF£º");
+				Sec = Obj.GetObjectItem((const char*)u8"CSFï¼š");
 				if (Sec.Available())
 				{
 					for (auto& p : Sec.GetMapString())
@@ -215,7 +244,7 @@ namespace StringManagerExt
 			Ext.Load_ForCCINI<ExtCCFile>(Name);
 			if (Ext.Available())
 			{
-				auto Sec = Ext.GetSection("CSF£º");
+				auto Sec = Ext.GetSection("CSFï¼š");
 				if (Ext.IsFound(Sec))
 				{
 					for (auto& p : Sec->second.SecStr)
@@ -226,7 +255,7 @@ namespace StringManagerExt
 					}
 				}
 
-				Sec = Ext.GetSection((const char*)u8"CSF£º");
+				Sec = Ext.GetSection((const char*)u8"CSFï¼š");
 				if (Ext.IsFound(Sec))
 				{
 					for (auto& p : Sec->second.SecStr)
@@ -351,14 +380,14 @@ bool CSFFile::LoadAsExternalFile(CSFFile* This, const char* name)
 	This->Reserved = HD->Reserved;
 	return ret;
 }
-CSFEntry CSFFile::GetString(CSFFile* This, const char* Key)//merge²Ù×÷Ö®ºóÇëÖØÐÂ»ñÈ¡
+CSFEntry CSFFile::GetString(CSFFile* This, const char* Key)//mergeæ“ä½œä¹‹åŽè¯·é‡æ–°èŽ·å–
 {
 	if (!This->Handle)return CSFEntry{ L"","" };
 	auto psd = ((IHExtCSF*)This->Handle)->GetStr_Opt(Key);
 	if (!psd)return CSFEntry{ L"","" };
 	else return CSFEntry{ psd->str.c_str(),psd->ext.c_str() };
 }
-CSFEntry CSFFile::GetStringDefault(CSFFile* This, const char* Key)//merge²Ù×÷Ö®ºóÇëÖØÐÂ»ñÈ¡
+CSFEntry CSFFile::GetStringDefault(CSFFile* This, const char* Key)//mergeæ“ä½œä¹‹åŽè¯·é‡æ–°èŽ·å–
 {
 	if (!This->Handle)return CSFEntry{ L"","" };
 	bool Missing;

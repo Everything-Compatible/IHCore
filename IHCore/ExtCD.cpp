@@ -78,6 +78,8 @@ void ClearPrevName_Impl(CDFileClass* This)
 	}
 }
 
+#include <CRC.h>
+
 JsonObject GetIHCoreJson();
 
 const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
@@ -138,6 +140,21 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 	auto This = reinterpret_cast<CDFileClass*>(this);
 	const char* pFileName = CDExt_Instance.TryRedirect(pOriginalFileName);
 	char v5[MAX_PATH];
+
+
+	/*
+	{
+		CRCEngine crc;
+		crc.Index = 0;
+		crc.CRC = 0;
+		crc.StagingBuffer.Composite = 0;
+		char String[260]{};
+		CRT::strcpy(String, pFileName);
+		CRT::strupr(String);
+		int crc32 = crc(String);
+		Debug::Log("[IH] File \"%s\", CRC32=%08X\n", String, crc32);
+	}
+	*/
 
 	if (!UseOriginalFileClass())
 	{

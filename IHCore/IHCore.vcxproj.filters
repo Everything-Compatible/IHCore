@@ -25,9 +25,6 @@
     <Filter Include="Data">
       <UniqueIdentifier>{3fa4902d-d76d-48c8-8d5e-4efb03d53bad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ext">
-      <UniqueIdentifier>{2615cac3-38f9-4ee7-b6b2-c9fc78fb9e4a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="YRPP">
       <UniqueIdentifier>{c02b0147-8d64-49e2-87c3-cbc9cb653f0a}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,12 @@
     </Filter>
     <Filter Include="Debug">
       <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{2615cac3-38f9-4ee7-b6b2-c9fc78fb9e4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extended">
+      <UniqueIdentifier>{0ca357d0-daac-4c46-82dd-86e7a903b164}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +85,7 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Debug.h">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="ExtLog.h">
       <Filter>File</Filter>
@@ -91,10 +94,10 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Macro.h">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="Patch.h">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="YRPP\AbstractClass.h">
       <Filter>YRPP</Filter>
@@ -1074,11 +1077,8 @@
     <ClInclude Include="..\Common\IHLoader\SyringeEx.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
-    <ClInclude Include="StringManagerExt.h">
-      <Filter>File</Filter>
-    </ClInclude>
     <ClInclude Include="SomeData.h">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="ExtCD.h">
       <Filter>File</Filter>
@@ -1093,7 +1093,7 @@
       <Filter>File</Filter>
     </ClInclude>
     <ClInclude Include="sha1.h">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="ConfData.h">
       <Filter>Data</Filter>
@@ -1149,6 +1149,24 @@
     <ClInclude Include="..\Common\IHLoader\EC.ObjBase.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
+    <ClInclude Include="ECDbgConsole.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="InfoStack.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="HotKeyClass.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="StringManagerExt.h">
+      <Filter>Extended</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1188,7 +1206,7 @@
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClCompile>
     <ClCompile Include="ExtLog.cpp">
       <Filter>File</Filter>
@@ -1197,7 +1215,7 @@
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Patch.cpp">
-      <Filter>Ext</Filter>
+      <Filter>External</Filter>
     </ClCompile>
     <ClCompile Include="YRPP\StaticInits.cpp">
       <Filter>YRPP</Filter>
@@ -1232,9 +1250,6 @@
     <ClCompile Include="InitSomewhere.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="StringManagerExt.cpp">
-      <Filter>File</Filter>
-    </ClCompile>
     <ClCompile Include="ExtMix.cpp">
       <Filter>File</Filter>
     </ClCompile>
@@ -1252,9 +1267,6 @@
     </ClCompile>
     <ClCompile Include="Exception.cpp">
       <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtScenario.cpp">
-      <Filter>File</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\EC.Misc.cpp">
       <Filter>EC SDK</Filter>
@@ -1288,6 +1300,18 @@
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\EC.ObjBase.cpp">
       <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ECDbgConsole.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtScenario.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="StringManagerExt.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtHotKey.cpp">
+      <Filter>Extended</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -78,7 +78,7 @@ DEFINE_HOOK(0x683CD1, RedirectINI, 7)
 	}
 
 	for (auto hd : ECListener::GetAll("EC::OnLoadScenario"))
-		((ECListener::Listener_LoadScenario)(hd))();
+		if(hd)((ECListener::Listener_LoadScenario)(hd))();
 
 	return 0;
 }

@@ -1,6 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include <vector>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <functional>
 #include "IH.Initial.h"
@@ -80,12 +81,12 @@ using FuncType_CommAlt = RoutineParam(__cdecl*)(RoutineParam);
 //For Executor&Routine
 enum class CreateMode
 {
-	ProcReplace = 0,  //Ìæ»»Proc Ìæ»»Context/Param »á´¥·¢Destructor¡¢UninitµÈ
-	ProcMerge = 1,    //Ìæ»»Proc ºÏ²¢Context ¸üĞÂÖØ¸´Ïî ¶ÔRoutineÍ¬Replace ²»»á´¥·¢Destructor¡¢UninitµÈ
-	ProcReserve = 2,  //Ìæ»»Proc ±£ÁôContext/Param ²»»á´¥·¢Destructor¡¢UninitµÈ
-	CtxReplace = 4,   //±£ÁôProc Ìæ»»Context/Param »á´¥·¢Destructor¡¢UninitµÈ
-	CtxMerge = 5,     //±£ÁôProc ºÏ²¢Context ¸üĞÂÖØ¸´Ïî ¶ÔRoutineÍ¬Replace ²»»á´¥·¢Destructor¡¢UninitµÈ
-	CtxReserve = 6,   //±£ÁôProc ±£ÁôContext/Param ²»»á´¥·¢Destructor¡¢UninitµÈ
+	ProcReplace = 0,  //æ›¿æ¢Proc æ›¿æ¢Context/Param ä¼šè§¦å‘Destructorã€Uninitç­‰
+	ProcMerge = 1,    //æ›¿æ¢Proc åˆå¹¶Context æ›´æ–°é‡å¤é¡¹ å¯¹RoutineåŒReplace ä¸ä¼šè§¦å‘Destructorã€Uninitç­‰
+	ProcReserve = 2,  //æ›¿æ¢Proc ä¿ç•™Context/Param ä¸ä¼šè§¦å‘Destructorã€Uninitç­‰
+	CtxReplace = 4,   //ä¿ç•™Proc æ›¿æ¢Context/Param ä¼šè§¦å‘Destructorã€Uninitç­‰
+	CtxMerge = 5,     //ä¿ç•™Proc åˆå¹¶Context æ›´æ–°é‡å¤é¡¹ å¯¹RoutineåŒReplace ä¸ä¼šè§¦å‘Destructorã€Uninitç­‰
+	CtxReserve = 6,   //ä¿ç•™Proc ä¿ç•™Context/Param ä¸ä¼šè§¦å‘Destructorã€Uninitç­‰
 };
 
 struct FuncInfo
@@ -152,6 +153,8 @@ struct ContextIndex
 
 using UTF8_CString = std::decay_t<decltype(u8"")>;
 using UTF8_CharType = std::remove_cv_t<std::remove_pointer_t<UTF8_CString>>;
+using UTF8_View = std::basic_string_view<UTF8_CharType>;
+using UTF8_String = std::basic_string<UTF8_CharType>;
 
 struct LibVersionInfo
 {
@@ -222,7 +225,7 @@ struct RoutineSet
 struct CSFEntry
 {
 	const wchar_t* Value;
-	const char* Extra;//ÎŞextra´«¿Õ´®
+	const char* Extra;//æ— extraä¼ ç©ºä¸²
 };
 
 

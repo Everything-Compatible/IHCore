@@ -1,9 +1,9 @@
-#include <string>
+ï»¿#include <string>
 #include <YRPP.h>
 #include <CRT.h>
 #include <Helpers/Macro.h>
 #include <CommandClass.h>
-
+#include <charconv>
 #include "Version.h"
 #include <ToolFunc.h>
 #include "SomeData.h"
@@ -53,19 +53,19 @@ std::wstring IH_MBToWC_Ex(const char* Src)
 	//::MessageBoxA(NULL, Src, "IH01", MB_OK);
 	if (strlen(Src) <= 2)return UTF8toUnicode(Src);
 	bool IsNew = false, IsUTF8 = false;
-	if (Src[0] == '#')
+	//if (Src[0] == '#')
 	{
 		//char sc[1000];
 		//Debug::Log("SimpleMBToWC_Ex : # %X %X %X %X", (unsigned)(unsigned char)Src[1], (unsigned)(unsigned char)Src[2], (unsigned)(unsigned char)Src[3], (unsigned)(unsigned char)Src[4]);
 		//sprintf_s(sc, "SimpleMBToWC_Ex : # %X %X %X %X", (unsigned)(unsigned char)Src[1], (unsigned)(unsigned char)Src[2], (unsigned)(unsigned char)Src[3], (unsigned)(unsigned char)Src[4]);
 		//::MessageBoxA(NULL, sc, "IH0Ex", MB_OK);
 	}
-	if (!strncmp(Src, "£º", 2))
+	if (!strncmp(Src, "ï¼š", 2))
 	{
 		IsNew = true;
 		IsUTF8 = false;
 	}
-	else if (strlen(Src) > 2 && !strncmp(Src, (const char*)u8"£º", 3))
+	else if (strlen(Src) > 2 && !strncmp(Src, (const char*)u8"ï¼š", 3))
 	{
 		IsNew = true;
 		IsUTF8 = true;
@@ -92,12 +92,12 @@ char SimpleMBToWC_Ex(wchar_t* Target, const char* Src, int nChars)
 		//Debug::Log("SimpleMBToWC_Ex : # %02X %02X %02X %02X", (int)sc[1], (int)sc[2], (int)sc[3], (int)sc[4]);
 
 	}
-	if (!strncmp(Src, "£º", 2))
+	if (!strncmp(Src, "ï¼š", 2))
 	{
 		IsNew = true;
 		IsUTF8 = false;
 	}
-	else if (strlen(Src) > 2 && !strncmp(Src, (const char*)u8"£º", 3))
+	else if (strlen(Src) > 2 && !strncmp(Src, (const char*)u8"ï¼š", 3))
 	{
 		IsNew = true;
 		IsUTF8 = true;
@@ -141,7 +141,16 @@ DEFINE_HOOK(0x735060, SimpleANSItoUTF16, 5)
 }
 
 reference<char, 0x889F64> DefaultStr;
-//829284 No Name
+//829284 :  No Name
+
+int safe_string_to_int(std::string_view str, int default_value) noexcept {
+	int value;
+	auto result = std::from_chars(str.data(), str.data() + str.size(), value);
+	if (result.ec != std::errc{} || result.ptr != str.data() + str.size()) {
+		return default_value;
+	}
+	return value;
+}
 
 static void ReadYRMData_New(_In_ const char* FileName,
 	_Out_ wchar_t* Desc,
@@ -166,17 +175,8 @@ static void ReadYRMData_New(_In_ const char* FileName,
 	{
 		BasicIt->second.GetIfExists("GameMode", GameModes);
 		IsOfficialMap = IsTrueString(BasicIt->second.GetStrRef("Official"));
-		try
-		{
-			MinPlayers = std::stoi(BasicIt->second.GetStrRef("MinPlayer"));
-			MaxPlayers = std::stoi(BasicIt->second.GetStrRef("MaxPlayer"));
-		}
-		catch (std::exception& e) 
-		{ 
-			(void)e; 
-			MinPlayers = 1;
-			MaxPlayers = 4;
-		}
+		MinPlayers = safe_string_to_int(BasicIt->second.GetStrRef("MinPlayer"), 1);
+		MaxPlayers = safe_string_to_int(BasicIt->second.GetStrRef("MaxPlayer"), 4);
 		//Debug::Log("ReadYRMData : Stage SUB04\n");
 		std::wstring ws1 = IH_MBToWC_Ex(BasicIt->second.GetStrRef("Name", "No Name"));
 		wchar_t dst[100];
@@ -228,7 +228,7 @@ bool IsSpaceEx(char c)
 char* WWSB_Trim_New(char* Str)
 {
 	bool Ex = false;
-	if (strstr(Str, (const char*)u8"£º"))Ex = true;
+	if (strstr(Str, (const char*)u8"ï¼š"))Ex = true;
 	//if(Ex)::MessageBoxA(NULL, UTF8toANSI(Str).c_str(), "IHTr1", MB_OK);
 	
 	char* _Str;

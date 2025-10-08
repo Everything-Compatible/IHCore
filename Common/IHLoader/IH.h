@@ -1,19 +1,19 @@
-/*
+ï»¿/*
 
 IH V0.4 SDK
-ÒıÇæ×÷Õß£º¸ÖÌúÖ®´¸  QQ£º2482911962
-SDK×÷Õß£º¸ÖÌúÖ®´¸  QQ£º2482911962
+å¼•æ“ä½œè€…ï¼šé’¢é“ä¹‹é”¤  QQï¼š2482911962
+SDKä½œè€…ï¼šé’¢é“ä¹‹é”¤  QQï¼š2482911962
 
-IH ÊÇ ¸ÖÌúÖ®´¸ ¿ª·¢µÄYRÒıÇæÀ©Õ¹,Ä¿Ç°°üÀ¨IHCore IHLibList 2¸ö×é¼ş¡£
-ÕâÊÇIHµÄÅäÌ×SDK£¬Ìá¹©ÁËµ÷ÓÃIHÄÚ²¿¹¦ÄÜµÄ½Ó¿Ú¡£
-Èç¹ûÄúÏëÒªµ÷ÓÃIHµÄ½Ó¿Ú£¬ÇëÔÚÏîÄ¿µ±ÖĞ°üº¬´ËSDK¡£
-ÔÚ°ÑIH×é¼ş£¨IHCore.dll IHLibList.dllµÈ£©·ÅÖÃÓÚÓÎÏ·Ä¿Â¼£¬
-²¢È·±£SyringeÊ¶±ğÁËËüÃÇºó£¬ÇÒÕıÈ·µØ½«ÄúµÄDLLÍ¨¹ıIHLoader×¢²áµ½IH×é¼şºó£¬
-´ËSDKµ±ÖĞµÄ½Ó¿Ú¼´Îª¿ÉÓÃµÄ¡£
-ÏêÏ¸µÄ½Ó¿ÚËµÃ÷Çë²éÔÄIH.Loader.h IH.File.hµÈÍ·ÎÄ¼şÄÚ½Ó¿Ú´¦µÄ×¢ÊÍ¡£
-ÈçÓĞÎÊÌâ»ò·´À¡ÇëÁªÏµ×÷Õß¡£
+IH æ˜¯ é’¢é“ä¹‹é”¤ å¼€å‘çš„YRå¼•æ“æ‰©å±•,ç›®å‰åŒ…æ‹¬IHCore IHLibList 2ä¸ªç»„ä»¶ã€‚
+è¿™æ˜¯IHçš„é…å¥—SDKï¼Œæä¾›äº†è°ƒç”¨IHå†…éƒ¨åŠŸèƒ½çš„æ¥å£ã€‚
+å¦‚æœæ‚¨æƒ³è¦è°ƒç”¨IHçš„æ¥å£ï¼Œè¯·åœ¨é¡¹ç›®å½“ä¸­åŒ…å«æ­¤SDKã€‚
+åœ¨æŠŠIHç»„ä»¶ï¼ˆIHCore.dll IHLibList.dllç­‰ï¼‰æ”¾ç½®äºæ¸¸æˆç›®å½•ï¼Œ
+å¹¶ç¡®ä¿Syringeè¯†åˆ«äº†å®ƒä»¬åï¼Œä¸”æ­£ç¡®åœ°å°†æ‚¨çš„DLLé€šè¿‡IHLoaderæ³¨å†Œåˆ°IHç»„ä»¶åï¼Œ
+æ­¤SDKå½“ä¸­çš„æ¥å£å³ä¸ºå¯ç”¨çš„ã€‚
+è¯¦ç»†çš„æ¥å£è¯´æ˜è¯·æŸ¥é˜…IH.Loader.h IH.File.hç­‰å¤´æ–‡ä»¶å†…æ¥å£å¤„çš„æ³¨é‡Šã€‚
+å¦‚æœ‰é—®é¢˜æˆ–åé¦ˆè¯·è”ç³»ä½œè€…ã€‚
 
-2024Äê12ÔÂ
+2024å¹´12æœˆ
 
 */
 #pragma once
@@ -27,3 +27,44 @@ IH ÊÇ ¸ÖÌúÖ®´¸ ¿ª·¢µÄYRÒıÇæÀ©Õ¹,Ä¿Ç°°üÀ¨IHCore IHLibList 2¸ö×é¼ş¡£
 #include "IH.File.h"
 
 #include "IH.Config.h"
+
+
+namespace IH
+{
+	void* IHCore_Malloc(size_t Size);
+	void IHCore_Free(void* Ptr) noexcept;
+
+	//Same as APIs above
+	void* Malloc(size_t Size);
+	void Free(void* Ptr) noexcept;
+
+	//Text Draw Variables
+	//Recognize #(xxx) in text and replace automatically
+	void SetTextDrawVariable(const char* Key, UTF8_CString Value);
+	UTF8_CString GetTextDrawVariable(const char* Key);
+	void DeleteTextDrawVariable(const char* Key);
+
+
+	//Text Draw Router:
+	//route text draw variable request to custom handlers
+	//Example:
+	//Route "MyVar" will match all #(MyVar.xxx) requests
+	//unless there is a specific text draw variable already declared
+	//Router functions:
+	//if a Router is Set on Route "MyVar"
+	//then a "MyVar.ABC" request will send to the router
+	//the router receive "ABC" (WITHOUT ROUTE PREFIX) and give the result
+	//if not found, give a nullptr
+	//NOTE:
+	//Route Name should NOT have '.'
+	using TextDrawRouter = UTF8_CString (__cdecl *)(const char* Key);
+	void SetTextDrawRouter(const char* Route, TextDrawRouter Router);
+	TextDrawRouter GetTextDrawRouter(const char* Route);
+	void DeleteTextDrawRouter(const char* Route);
+
+	//Output the evaluated result
+	//considering all variables and routers.
+	//return nullptr if not found.
+	UTF8_CString GetTextDrawValue(UTF8_CString Key);
+	UTF8_CString GetTextDrawValue(const char* Key);
+}

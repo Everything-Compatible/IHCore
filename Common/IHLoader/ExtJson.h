@@ -36,6 +36,7 @@ class JsonObject
 {
 private:
     cJSON* Object{ nullptr };
+
 public:
     JsonObject(cJSON* _F) { Object = _F; }
     JsonObject() : Object(nullptr) {}
@@ -103,9 +104,11 @@ public:
     std::vector < std::pair<std::string, std::string>> GetPVString() const;
 
     std::string GetText() const;
+    std::string GetTextEx() const;
 
     JsonObject CreateObjectItem(const std::string& Str) const;
     void AddObjectItem(const std::string& Str, JsonObject Child, bool NeedsCopy) const;
+    void AddObjectItem(const std::string& Str, JsonFile&& File) const;
     void AddNull(const std::string& Str) const;
     void AddInt(const std::string& Str, int Val) const;
     void AddDouble(const std::string& Str, double Val) const;
@@ -133,6 +136,7 @@ public:
     void SetStrBool(bool Val, StrBoolType Type) const;
     void CopyObject(JsonObject Obj, bool Recurse) const;
     void RedirectObject(JsonObject Obj);
+    void SetObject();
 
     //给空节点的非const函数
     void CreateNull();
@@ -142,6 +146,7 @@ public:
     void CreateBool(bool Val);
     void CreateStrBool(bool Val, StrBoolType Type);
     void CreateCopy(JsonObject Obj, bool Recurse);
+    void CreateObject();
 
     // 不知道是否为空时请调用以下函数 
     void SetOrCreateNull();
@@ -151,6 +156,7 @@ public:
     void SetOrCreateBool(bool Val);
     void SetOrCreateStrBool(bool Val, StrBoolType Type);
     void SetOrCreateCopy(JsonObject Obj, bool Recurse);
+    void SetOrCreateObject();
 
     JsonFile DetachObjectItem(const std::string& Str);
     JsonFile DetachArrayItem(int Index);
@@ -168,9 +174,9 @@ class JsonFile
 private:
     cJSON* File{ nullptr };
 public:
-    JsonFile() : File(nullptr) {}
+    JsonFile() : File(cJSON_CreateObject()) {}
     JsonFile(cJSON* _F) { File = _F; }
-    JsonFile(JsonObject Obj) { File = Obj.GetRaw(); }
+	//JsonFile(JsonObject Obj) { File = Obj.GetRaw(); } //因为可能会导致File被释放
     ~JsonFile() { if (File != nullptr)cJSON_Delete(File); }
 
     operator JsonObject() const { return JsonObject(File); }
@@ -201,6 +207,8 @@ public:
 };
 
 inline const char* Json_GetErrorPtr() { return cJSON_GetErrorPtr(); }//不理他
+
+std::string EscapeString(const std::string& str);
 
 
 #ifdef IHCore

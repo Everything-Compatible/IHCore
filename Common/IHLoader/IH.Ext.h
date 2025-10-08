@@ -1,7 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include "IH.Loader.h"
 
-//ÔÚInitÖ®ºó²Å¿ÉÓÃµÄ¶«Î÷
+//åœ¨Initä¹‹åæ‰å¯ç”¨çš„ä¸œè¥¿
 namespace Ext
 {
 	inline LibInputFnTable& FnTable()
@@ -56,7 +56,7 @@ namespace Ext
 		}
 	};
 
-	//¼ÙÈçÄã²»ÏëÓÃExecutor
+	//å‡å¦‚ä½ ä¸æƒ³ç”¨Executor
 	class ActiveContext
 	{
 		ContextIndex Idx;
@@ -98,7 +98,7 @@ namespace Ext
 		inline RoutineHandle GetHandle() { return Handle; }
 
 		bool Available() const;
-		void InstantRun() const;//Á¢¿Ì¼ÌĞø£¨ÈôÔİÍ££©²¢ÇåÁãµÈ´ıÊ±¼ä
+		void InstantRun() const;//ç«‹åˆ»ç»§ç»­ï¼ˆè‹¥æš‚åœï¼‰å¹¶æ¸…é›¶ç­‰å¾…æ—¶é—´
 		void Pause() const;
 		void Resume() const;
 		void Delay(int NFrames) const;
@@ -138,7 +138,7 @@ namespace Ext
 		int Version();
 		const char* LibName();
 		LibInputFnTable* LibFnTable();
-		LibFuncHandle GetTableFn(int FuncIdx);//ËÆºõ¿ÉÒÔÔÚµÍ°æ±¾SDK·ÃÎÊ¸ß°æ±¾IHµÄ½Ó¿Ú
+		LibFuncHandle GetTableFn(int FuncIdx);//ä¼¼ä¹å¯ä»¥åœ¨ä½ç‰ˆæœ¬SDKè®¿é—®é«˜ç‰ˆæœ¬IHçš„æ¥å£
 		void SetTableFn(int FuncIdx, LibFuncHandle Fn);
 		LibFuncHandle GetTableCustormFn(int FuncIdx);
 		void SetTableCustomFn(int FuncIdx, LibFuncHandle Fn);
@@ -168,8 +168,8 @@ namespace Ext
 		bool LoadAsCCFile(const char* name);
 		bool LoadAsCCFile(CCFileClass* pCC);
 		bool LoadAsExternalFile(const char* name);
-		CSFEntry GetString(const char* Key);//merge²Ù×÷Ö®ºóÇëÖØĞÂ»ñÈ¡£¬clear²Ù×÷Ö®ºóÈ«²¿Ê§Ğ§
-		CSFEntry GetStringDefault(const char* Key);//merge²Ù×÷Ö®ºóÇëÖØĞÂ»ñÈ¡£¬clear²Ù×÷Ö®ºóÈ«²¿Ê§Ğ§
+		CSFEntry GetString(const char* Key);//mergeæ“ä½œä¹‹åè¯·é‡æ–°è·å–ï¼Œclearæ“ä½œä¹‹åå…¨éƒ¨å¤±æ•ˆ
+		CSFEntry GetStringDefault(const char* Key);//mergeæ“ä½œä¹‹åè¯·é‡æ–°è·å–ï¼Œclearæ“ä½œä¹‹åå…¨éƒ¨å¤±æ•ˆ
 		void Merge(const CSFClass* Another);
 		void Merge(const char* Key, const wchar_t* value, const char* Extra);
 		bool Available();
@@ -231,9 +231,27 @@ namespace Ext
 	bool RegisterRoutineSet(const char* Name, const RoutineSet& Routine, RoutineParam Param, bool Paused, int InitialDelay, bool ResetParam, CreateMode Mode);
 	LibData GetLib(const char* Name);
 	LibData GetAvailableLib(const char* Name);
-	FuncInfo* QueryFunction(BasicLibData* Lib, const char* Name, int Version);//DoNotCheckVersion»¹ÊÇÆ¥Åäµ±Ç°°æ±¾ µ«´ó²¿·Ö¼ì²é¶¼²»»á¹¤×÷ ÉõÖÁ²»¼ì²é´«³öµÄÊÇ²»ÊÇFuncInfo*
+	FuncInfo* QueryFunction(BasicLibData* Lib, const char* Name, int Version);//DoNotCheckVersionè¿˜æ˜¯åŒ¹é…å½“å‰ç‰ˆæœ¬ ä½†å¤§éƒ¨åˆ†æ£€æŸ¥éƒ½ä¸ä¼šå·¥ä½œ ç”šè‡³ä¸æ£€æŸ¥ä¼ å‡ºçš„æ˜¯ä¸æ˜¯FuncInfo*
 	void* CustomFunction(int FuncIdx);
+
+	
+
+
 }
+
+namespace ECDebug
+{
+	void ReturnString(UTF8_View Str);
+	void ReturnError(UTF8_View Str, int Code);
+	void DoNotEcho();
+	void ReturnStdError(long Code);
+	void SetGlobalVar(UTF8_View Key, UTF8_View Value);
+	void SetErrorCode(int Code);
+	int GetErrorCode();
+	void GetLastResult(UTF8_String& Ret, UTF8_String& ErrorStr, int& ErrorCode);
+	UTF8_String GetVar(UTF8_View Key);
+}
+
 
 
 struct CSFClass_ITable
@@ -245,8 +263,8 @@ struct CSFClass_ITable
 	bool(__cdecl* LoadAsCCFile_A)(Ext::CSFClass* This, const char* name);
 	bool(__cdecl* LoadAsCCFile_B)(Ext::CSFClass* This, CCFileClass* pCC);
 	bool(__cdecl* LoadAsExternalFile)(Ext::CSFClass* This, const char* name);
-	CSFEntry(__cdecl* GetString)(Ext::CSFClass* This, const char* Key);//merge²Ù×÷Ö®ºóÇëÖØĞÂ»ñÈ¡£¬clear²Ù×÷Ö®ºóÈ«²¿Ê§Ğ§
-	CSFEntry(__cdecl* GetStringDefault)(Ext::CSFClass* This, const char* Key);//merge²Ù×÷Ö®ºóÇëÖØĞÂ»ñÈ¡£¬clear²Ù×÷Ö®ºóÈ«²¿Ê§Ğ§
+	CSFEntry(__cdecl* GetString)(Ext::CSFClass* This, const char* Key);//mergeæ“ä½œä¹‹åè¯·é‡æ–°è·å–ï¼Œclearæ“ä½œä¹‹åå…¨éƒ¨å¤±æ•ˆ
+	CSFEntry(__cdecl* GetStringDefault)(Ext::CSFClass* This, const char* Key);//mergeæ“ä½œä¹‹åè¯·é‡æ–°è·å–ï¼Œclearæ“ä½œä¹‹åå…¨éƒ¨å¤±æ•ˆ
 	void(__cdecl* Merge_A)(Ext::CSFClass* This, const Ext::CSFClass* Another);
 	void(__cdecl* Merge_B)(Ext::CSFClass* This, const char* Key, const wchar_t* value, const char* Extra);
 	bool(__cdecl* Available)(Ext::CSFClass* This);
@@ -330,8 +348,8 @@ struct LibInputFnTable
 	void(__cdecl* ResetGetFunctionBuffer)();
 
 	//FuncIdx 50~54
-	void* PlaceHolder_15;
-	void* PlaceHolder_16;
+	UTF8_CString (__cdecl* GetTextDrawValue)(UTF8_CString Key);
+	void* (__cdecl* IHCore_Malloc)(size_t Size);
 	BasicLibData* (__cdecl* GetLib)(const char* Name);
 	BasicLibData* (__cdecl* GetAvailableLib)(const char* Name);
 	FuncInfo* (__cdecl* QueryFunction)(BasicLibData* Lib, const char* Name, int Version);
@@ -343,9 +361,24 @@ struct LibInputFnTable
 	void* Custom_4;
 	void* Custom_5;
 
+	//FuncIdx 60~64
 	CSFClass_ITable* CSFClass_pITable;
 	void* PlaceHolder_17;
 	void* PlaceHolder_18;
 	void* PlaceHolder_19;
 	void* PlaceHolder_20;
+
+	//FuncIdx 65~69
+	void(__cdecl* IHCore_Free)(void* p);
+	void(__cdecl* DbgFunc_ReturnString)(UTF8_CString Str);
+	void(__cdecl* DbgFunc_ReturnError)(UTF8_CString Str, int Code);
+	void(__cdecl* DbgFunc_DoNotEcho)();
+	void(__cdecl* DbgFunc_ReturnStdError)(long Code);
+
+	//FuncIdx 70~74
+	void(__cdecl* DbgFunc_SetGlobalVar)(UTF8_CString Key, UTF8_CString Value);
+	void(__cdecl* DbgFunc_SetErrorCode)(int Code);
+	int(__cdecl* DbgFunc_GetErrorCode)();
+	void(__cdecl* DbgFunc_GetLastResult)(UTF8_CString& Ret, UTF8_CString& ErrorStr, int& ErrorCode);
+	UTF8_CString(__cdecl* DbgFunc_GetVar)(UTF8_CString Key);
 };

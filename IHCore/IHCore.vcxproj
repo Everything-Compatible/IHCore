@@ -162,6 +162,7 @@
     <ClInclude Include="..\Common\DataStructure.h" />
     <ClInclude Include="..\Common\IHLoader\cJSON.h" />
     <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.h" />
     <ClInclude Include="..\Common\IHLoader\EC.LoadSave.h" />
     <ClInclude Include="..\Common\IHLoader\EC.LoadSaveImpl.h" />
     <ClInclude Include="..\Common\IHLoader\EC.ObjBase.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="..\Common\IHLoader\ExtJson.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Config.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Ext.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Initial.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Loader.h" />
     <ClInclude Include="..\Common\IHLoader\SyringeEx.h" />
@@ -186,6 +188,7 @@
     <ClInclude Include="Command.h" />
     <ClInclude Include="ConfData.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="ECDbgConsole.h" />
     <ClInclude Include="ExtCD.h" />
     <ClInclude Include="ExtCsf.h" />
     <ClInclude Include="ExtFile.h" />
@@ -193,7 +196,9 @@
     <ClInclude Include="ExtLog.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="HotKeyClass.h" />
     <ClInclude Include="IHConfig.h" />
+    <ClInclude Include="InfoStack.h" />
     <ClInclude Include="InitialLoad.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MiscFunc.h" />
@@ -549,6 +554,7 @@
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ECDbgConsole.cpp" />
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="ExtCD.cpp" />
     <ClCompile Include="ExtCsf.cpp" />
@@ -559,6 +565,7 @@
     <ClCompile Include="ExtMix.cpp" />
     <ClCompile Include="ExtScenario.cpp" />
     <ClCompile Include="Global.cpp" />
+    <ClCompile Include="ExtHotKey.cpp" />
     <ClCompile Include="IHConfig.cpp" />
     <ClCompile Include="InitialLoad.cpp" />
     <ClCompile Include="InitSomewhere.cpp" />

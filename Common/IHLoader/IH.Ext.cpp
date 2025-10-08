@@ -1,4 +1,10 @@
-#include "IH.Ext.h"
+ï»¿#include "IH.h"
+
+
+void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
+const char* Internal_GetGlobalVarString(const char* Usage, const char* Key);
+void Internal_SetGlobalVarPtr(const char* Usage, const char* Key, LPCVOID Ptr);
+LPCVOID Internal_GetGlobalVarPtr(const char* Usage, const char* Key);
 
 namespace Ext
 {
@@ -245,7 +251,7 @@ namespace Ext
 	}
 	FuncInfo* LibData::QueryFunction(const char* Name, int Version)
 	{
-		//IHCore»á¼ì²é²ÎÊý£¬´Ë´¦ÂÔ¹ý
+		//IHCoreä¼šæ£€æŸ¥å‚æ•°ï¼Œæ­¤å¤„ç•¥è¿‡
 		return Ext::QueryFunction(Lib, Name, Version);
 	}
 	int LibData::Version()
@@ -316,11 +322,11 @@ namespace Ext
 	{
 		return CSFClass_GetITable().LoadAsExternalFile(this, name);
 	}
-	CSFEntry CSFClass::GetString(const char* Key)//merge²Ù×÷Ö®ºóÇëÖØÐÂ»ñÈ¡£¬clear²Ù×÷Ö®ºóÈ«²¿Ê§Ð§
+	CSFEntry CSFClass::GetString(const char* Key)//mergeæ“ä½œä¹‹åŽè¯·é‡æ–°èŽ·å–ï¼Œclearæ“ä½œä¹‹åŽå…¨éƒ¨å¤±æ•ˆ
 	{
 		return CSFClass_GetITable().GetString(this, Key);
 	}
-	CSFEntry CSFClass::GetStringDefault(const char* Key)//merge²Ù×÷Ö®ºóÇëÖØÐÂ»ñÈ¡£¬clear²Ù×÷Ö®ºóÈ«²¿Ê§Ð§
+	CSFEntry CSFClass::GetStringDefault(const char* Key)//mergeæ“ä½œä¹‹åŽè¯·é‡æ–°èŽ·å–ï¼Œclearæ“ä½œä¹‹åŽå…¨éƒ¨å¤±æ•ˆ
 	{
 		return CSFClass_GetITable().GetStringDefault(this, Key);
 	}
@@ -517,5 +523,114 @@ namespace Ext
 	void* CustomFunction(int FuncIdx)
 	{
 		return CustomFunctionImpl(*Init::LibInput->FunctionTable, FuncIdx);
+	}
+
+	
+}
+
+
+namespace IH
+{
+	void* IHCore_Malloc(size_t Size)
+	{
+		return Init::LibInput->FunctionTable->IHCore_Malloc(Size);
+	}
+	void IHCore_Free(void* Ptr) noexcept
+	{
+		return Init::LibInput->FunctionTable->IHCore_Free(Ptr);
+	}
+
+	void* Malloc(size_t Size)
+	{
+		return IHCore_Malloc(Size);
+	}
+	void Free(void* Ptr) noexcept
+	{
+		IHCore_Free(Ptr);
+	}
+
+	const char* Usage_TextDrawVariable = "IHCore::TextDrawVariable";
+	const char* Usage_TextDrawRouter = "IHCore::TextDrawRouter";
+
+	void SetTextDrawRouter(const char* Route, TextDrawRouter Handler)
+	{
+		Internal_SetGlobalVarPtr(Usage_TextDrawRouter, Route, Handler);
+	}
+	TextDrawRouter GetTextDrawRouter(const char* Route)
+	{
+		return (TextDrawRouter)Internal_GetGlobalVarPtr(Usage_TextDrawRouter, Route);
+	}
+	void DeleteTextDrawRouter(const char* Route)
+	{
+		Internal_SetGlobalVarPtr(Usage_TextDrawRouter, Route, nullptr);
+	}
+	void SetTextDrawVariable(const char* Key, UTF8_CString Value)
+	{
+		Internal_SetGlobalVarString(Usage_TextDrawVariable, Key, _strdup((const char*)Value));
+	}
+	UTF8_CString GetTextDrawVariable(const char* Key)
+	{
+		return (UTF8_CString)Internal_GetGlobalVarString(Usage_TextDrawVariable, Key);
+	}
+	void DeleteTextDrawVariable(const char* Key)
+	{
+		Internal_SetGlobalVarString(Usage_TextDrawVariable, Key, nullptr);
+	}
+
+	UTF8_CString GetTextDrawValue(UTF8_CString Key)
+	{
+		return Init::LibInput->FunctionTable->GetTextDrawValue(Key);
+	}
+	UTF8_CString GetTextDrawValue(const char* Key)
+	{
+		return Init::LibInput->FunctionTable->GetTextDrawValue((UTF8_CString)Key);
+	}
+}
+
+namespace ECDebug
+{
+	void ReturnString(UTF8_View Str)
+	{
+		Init::LibInput->FunctionTable->DbgFunc_ReturnString(Str.data());
+	}
+	void ReturnError(UTF8_View Str, int Code)
+	{
+		Init::LibInput->FunctionTable->DbgFunc_ReturnError(Str.data(), Code);
+	}
+	void DoNotEcho()
+	{
+		Init::LibInput->FunctionTable->DbgFunc_DoNotEcho();
+	}
+	void ReturnStdError(long Code)
+	{
+		Init::LibInput->FunctionTable->DbgFunc_ReturnStdError(Code);
+	}
+	void SetGlobalVar(UTF8_View Key, UTF8_View Value)
+	{
+		Init::LibInput->FunctionTable->DbgFunc_SetGlobalVar(Key.data(), Value.data());
+	}
+	void SetErrorCode(int Code)
+	{
+		Init::LibInput->FunctionTable->DbgFunc_SetErrorCode(Code);
+	}
+	int GetErrorCode()
+	{
+		return Init::LibInput->FunctionTable->DbgFunc_GetErrorCode();
+	}
+	void GetLastResult(UTF8_String& Ret, UTF8_String& ErrorStr, int& ErrorCode)
+	{
+		UTF8_CString RetStr = nullptr, ErrStr = nullptr;
+		Init::LibInput->FunctionTable->DbgFunc_GetLastResult(RetStr, ErrStr, ErrorCode);
+		Ret = RetStr ? RetStr : u8"";
+		ErrorStr = ErrStr ? ErrStr : u8"";
+		Init::LibInput->FunctionTable->IHCore_Free((void*)RetStr);
+		Init::LibInput->FunctionTable->IHCore_Free((void*)ErrStr);
+	}
+	UTF8_String GetVar(UTF8_View Key)
+	{
+		UTF8_CString Ret = Init::LibInput->FunctionTable->DbgFunc_GetVar(Key.data());
+		UTF8_String s =  Ret ? Ret : u8"";
+		Init::LibInput->FunctionTable->IHCore_Free((void*)Ret);
+		return s;
 	}
 }

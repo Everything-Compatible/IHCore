@@ -10,6 +10,7 @@
 #include "Debug.h"
 #include "Global.h"
 #include "ExtIni.h"
+#include "ECDbgConsole.h"
 
 bool PrintWindow(HWND hd);
 
@@ -336,6 +337,8 @@ namespace Test
 		DrawGlobalTimer();
 		Local::ExecutorRunLoop();
 		Local::LocalFrameUpdate();
+
+		ECDebug::FlushCommands();
 	}
 }
 /*

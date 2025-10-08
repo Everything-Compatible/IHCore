@@ -130,6 +130,18 @@ namespace SyringeData
 		void* Addr;
 	};
 
+	struct DaemonData
+	{
+		BOOL EnableDaemon;
+		BOOL OpenAsDaemon;
+		DWORD ThreadID;
+		const wchar_t* lpReportString;
+		DWORD lpReportStringLen;
+		const char* lpDebugPipeName;
+		DWORD lpDebugPipeNameLen;
+		int dwReserved[9];
+	};
+
 	struct SharedMemHeader
 	{
 		int TotalSize;
@@ -200,6 +212,16 @@ namespace SyringeData
 	void DisableAllHooksAt(DWORD Address);
 	bool IsHookValid(DWORD Address, const std::string& Lib, const std::string& Proc);
 	HookType GetHookProc(DWORD Address, const std::string& Lib, const std::string& Proc);
+
+	bool IsDaemonSupported();
+	bool SetDaemonThread(DWORD id);
+	bool IsADaemonNow();
+	bool DaemonConnect(int WaitBusyMillis = 3000);
+	bool DaemonDisconnect();
+	bool IsDaemonConnected();
+	std::string SendRequestMessage(const std::string& Message);//×èÈûÊ½ÇëÇó
+	const wchar_t* GetDaemonReport();
+	bool ShouldCloseDaemonPipe();
 }
 /*
 

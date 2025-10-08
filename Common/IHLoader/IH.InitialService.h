@@ -1,25 +1,25 @@
-#pragma once
+ï»¿#pragma once
 #include "IH.Loader.h"
 
 namespace InitialLoad
 {
 	template<typename ParamType, typename... TArgs>
-	IHInitialLoadService CreateRequest(const char* Name, TArgs&&... args)//´´½¨ºóÓÀ²»Ïú»Ù
+	IHInitialLoadService CreateRequest(const char* Name, TArgs&&... args)//åˆ›å»ºåæ°¸ä¸é”€æ¯
 	{
-		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType ±ØĞëÅÉÉú×Ô InitialLoadParam £¡");
+		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType å¿…é¡»æ´¾ç”Ÿè‡ª InitialLoadParam ï¼");
 		return IHInitialLoadService{ Name,new ParamType(std::forward<TArgs>(args)...) };
 	}
 	void ServiceRequest(IHInitialLoadService IService);
 	template<typename ParamType, typename... TArgs>
-	void CreateRequestAndSubmit(const char* Name, TArgs&&... args)//´´½¨ºóÓÀ²»Ïú»Ù
+	void CreateRequestAndSubmit(const char* Name, TArgs&&... args)//åˆ›å»ºåæ°¸ä¸é”€æ¯
 	{
-		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType ±ØĞëÅÉÉú×Ô InitialLoadParam £¡");
+		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType å¿…é¡»æ´¾ç”Ÿè‡ª InitialLoadParam ï¼");
 		ServiceRequest(IHInitialLoadService{ Name,new ParamType(std::forward<TArgs>(args)...) });
 	}
 	template<typename ParamType>
 	class Service
 	{
-		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType ±ØĞëÅÉÉú×Ô InitialLoadParam £¡");
+		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType å¿…é¡»æ´¾ç”Ÿè‡ª InitialLoadParam ï¼");
 		std::string ServiceName;
 		PArray<IHInitialLoadService> Requests;
 		bool Requested{ false };
@@ -30,7 +30,7 @@ namespace InitialLoad
 
 		Service(const std::string& Name) : ServiceName(Name), Requests() {}
 		Service(const char* Name) : ServiceName(Name), Requests() {}
-		void ProcessOnce(const std::function<void(const ParamType&)>& Func)//Èç¹ûÁĞ±íÎª¿ÕÔòÌî²¹²¢´¦Àí
+		void ProcessOnce(const std::function<void(const ParamType&)>& Func)//å¦‚æœåˆ—è¡¨ä¸ºç©ºåˆ™å¡«è¡¥å¹¶å¤„ç†
 		{
 			if (!Requested)
 			{
@@ -41,7 +41,7 @@ namespace InitialLoad
 				Requested = true;
 			}
 		}
-		void Process(const std::function<void(const ParamType&)>& Func)//Èç¹ûÁĞ±íÎª¿ÕÈÔ»á³¢ÊÔrefresh
+		void Process(const std::function<void(const ParamType&)>& Func)//å¦‚æœåˆ—è¡¨ä¸ºç©ºä»ä¼šå°è¯•refresh
 		{
 			if (!Requests.N)Refresh();
 			for (size_t i = 0; i < Requests.N; i++)
@@ -62,3 +62,4 @@ namespace InitialLoad
 
 #define ClassRegisterByName(Type, Class) InitialLoad::CreateRequestAndSubmit<InitialLoadParam_RegisterVTable>(Type, #Class, GetIHFileRegisterKey<Class>(), sizeof(Class));
 #define RegisterIHFile(Class) ClassRegisterByName("IHFile::RegisterIHFile", Class)
+#define InitialRequest(Type, ...) InitialLoad::CreateRequestAndSubmit<InitialLoadParam_##Type>(__VA_ARGS__)

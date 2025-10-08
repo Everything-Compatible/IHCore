@@ -1,19 +1,22 @@
-
+Ôªø
 #include "LocalData.h"
 #include <Windows.h>
 #include <map>
 #include "..\IHCore\Debug.h"
 #include "..\IHCore\SomeData.h"
+#include "..\IHCore\ECDbgConsole.h"
 #include <YRPP.h>
 
 extern struct CSFFile_ITable CSFFile_InstTable;
+
+const char8_t* GetTextDrawVariable(const std::u8string_view Key);
 
 namespace HPRelationManager
 {
 	std::vector<const HPFuncPackManager*> FuncPack;//EXPORT
 	std::unordered_map<std::string, FuncHandle> Callback;//EXPORT
 	
-	std::vector<HPFuncPackData> FuncPackImpl;//”…HPLocalData::Initialize◊‘∂Ø…˙≥…
+	std::vector<HPFuncPackData> FuncPackImpl;//Áî±HPLocalData::InitializeËá™Âä®ÁîüÊàê
 	void MakeFuncPackImpl()
 	{
 		for (auto Pack : FuncPack)
@@ -292,6 +295,7 @@ namespace Local
 	//FuncInfo
 	FuncInfo* GetFuncFromLib(const char* pLib, const char* pFunc, int Version)
 	{
+		if (!strlen(pLib))return Internal_GetFunc(pFunc, Version);
 		if (!strcmp(pLib, "IHCore"))return IHCore_GetFunc(pFunc, Version);
 		
 		auto it = LibMap.find(pLib);
@@ -505,12 +509,12 @@ namespace Local
 	//0,1 for bool other return 2; default return -1
 	GenCallRetType GeneralCall(const FuncInfo& Fn, JsonObject Context)
 	{
-		//if (!Fn)return GenCallRetType::Default;
+		if (!Fn.Func)return GenCallRetType::Default;
 		switch (Fn.Type)
 		{
 		case FuncType::Condition:
 		{
-			auto pf = (bool(__cdecl*)(JsonObject Context))Fn.Func;
+			auto pf = (FuncType_Condition)Fn.Func;
 			if (Fn.Func)
 			{
 				JsonFile File;
@@ -522,7 +526,7 @@ namespace Local
 		}break;
 		case FuncType::Action:
 		{
-			auto pf = (void(__cdecl*)(JsonObject Context))Fn.Func;
+			auto pf = (FuncType_Action)Fn.Func;
 			JsonFile File;
 			if (!Context.Available())return GenCallRetType::Default;
 			File.DuplicateFromObject(Context, true);
@@ -532,7 +536,7 @@ namespace Local
 		}break;
 		case FuncType::Callback:
 		{
-			auto pf = (void(__cdecl*)(JsonObject Context))Fn.Func;
+			auto pf = (FuncType_Callback)Fn.Func;
 			JsonFile File;
 			if (!Context.Available())return GenCallRetType::Default;
 			File.DuplicateFromObject(Context, true);
@@ -542,11 +546,39 @@ namespace Local
 		}break;
 		case FuncType::Procedure:
 		{
-			auto pf = (void(__cdecl*)(void))Fn.Func;
+			auto pf = (FuncType_Procedure)Fn.Func;
 			pf();
 			return GenCallRetType::Void;
 		}break;
 		case FuncType::Default:
+		default:
+			return GenCallRetType::Default;
+		}
+		return GenCallRetType::Default;
+	}
+
+	GenCallRetType GeneralCallAlt(const FuncInfo& Fn, const GeneratorParam& Param)
+	{
+		if (!Fn.Func)return GenCallRetType::Default;
+		switch (Fn.Type)
+		{
+		case FuncType::ConditionAlt:
+		{
+			auto pf = (FuncType_ConditionAlt)Fn.Func;
+			return pf(Param) ? GenCallRetType::True : GenCallRetType::False;
+		}break;
+		case FuncType::ActionAlt:
+		{
+			auto pf = (FuncType_ActionAlt)Fn.Func;
+			pf(Param);
+			return GenCallRetType::Void;
+		}break;
+		case FuncType::Procedure:
+		{
+			auto pf = (FuncType_Procedure)Fn.Func;
+			pf();
+			return GenCallRetType::Void;
+		}break;
 		default:
 			return GenCallRetType::Default;
 		}
@@ -643,7 +675,7 @@ namespace Local
 
 
 
-	//»Ù√ª”–Destructor£¨ÃÓ≤πnullptr
+	//Ëã•Ê≤°ÊúâDestructorÔºåÂ°´Ë°•nullptr
 	bool MakeExecutor_BaseText(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Text, const char* Type, const char* ExecType, SwizzleExecutor_t Swizzle, FuncInfo* Destructor)
 	{
 		if (!Action)return false;
@@ -907,7 +939,7 @@ namespace Local
 		};
 	}
 
-	//»Á”–swizzle£¨Param”¶∏√ «swizzle∫Ûµƒ
+	//Â¶ÇÊúâswizzleÔºåParamÂ∫îËØ•ÊòØswizzleÂêéÁöÑ
 	void AddExecutor(const GeneralExecutor& GenExec, const GeneratorParam& Param,bool DirectBind)
 	{
 		bool Found = true;
@@ -1074,6 +1106,85 @@ namespace Local
 		return true;
 	}
 
+	/*
+	void ReturnString(const std::u8string& Str);
+
+	void ReturnError(const std::u8string& Str, int Code);
+
+	void DoNotEcho();
+
+	void ReturnStdError(long Code);
+
+	void SetGlobalVar(const std::u8string& Key, const std::u8string& Value);
+
+	void SetErrorCode(int Code);
+
+	int GetErrorCode();
+
+	void GetLastResult(std::u8string& Ret, std::u8string& ErrorStr, int& ErrorCode);
+
+	const std::u8string& GetVar(const std::u8string& Key);
+	*/
+	//UTF8_CharType
+	//UTF8_CString
+
+	void IHCore_Free(void* p)
+	{
+		free(p);
+	}
+	void DbgFunc_ReturnString(UTF8_CString Str)
+	{
+		ECCommand::ReturnString(Str);
+	}
+	void DbgFunc_ReturnError(UTF8_CString Str, int Code)
+	{
+		ECCommand::ReturnError(Str, Code);
+	}
+	void DbgFunc_DoNotEcho()
+	{
+		ECCommand::DoNotEcho();
+	}
+	void DbgFunc_ReturnStdError(long Code)
+	{
+		ECCommand::ReturnStdError(Code);
+	}
+	void DbgFunc_SetGlobalVar(UTF8_CString Key, UTF8_CString Value)
+	{
+		ECCommand::SetGlobalVar(Key, Value);
+	}
+	void DbgFunc_SetErrorCode(int Code)
+	{
+		ECCommand::SetErrorCode(Code);
+	}
+	int DbgFunc_GetErrorCode()
+	{
+		return ECCommand::GetErrorCode();
+	}
+	void DbgFunc_GetLastResult(UTF8_CString& Ret, UTF8_CString& ErrorStr, int& ErrorCode)
+	{
+		std::u8string _Ret, _ErrorStr;
+		int _ErrorCode;
+		ECCommand::GetLastResult(_Ret, _ErrorStr, _ErrorCode);
+		char8_t* p1 = (char8_t*)malloc(_Ret.size() + 1);
+		memcpy(p1, _Ret.c_str(), _Ret.size() + 1);
+		char8_t* p2 = (char8_t*)malloc(_ErrorStr.size() + 1);
+		memcpy(p2, _ErrorStr.c_str(), _ErrorStr.size() + 1);
+		Ret = p1;
+		ErrorStr = p2;
+		ErrorCode = _ErrorCode;
+	}
+	UTF8_CString DbgFunc_GetVar(UTF8_CString Key)
+	{
+		auto& Str = ECCommand::GetVar(Key);
+		char8_t* p = (char8_t*)malloc(Str.size() + 1);
+		memcpy(p, Str.c_str(), Str.size() + 1);
+		return p;
+	}
+
+
+
+
+
 
 
 
@@ -1096,7 +1207,7 @@ namespace Local
 	//PLACEHOLDER 1
 	//PLACEHOLDER 2
 
-	//◊¢≤·∫Ø ˝
+	//Ê≥®ÂÜåÂáΩÊï∞
 	void __cdecl Export_RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor)
 	{
 		RegisterContextProcessor(Type, pProcessor);
@@ -1162,7 +1273,7 @@ namespace Local
 	{
 		DeleteRoutine(Name);
 	}
-	//»Ù√ª”–Destructor£¨ÃÓ≤πnullptr
+	//Ëã•Ê≤°ÊúâDestructorÔºåÂ°´Ë°•nullptr
 	bool __cdecl Export_MakeExecutor_BaseText(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Text, const char* Type, const char* ExecType, SwizzleExecutor_t Swizzle, FuncInfo* Destructor)
 	{
 		return MakeExecutor_BaseText(Base, Action, Delay, Text, Type, ExecType, Swizzle, Destructor);
@@ -1175,7 +1286,7 @@ namespace Local
 	//PLACEHOLDER 8
 	//PLACEHOLDER 9
 
-	//ÃÓ≥‰
+	//Â°´ÂÖÖ
 	bool __cdecl Export_MakeExecutor_Trigger(GeneralExecutor& Target, FuncInfo* Condition, int Interval)
 	{
 		return MakeExecutor_Trigger(Target, Condition, Interval);
@@ -1204,7 +1315,7 @@ namespace Local
 	//PLACEHOLDER 10
 	//PLACEHOLDER 11
 
-	//ÃÓ≥‰ EX
+	//Â°´ÂÖÖ EX
 	bool __cdecl Export_MakeExecutorEx_Trigger(GeneralExecutor& Target, const ExecutorBase& Base, FuncInfo* Condition, int Interval)
 	{
 		return MakeExecutorEx_InfiniteTrigger(Target, Base, Condition, Interval);
@@ -1233,7 +1344,7 @@ namespace Local
 	//PLACEHOLDER 12
 	//PLACEHOLDER 13
 
-	//ÃÌº”
+	//Ê∑ªÂä†
 	void __cdecl Export_AddExecutor(const GeneralExecutor& GenExec, const GeneratorParam& Param, bool DirectBind)
 	{
 		AddExecutor(GenExec, Param, DirectBind);
@@ -1259,6 +1370,10 @@ namespace Local
 	{
 		return RegisterRoutineSet(Name, Routine, Param, Paused, InitialDelay, ResetParam, Mode);
 	}
+	void* __cdecl Export_IHCore_Malloc(size_t Size)
+	{
+		return malloc(Size);
+	}
 	BasicLibData* __cdecl Export_GetLib(const char* Name)
 	{
 		return GetLib(Name);
@@ -1276,6 +1391,51 @@ namespace Local
 		return RegisterIHFileStream(StreamName, vtbl);
 	}
 
+	void __cdecl Export_IHCore_Free(void* p)
+	{
+		IHCore_Free(p);
+	}
+	void __cdecl Export_DbgFunc_ReturnString(UTF8_CString Str)
+	{
+		DbgFunc_ReturnString(Str);
+	}
+	void __cdecl Export_DbgFunc_ReturnError(UTF8_CString Str, int Code)
+	{
+		DbgFunc_ReturnError(Str, Code);
+	}
+	void __cdecl Export_DbgFunc_DoNotEcho()
+	{
+		DbgFunc_DoNotEcho();
+	}
+	void __cdecl Export_DbgFunc_ReturnStdError(long Code)
+	{
+		DbgFunc_ReturnStdError(Code);
+	}
+	void __cdecl Export_DbgFunc_SetGlobalVar(UTF8_CString Key, UTF8_CString Value)
+	{
+		DbgFunc_SetGlobalVar(Key, Value);
+	}
+	void __cdecl Export_DbgFunc_SetErrorCode(int Code)
+	{
+		DbgFunc_SetErrorCode(Code);
+	}
+	int __cdecl Export_DbgFunc_GetErrorCode()
+	{
+		return DbgFunc_GetErrorCode();
+	}
+	void __cdecl Export_DbgFunc_GetLastResult(UTF8_CString& Ret, UTF8_CString& ErrorStr, int& ErrorCode)
+	{
+		DbgFunc_GetLastResult(Ret, ErrorStr, ErrorCode);
+	}
+	UTF8_CString __cdecl Export_DbgFunc_GetVar(UTF8_CString Key)
+	{
+		return DbgFunc_GetVar(Key);
+	}
+
+	UTF8_CString __cdecl Export_GetTextDrawValue(UTF8_CString Key)
+	{
+		return ::GetTextDrawVariable(Key);
+	}
 
 	LibInputFnTable IHCoreFnTable
 	{
@@ -1342,8 +1502,8 @@ namespace Local
 		Export_GetRoutineParam,
 		Export_ResetGetFunctionBuffer,
 
-		nullptr,
-		nullptr,
+		Export_GetTextDrawValue,
+		Export_IHCore_Malloc,
 		Export_GetLib,
 		Export_GetAvailableLib,
 		Export_QueryFunction,
@@ -1359,5 +1519,17 @@ namespace Local
 		nullptr,
 		nullptr,
 		nullptr,
+
+		Export_IHCore_Free,
+		Export_DbgFunc_ReturnString,
+		Export_DbgFunc_ReturnError,
+		Export_DbgFunc_DoNotEcho,
+		Export_DbgFunc_ReturnStdError,
+
+		Export_DbgFunc_SetGlobalVar,
+		Export_DbgFunc_SetErrorCode,
+		Export_DbgFunc_GetErrorCode,
+		Export_DbgFunc_GetLastResult,
+		Export_DbgFunc_GetVar
 	};
 }

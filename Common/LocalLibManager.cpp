@@ -1,4 +1,4 @@
-
+ï»¿
 #include "LocalData.h"
 #include "ToolFunc.h"
 #include <YRPP.h>
@@ -7,11 +7,15 @@
 #include "..\IHCore\Debug.h"
 #include "..\IHCore\Patch.h"
 #include <SyringeEx.h>
+#include "..\IHCore\ECDbgConsole.h"
 
 namespace HPLocalData
 {
 	const HPDLLOutput* __cdecl LoadIFunction(const HPDLLInput*);
 }
+
+void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
+const char8_t* GetTextDrawVariable(const std::u8string_view Key);
 
 IHException::IHException(const char* info) : Info(info) {};
 IHException::IHException(std::string&& info) : Info(std::move(info)) {};
@@ -72,14 +76,14 @@ namespace Local
 			std::string DL = d.LowestRequiredVersion == DoNotCheckVersion ? "(No Requirements)" : std::to_string(d.LowestRequiredVersion);
 
 			if (it == LibMap.end())
-				sprintf_s(IHExcBuf, "IHCore: %hs needs dependency %hs \n(Required Version£º%hs or other compatible versions higher than %hs)"
+				sprintf_s(IHExcBuf, "IHCore: %hs needs dependency %hs \n(Required Versionï¼š%hs or other compatible versions higher than %hs)"
 					, lib.Out->Info->LibName, d.LibName, DV.c_str(), DL.c_str());
 			else if (d.LowestRequiredVersion != DoNotCheckVersion && d.LowestRequiredVersion > it->second->Out->Info->Version)
-				sprintf_s(IHExcBuf, "IHCore: Dependency of %hs : %hs version too low£¬\n(Current Version: %d Lowest Compatible Version: %d,Required Version£º%hs or other compatible versions higher than %hs)"
+				sprintf_s(IHExcBuf, "IHCore: Dependency of %hs : %hs version too lowï¼Œ\n(Current Version: %d Lowest Compatible Version: %d,Required Versionï¼š%hs or other compatible versions higher than %hs)"
 					, lib.Out->Info->LibName, d.LibName, it->second->Out->Info->Version, 
 					it->second->Out->Info->LowestSupportedVersion, DV.c_str(), DL.c_str());
 			else if (d.Version != DoNotCheckVersion && d.Version < it->second->Out->Info->LowestSupportedVersion)
-				sprintf_s(IHExcBuf, "IHCore: Dependency of %hs : %hs version too high£¬\n(Current Version: %d Lowest Compatible Version: %d,Required Version£º%hs or other compatible versions higher than %hs)"
+				sprintf_s(IHExcBuf, "IHCore: Dependency of %hs : %hs version too highï¼Œ\n(Current Version: %d Lowest Compatible Version: %d,Required Versionï¼š%hs or other compatible versions higher than %hs)"
 					, lib.Out->Info->LibName, d.LibName, it->second->Out->Info->Version, 
 					it->second->Out->Info->LowestSupportedVersion, DV.c_str(), DL.c_str());
 			IHLogAndThrow(IHExcBuf);
@@ -137,14 +141,14 @@ namespace Local
 				else
 				{
 					sv += bk->Out->Info->LibName;
-					sv += " Version£º" + std::to_string(bk->Out->Info->Version);
+					sv += " Versionï¼š" + std::to_string(bk->Out->Info->Version);
 					sv += "->\n";
 				}
 				//bk->PD = false;
 				RingStack.pop_back();
 			}
 			sv += lib.Out->Info->LibName;
-			sv += " Version£º" + std::to_string(lib.Out->Info->Version);
+			sv += " Versionï¼š" + std::to_string(lib.Out->Info->Version);
 			sv += "\n";
 			sprintf_s(IHExcBuf, "IHCore: Ring dependency formed. One of the ring is\n%s", sv.c_str());
 			throw IHException(IHExcBuf);
@@ -199,6 +203,79 @@ namespace Local
 
 	
 	void ExitClear();
+
+	std::unordered_map<std::string, std::u8string> Var_Lib;
+	UTF8_CString __cdecl TextDrawRouter_Lib(const char* Key)
+	{
+		auto it = Var_Lib.find(Key);
+		if (it == Var_Lib.end())return nullptr;
+		else return it->second.c_str();
+	}
+
+	UTF8_CString __cdecl TextDrawRouter_SuppressNotFound(const char* Key)
+	{
+		//const char8_t* GetTextDrawVariable(const std::u8string_view Key)
+		auto v = GetTextDrawVariable(conv Key);
+		return v ? v : u8"";
+	}
+
+	void SetLibInfoToTextDrawVariables()
+	{
+		std::string LibListTotal;
+
+		for (auto& LibName : InitOrder)
+		{
+			auto it = LibMap.find(LibName);
+			if (it == LibMap.end())continue;
+			auto& Lib = *it->second;
+			if (!Lib.Available)continue;
+
+			auto Name = Lib.Out->Info->LibName;
+			auto Version = Lib.Out->Info->Version;
+			auto LSV = Lib.Out->Info->LowestSupportedVersion;
+			auto Desc = Lib.Out->Info->Description ? Lib.Out->Info->Description : u8"(No Description)";
+			auto& Dep = Lib.Out->Dependencies;
+
+			LibListTotal += Name;
+			LibListTotal += ',';
+
+			std::string DepTotal;
+			if (Dep.N && Dep.Data)
+			{
+				for (size_t i = 0; i < Dep.N; i++)
+				{
+					DepTotal += Dep.Data[i].LibName;
+					DepTotal += '(';
+					DepTotal += Dep.Data[i].Version == DoNotCheckVersion ? "No Version Req." : std::to_string(Dep.Data[i].Version);
+					DepTotal += ';';
+					DepTotal += Dep.Data[i].LowestRequiredVersion == DoNotCheckVersion ? "No Lowest Version Req." : std::to_string(Dep.Data[i].LowestRequiredVersion);
+					DepTotal += ';';
+					DepTotal += Dep.Data[i].RequiredLoadSequence ? "Forced Load Sequence" : "Optional Load Sequence";
+					DepTotal += ')';
+					DepTotal += ',';
+				}
+				if (!DepTotal.empty())DepTotal.pop_back();
+			}
+			else
+			{
+				DepTotal = "(No Dependencies)";
+			}
+
+			using namespace std::string_literals;
+			Var_Lib[Name + ".Name"s] = conv Name;
+			Var_Lib[Name + ".Ver"s] = ~std::to_string(Version);
+			Var_Lib[Name + ".LSV"s] = ~std::to_string(LSV);
+			Var_Lib[Name + ".Desc"s] = Desc;
+			Var_Lib[Name + ".Dep"s] = ~DepTotal;
+		}
+
+		if (!LibListTotal.empty())LibListTotal.pop_back();
+		Var_Lib["List"] = ~LibListTotal;
+		IH::SetTextDrawVariable("_EmptyString", u8"");
+
+		IH::SetTextDrawRouter("Lib", TextDrawRouter_Lib);
+		IH::SetTextDrawRouter("NoMissing", TextDrawRouter_SuppressNotFound);
+	}
 
 	void InitLibs()
 	{
@@ -261,6 +338,20 @@ namespace Local
 		{
 			MessageBoxA(NULL, e.what(), "[EC] ERROR", MB_OK);
 		}
+
+		if (ECDebug::HasConsole())
+		{
+			if (ECDebug::OpenDebugConsole())
+			{
+				Debug::Log("[EC] Debug Console Opened\n");
+			}
+			else
+			{
+				Debug::Log("[EC] Failed to Open Debug Console\n");
+			}
+		}
+
+		SetLibInfoToTextDrawVariables();
 	}
 
 	BasicLibData* GetLib(const char* Name)
@@ -287,6 +378,7 @@ namespace Local
 	void __cdecl ExitClearImpl()
 	{
 		ExitClear();
+		ECDebug::CloseDebugConsole();
 	}
 
 
@@ -300,6 +392,9 @@ namespace Local
 
 	void InitEx()
 	{
+		//7CBDDC
+		//Patch::Apply_LJMP(0x7CBDDC, +[]() { MessageBoxA(NULL, "Terminate", "!!", MB_OK); TerminateProcess(GetCurrentProcess(), 0); });
+
 		//Patch::Apply_RAW(0x474200, { 0x8B ,0xF1 ,0x8D ,0x54 ,0x24 ,0x0C });
 		/*
 	.text:00474200 0B4                 mov     esi, ecx

@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -38,7 +38,7 @@ void IHLogAndThrow(const char* str);
 namespace IHLibList
 {
 	bool IsAvailable();
-	bool Initialize();//»Áπ˚√ª”–µ˜”√∏√∫Ø ˝£¨ π”√ ±ª·◊‘∂Ø≤π…œµ˜”√
+	bool Initialize();//Â¶ÇÊûúÊ≤°ÊúâË∞ÉÁî®ËØ•ÂáΩÊï∞Ôºå‰ΩøÁî®Êó∂‰ºöËá™Âä®Ë°•‰∏äË∞ÉÁî®
 	bool RegisterToLibList(FuncHandle Init);
 	int GetMaxLibs();//-1 for error
 	const PointerArray<FuncHandle> GetEntries();
@@ -46,7 +46,7 @@ namespace IHLibList
 
 namespace HPLocalData//At Lib
 {
-	//’‚–© «–Ë“™‘⁄Init ±◊‘º∫ÃÓµƒ
+	//Ëøô‰∫õÊòØÈúÄË¶ÅÂú®InitÊó∂Ëá™Â∑±Â°´ÁöÑ
 	extern StdStringAW AbsPath;
 	extern StdStringAW AbsDir;
 	extern HPLoadII_t HPLoadII;
@@ -55,14 +55,13 @@ namespace HPLocalData//At Lib
 	extern HPDLLInput* Input;
 	extern HPDLLOutput Output;
 
-	//‘⁄HPRelationManager◊¢≤·ÕÍ÷Æ∫Û
-	//ÃÓ∫√»´≤ø–≈œ¢‘Ÿµ˜”√
-	//≈‰÷√Output£¨≤¢◊∞‘ÿFuncPack
-	void InitializeOutput();
 };
 
 FuncInfo* IHCore_GetFunc(const char* Name, int Version);
-
+FuncInfo* Internal_GetFunc(const char* Name, int Version);
+std::u8string FormatMessageU8(DWORD ErrorValue);
+GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Arguments);
+GenCallRetType ProcessSyringeRequestAlt(const std::string& Method, GeneratorParam Arg);
 
 namespace Local
 {
@@ -186,6 +185,7 @@ namespace Local
 
 	//0,1 for bool other return 2; default return -1
 	GenCallRetType GeneralCall(const FuncInfo& Fn, JsonObject Context);
+	GenCallRetType GeneralCallAlt(const FuncInfo& Fn, const GeneratorParam& Param);
 
 	JsonObject DirectBindContextTo(JsonObject Context, const ContextIndex& Idx);
 	JsonObject DirectBindTextTo(const char* Text, const ContextIndex& Idx);
@@ -199,7 +199,7 @@ namespace Local
 	void DelayRoutine(RoutineHandle Routine,int Delay);
 	void DeleteRoutine(const char* Name);
 
-	//»Ù√ª”–Destructor£¨ÃÓ≤πnullptr
+	//Ëã•Ê≤°ÊúâDestructorÔºåÂ°´Ë°•nullptr
 	bool MakeExecutor_BaseText(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Text, const char* Type, const char* ExecType, SwizzleExecutor_t Swizzle, FuncInfo* Destructor);
 	bool MakeExecutor_Base(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Type, const char* ExecType, JsonObject Context, FuncInfo* Destructor);
 
@@ -226,12 +226,14 @@ namespace Local
 	void ResetGetFunctionBuffer();
 	bool RegisterIHFileStream(const char* StreamName, VClass vtbl);
 
+	
+
 	//FuncInfo
 	FuncInfo* __cdecl Export_GetFuncFromLib(const char* pLib, const char* pFunc, int Version);
 	PArray<FuncInfo*> __cdecl Export_GetFuncByName(const char* pFunc);
 		//PLACEHOLDER 1
 		//PLACEHOLDER 2
-	//◊¢≤·∫Ø ˝
+	//Ê≥®ÂÜåÂáΩÊï∞
 	void __cdecl Export_RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor);
 		//void Export_RegisterBinder(const char* Type, const char* BindType, Binder_t pBinder);
 		//void Export_RegisterGenerator(const char* BindType, BindingGenerator_t pGenerator);
@@ -255,12 +257,12 @@ namespace Local
 	void __cdecl Export_DelayRoutine(RoutineHandle Routine, int Delay);
 	void __cdecl Export_DeleteRoutine(const char* Name);
 
-	//»Ù√ª”–Destructor£¨ÃÓ≤πnullptr
+	//Ëã•Ê≤°ÊúâDestructorÔºåÂ°´Ë°•nullptr
 	bool __cdecl Export_MakeExecutor_BaseText(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Text, const char* Type, const char* ExecType, SwizzleExecutor_t Swizzle, FuncInfo* Destructor);
 	bool __cdecl Export_MakeExecutor_Base(ExecutorBase& Base, FuncInfo* Action, int Delay, const char* Type, const char* ExecType, JsonObject Context, FuncInfo* Destructor);
 		//PLACEHOLDER 8
 		//PLACEHOLDER 9
-	//ÃÓ≥‰
+	//Â°´ÂÖÖ
 	bool __cdecl Export_MakeExecutor_Trigger(GeneralExecutor& Target, FuncInfo* Condition, int Interval);
 	bool __cdecl  Export_MakeExecutor_InfiniteTrigger(GeneralExecutor& Target, FuncInfo* Condition, int Interval);
 	bool __cdecl Export_MakeExecutor_Once(GeneralExecutor& Target);
@@ -269,7 +271,7 @@ namespace Local
 	bool __cdecl Export_MakeExecutor_NLoop(GeneralExecutor& Target, int N, int Interval);
 		//PLACEHOLDER 10
 		//PLACEHOLDER 11
-	//ÃÓ≥‰ EX
+	//Â°´ÂÖÖ EX
 	bool __cdecl Export_MakeExecutorEx_Trigger(GeneralExecutor& Target, const ExecutorBase& Base, FuncInfo* Condition, int Interval);
 	bool __cdecl Export_MakeExecutorEx_InfiniteTrigger(GeneralExecutor& Target, const ExecutorBase& Base, FuncInfo* Condition, int Interval);
 	bool __cdecl Export_MakeExecutorEx_Once(GeneralExecutor& Target, const ExecutorBase& Base);
@@ -278,19 +280,31 @@ namespace Local
 	bool __cdecl Export_MakeExecutorEx_NLoop(GeneralExecutor& Target, const ExecutorBase& Base, int N, int Interval);
 		//PLACEHOLDER 12
 		//PLACEHOLDER 13
-	//ÃÌº”
+	//Ê∑ªÂä†
 	void __cdecl Export_AddExecutor(const GeneralExecutor& GenExec, const GeneratorParam& Param, bool DirectBind);
 	bool __cdecl Export_HasExecutor(const ContextIndex& Idx);
 	void __cdecl Export_RemoveExecutor(const ContextIndex& Idx);
 
-		//PLACEHOLDER 14
+	//PLACEHOLDER 14
 	RoutineParam* __cdecl Export_GetRoutineParam(RoutineHandle Routine);
 	void __cdecl Export_ResetGetFunctionBuffer();
 
-	//PLACEHOLDER 15
-	//PLACEHOLDER 16
+	UTF8_CString __cdecl Export_GetTextDrawValue(UTF8_CString Key);
+	void* __cdecl Export_IHCore_Malloc(size_t Size);
 	BasicLibData* __cdecl Export_GetLib(const char* Name);
 	BasicLibData* __cdecl Export_GetAvailableLib(const char* Name);
 	FuncInfo* __cdecl Export_QueryFunction(BasicLibData* Lib, const char* Name, int Version);
+
+	void __cdecl Export_IHCore_Free(void* p);
+	void __cdecl Export_DbgFunc_ReturnString(UTF8_CString Str);
+	void __cdecl Export_DbgFunc_ReturnError(UTF8_CString Str, int Code);
+	void __cdecl Export_DbgFunc_DoNotEcho();
+	void __cdecl Export_DbgFunc_ReturnStdError(long Code);
+
+	void __cdecl Export_DbgFunc_SetGlobalVar(UTF8_CString Key, UTF8_CString Value);
+	void __cdecl Export_DbgFunc_SetErrorCode(int Code);
+	int __cdecl Export_DbgFunc_GetErrorCode();
+	void __cdecl Export_DbgFunc_GetLastResult(UTF8_CString& Ret, UTF8_CString& ErrorStr, int& ErrorCode);
+	UTF8_CString __cdecl Export_DbgFunc_GetVar(UTF8_CString Key);
 
 }

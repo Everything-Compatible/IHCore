@@ -1,4 +1,4 @@
-#include "IH.Loader.h"
+﻿#include "IH.Loader.h"
 #include "IH.Config.h"
 #include "IH.Initial.h"
 #include "IH.InitialService.h"
@@ -218,6 +218,30 @@ const char* Internal_GetRTTIClassName(const ECRTTIInfo* pInfo)
 	Init::Loader.Rely();
 	//if (!Init::_NamedPointer_GetName)MessageBoxA(Game::hWnd, "Init::_NamedPointer_GetName == nullptr", "EC SDK", MB_OK);
 	return Init::_NamedPointer_GetName("EC::RTTI", pInfo);
+}
+
+void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value)
+{
+	Init::Loader.Rely();
+	Init::_SetNamedPointer(Usage, Key, Value);
+}
+
+const char* Internal_GetGlobalVarString(const char* Usage, const char* Key)
+{
+	Init::Loader.Rely();
+	return (const char*)Init::_GetNamedPointer(Usage, Key);
+}
+
+void Internal_SetGlobalVarPtr(const char* Usage, const char* Key, LPCVOID Ptr)
+{
+	Init::Loader.Rely();
+	Init::_SetNamedPointer(Usage, Key, Ptr);
+}
+
+LPCVOID Internal_GetGlobalVarPtr(const char* Usage, const char* Key)
+{
+	Init::Loader.Rely();
+	return Init::_GetNamedPointer(Usage, Key);
 }
 
 namespace InitialLoad

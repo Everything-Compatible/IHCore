@@ -66,6 +66,18 @@ public:
 		return nullptr;
 	}
 
+	static AbstractType GetClassType(const char* name)
+	{
+		const size_t TypeCount = 74;
+		const auto Types = reinterpret_cast<NamedValue(*)[TypeCount]>(0x816EE0);
+		for (const auto& Type : *Types) {
+			if (!_strcmpi(Type.Name, name)) {
+				return static_cast<AbstractType>(Type.Value);
+			}
+		}
+		return AbstractType::None;
+	}
+
 	//IUnknown
 	virtual HRESULT __stdcall QueryInterface(REFIID iid, void** ppvObject) R0;
 	virtual ULONG __stdcall AddRef() R0;

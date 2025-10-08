@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>
 
 //Although it may cause UB
 namespace std
@@ -43,6 +44,19 @@ std::string TimeNow();
 
 bool IsTrueString(const std::string& s);
 
+std::u8string& operator~(std::string& str);
+std::string& operator~(std::u8string& str);
+const std::u8string& operator~(const std::string& str);
+const std::string& operator~(const std::u8string& str);
+std::u8string&& operator~(std::string&& str);
+std::string&& operator~(std::u8string&& str);
+const std::u8string&& operator~(const std::string&& str);
+const std::string&& operator~(const std::u8string&& str);
+struct conv_t final {};
+inline const conv_t conv_x;
+#define conv conv_x-
+const char* operator-(const conv_t&, const char8_t* str);
+const char8_t* operator-(const conv_t&, const char* str);
 
 
 //∂®“Â‘⁄ExtIni.cpp
@@ -52,9 +66,13 @@ using BufString = char[MAX_LINE_LENGTH];
 
 hash_t StrHash(const char*);
 hash_t StrHash(const std::string&);
-void CStringTrimFront(char*&);
-void CStringTrimBack(char*);
-void CStringTrim(char*&);
+
+std::string Trim(const std::string& str);
+std::u8string Trim(const std::u8string& str);
+std::wstring Trim(const std::wstring& str);
+std::vector<std::string> SplitParam(const std::string_view Text);
+std::vector<std::u8string> SplitParam(const std::u8string_view Text);
+std::vector<std::u8string> SplitParamEx(const std::u8string& Text);
 const char* BoolCStr(bool);
 const std::string& BoolStr(bool);
 

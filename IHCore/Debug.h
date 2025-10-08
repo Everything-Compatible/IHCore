@@ -1,4 +1,4 @@
-/**
+﻿/**
 *  yrpp-spawner
 *
 *  Copyright(C) 2022-present CnCNet
@@ -40,6 +40,6 @@ public:
 };
 
 
-#define IH_ENTER_FN_LOG(fn,ext) (Debug::Log("IHCore : Enter hook " #fn " at 0x%08X, Ext call " #ext " at 0x%08X \n",fn,ext)) 
+#define IH_ENTER_FN_LOG(fn,ext) //(Debug::Log("IHCore : Enter hook " #fn " at 0x%08X, Ext call " #ext " at 0x%08X \n",fn,ext)) 
 
-#define IH_EXIT_FN_LOG(fn,ext) (Debug::Log("IHCore : Exit hook " #fn " at 0x%08X, Ext call " #ext " at 0x%08X \n",fn,ext)) 
+#define IH_EXIT_FN_LOG(fn,ext) //(Debug::Log("IHCore : Exit hook " #fn " at 0x%08X, Ext call " #ext " at 0x%08X \n",fn,ext)) 

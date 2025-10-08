@@ -1,15 +1,51 @@
-#include <YRPP.h>
+Ôªø#include <YRPP.h>
 #include <BitFont.h>
 #include <Helpers/Macro.h>
 #include <vector>
 #include <map>
 #include <mutex>
 #include <memory>
+#include <optional>
 #include "ToolFunc.h"
 #include "Debug.h"
+#include "../Common/IHLoader/IH.h"
 
 
-const wchar_t Magic_StyleAction = 0xFFFF;// L'Ã∆';
+const wchar_t Magic_StyleAction = 0xFFFF;// L'Âîê';
+
+const char8_t* GetTextDrawVariable(const std::u8string_view Key)
+{
+    auto v = IH::GetTextDrawVariable(conv Key.data());
+    if (!v)
+    {
+        auto RouteNamePos = Key.find_first_of(u8'.');
+        if (RouteNamePos != std::u8string_view::npos)
+        {
+            auto router = Key.substr(0, RouteNamePos);
+            auto key = Key.substr(RouteNamePos + 1);
+            auto routerfn = IH::GetTextDrawRouter(conv std::u8string(router).c_str());
+            if (routerfn)
+            {
+                v = routerfn(conv std::u8string(key).c_str());
+                if (v)return v;
+                else return nullptr;
+            }
+            else return nullptr;
+        }
+        else return nullptr;
+    }
+    return strlen(conv v) ? v : u8"";
+}
+
+std::wstring GetTextDrawVariable(const wchar_t* Key)
+{
+	static std::mutex mtx;
+	std::lock_guard<std::mutex> lock(mtx);
+    auto k = UnicodetoUTF8(Key);
+
+    auto v = GetTextDrawVariable(~k);
+	return v ? UTF8toUnicode(conv v) : L"MISSING:" + std::wstring(Key);
+}
 
 void ColorConvertHSVtoRGB(float h, float s, float v, float& out_r, float& out_g, float& out_b)
 {
@@ -61,7 +97,7 @@ struct CurrentDrawStyle
     bool Random{ false };
     short Col16{ 0 };
 
-    //≤‚ ‘”√µƒ∫Ø ˝
+    //ÊµãËØïÁî®ÁöÑÂáΩÊï∞
     inline std::wstring GetWT() const
     {
         wchar_t s[20];
@@ -90,19 +126,19 @@ wchar_t GetNextChar(const wchar_t*& ws, CurrentDrawStyle& cd)
         (short)0xFAAA, (short)0xFABF, (short)0xFFEA, (short)0xFFFF,
     };
     bool Styled{ false };
-    if (ws[0] == L'°Ï' && ws[1] == L'°Ï')//OK
+    if (ws[0] == L'¬ß' && ws[1] == L'¬ß')//OK
     {
         ws += 2;
-        return L'°Ï';
+        return L'¬ß';
     }
     if (ws[0] == L'#' && ws[1] == L'#')//OK
     {
         ws += 2;
         return L'#';
     }
-    while (*ws == L'°Ï' || *ws == L'#')
+    while (*ws == L'¬ß' || *ws == L'#')
     {
-        if (*ws == L'°Ï')
+        if (*ws == L'¬ß')
         {
             if (ws[1] == L'x' || ws[1] == L'X')
             {
@@ -222,6 +258,38 @@ wchar_t GetNextChar(const wchar_t*& ws, CurrentDrawStyle& cd)
     }
 }
 
+std::wstring GetReplacedDrawStr(const wchar_t* s)
+{
+    //TextDrawVariable
+	//Looks like #{var}
+	std::wstring res;
+	for (auto p = s; *p;)
+	{
+		if (p[0] == L'#' && p[1] == L'{')
+		{
+			auto q = wcschr(p + 2, L'}');
+			if (q)
+			{
+				auto varname = std::wstring(p + 2, q - (p + 2));
+				auto varvalue = GetTextDrawVariable(varname.c_str());
+				res += varvalue;
+				p = q + 1;
+			}
+			else
+			{
+				res.push_back(*p);
+				++p;
+			}
+		}
+		else
+		{
+			res.push_back(*p);
+			++p;
+		}
+	}
+	return res;
+}
+
 struct DrawStyleList
 {
     std::vector<CurrentDrawStyle> List;
@@ -242,12 +310,13 @@ struct DrawStyleList
     }
     const wchar_t* MakeString(const wchar_t* ws)
     {
-        if (MessageListClass::Instance->GetEditBuffer() == ws)return L"Œ“≤‚ƒ„µƒ¬Ì";
+        //if (MessageListClass::Instance->GetEditBuffer() == ws)return L"ÊàëÊµã‰Ω†ÁöÑÈ©¨";
         CurrentDrawStyle ds{};
         NewStr.clear();
         Cur = 0;
         List.emplace_back();
-        for (auto p = ws; *p;)
+        auto VarReplaced = GetReplacedDrawStr(ws);
+        for (auto p = VarReplaced.c_str(); *p;)
         {
             NewStr.push_back(GetNextChar(p, ds));
             if (NewStr.back() == Magic_StyleAction)
@@ -260,7 +329,7 @@ struct DrawStyleList
     }
     const wchar_t* MakeStringAlt(const wchar_t* ws)
     {
-        if (MessageListClass::Instance->GetEditBuffer() == ws)return L"Œ“≤‚ƒ„µƒ¬Ì";
+        //if (MessageListClass::Instance->GetEditBuffer() == ws)return L"ÊàëÊµã‰Ω†ÁöÑÈ©¨";
         CurrentDrawStyle ds{};
         NewStr.clear();
         for (auto p = ws; *p;)
@@ -369,8 +438,7 @@ DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
     else return 0;
 }
 
-//DISABLED
-DEFINE_HOOK(0x4338DF, ResetFontTest, 6)
+DEFINE_HOOK(0x4338DF, InitExtFont, 6)
 {
     GET(BitFont*, pFont, ESI);
     for (int i = 0; i < 0x10000; i++)
@@ -392,7 +460,7 @@ DEFINE_HOOK(0x4338DF, ResetFontTest, 6)
     return 0;
 }
 
-//…Ë÷√∏Ò Ω
+//ËÆæÁΩÆÊ†ºÂºè
 DEFINE_HOOK(0x434120, BitFont_Blit_A, 5)
 {
     GET_STACK(wchar_t, Char, 0x4);
@@ -442,7 +510,7 @@ DEFINE_HOOK(0x43417A, BitFont_Blit_B, 6)
 }
 
 
-//ª÷∏¥∏Ò Ω
+//ÊÅ¢Â§çÊ†ºÂºè
 DEFINE_HOOK(0x4344E4, BitFont_Blit_C, 7)
 {
     auto& List = DrawStyle::GetList();
@@ -571,10 +639,10 @@ DEFINE_HOOK(0x433DF, ResetFontTest, 6)
     auto end = cl.now();
     auto nano = (end - start).count();
     auto ns = nano % 1000; nano /= 1000;
-    auto ¶Ãs = nano % 1000; nano /= 1000;
+    auto Œºs = nano % 1000; nano /= 1000;
     auto ms = nano % 1000; nano /= 1000;
     auto sec = nano;
-    Debug::Log("[IH] Font redirection in %lld s %lld ms %lld ¶Ãs %lld ns.", sec, ms, ¶Ãs, ns);
+    Debug::Log("[IH] Font redirection in %lld s %lld ms %lld Œºs %lld ns.", sec, ms, Œºs, ns);
 
     for (int i = 0; i < 0x10000; i++)
     {
@@ -592,13 +660,13 @@ DEFINE_HOOK(0x433DF, ResetFontTest, 6)
 int Test_CurColor = -1;
 bool Test_ChangingColor = false;
 bool Test_NextChanging = false;
-wchar_t FmtColorIntro = L'∫Ω', FmtEndAll = L'Ω¥';
+wchar_t FmtColorIntro = L'Ëà™', FmtEndAll = L'ÈÖ±';
 unsigned char OrigBuf[50];
 unsigned char* pOrigBuf;
 //short OrigModule[2];
 //short* pOrigModule[2];
 
-//434500°¢434B90°¢434CD0
+//434500„ÄÅ434B90„ÄÅ434CD0
 DEFINE_HOOK(0x434120, BitFont_Blit, 5)
 {
     GET_STACK(wchar_t, Character, 0x4);
@@ -643,7 +711,7 @@ DEFINE_HOOK(0x434120, BitFont_Blit, 5)
         Test_ChangingColor = false;
     }
     /*
-    if (Character == L'≥‘')// && Color16 != -1
+    if (Character == L'ÂêÉ')// && Color16 != -1
     {
         Color16 = 0b0000011111100000;
     }
