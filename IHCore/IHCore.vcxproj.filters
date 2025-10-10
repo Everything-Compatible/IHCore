@@ -72,9 +72,6 @@
     <ClInclude Include="ExtCsf.h">
       <Filter>File</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\DataStructure.h">
-      <Filter>Data</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\ToolFunc.h">
       <Filter>Util</Filter>
     </ClInclude>
@@ -1191,9 +1188,6 @@
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\LocalData.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\DataStructure.cpp">
       <Filter>Data</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\LocalLibManager.cpp">

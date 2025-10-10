@@ -159,7 +159,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\DataStructure.h" />
     <ClInclude Include="..\Common\IHLoader\cJSON.h" />
     <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
     <ClInclude Include="..\Common\IHLoader\EC.h" />
@@ -531,7 +530,6 @@
     <ClInclude Include="YRPP\YRPPCore.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\DataStructure.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.GameClass.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.LoadSave.cpp" />

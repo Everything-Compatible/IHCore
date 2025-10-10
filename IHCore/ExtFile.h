@@ -1,11 +1,12 @@
-#pragma once
+﻿#pragma once
 
 #include<cstdio>
 #include<string>
 #include<vector>
 #include<cstdint>
 #include<functional>
-#include "..\Common\DataStructure.h"
+
+
 
 class CCFileClass;
 enum class FileAccessMode;
