@@ -179,7 +179,6 @@
     <ClInclude Include="..\Common\IHLoader\SyringeEx.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Buff.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Define.h" />
-    <ClInclude Include="..\Common\IHLoader\WIC.ExampleBuff.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Interface.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Template.h" />
@@ -533,7 +532,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\DataStructure.cpp" />
-    <ClCompile Include="..\Common\IHLoader\cJSON.c" />
     <ClCompile Include="..\Common\IHLoader\EC.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.GameClass.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.LoadSave.cpp" />
@@ -544,9 +542,9 @@
     <ClCompile Include="..\Common\IHLoader\IH.Initial.cpp" />
     <ClCompile Include="..\Common\IHLoader\IH.Loader.cpp" />
     <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp" />
+    <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c" />
     <ClCompile Include="..\Common\IHLoader\WIC.Buff.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp" />
-    <ClCompile Include="..\Common\IHLoader\WIC.ExampleBuff.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp" />
     <ClCompile Include="..\Common\LocalData.cpp" />
     <ClCompile Include="..\Common\LocalLibManager.cpp" />

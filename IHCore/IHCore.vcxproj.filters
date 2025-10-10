@@ -1116,9 +1116,6 @@
     <ClInclude Include="..\Common\IHLoader\WIC.Define.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\IHLoader\WIC.ExampleBuff.h">
-      <Filter>EC SDK</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\IHLoader\WIC.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
@@ -1235,9 +1232,6 @@
     <ClCompile Include="Optional.Hooks.cpp">
       <Filter>Test</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\IHLoader\cJSON.c">
-      <Filter>EC SDK</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ExtJson.cpp">
       <Filter>EC SDK</Filter>
     </ClCompile>
@@ -1283,9 +1277,6 @@
     <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp">
       <Filter>EC SDK</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\IHLoader\WIC.ExampleBuff.cpp">
-      <Filter>EC SDK</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp">
       <Filter>EC SDK</Filter>
     </ClCompile>
@@ -1312,6 +1303,9 @@
     </ClCompile>
     <ClCompile Include="ExtHotKey.cpp">
       <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c">
+      <Filter>EC SDK</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
