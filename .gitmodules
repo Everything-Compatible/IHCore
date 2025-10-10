@@ -1,0 +1,3 @@
+[submodule "Common/IHLoader"]
+	path = Common/IHLoader
+	url = https://github.com/Everything-Compatible/EC-SDK.git
