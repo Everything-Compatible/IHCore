@@ -1,0 +1,194 @@
+IHCore V0.5.1 251011A 
+以后的所有更新在https://github.com/Everything-Compatible/IHCore仓库。
+另外，IHCore正式开放源代码，欢迎参与改进。
+修改与更新：
+统一了关于指针数组的处理。
+大幅度删节了废弃的代码。
+改用submodule连接到EC SDK的仓库。
+再次尝试解决了安装EC之后关闭程序慢的问题。
+------------------------------------------------------------
+IHCore V0.5.1 251008A/B/C：
+修复&调整：
+现在Ares的#Include与INI长度扩展可以同时生效。
+减少了Debug.log当中有关一些已经稳定运行很久的函数的日志输出。
+现在不会在Syringe.log当中再出现stoi错误等提示。
+优化了对yrm地图的处理。
+在调试控制台当中提供了文本变量的输出功能。
+关于API：
+文本变量的API由3个增加到8个，提供了输出替换结果、文本变量路由两个功能。
+详细见IH.h和IH.Ext.cpp。
+关于文本变量：
+在几乎所有非SHP文本上生效。
+在文本当中写 #{xxx} 则自动替换为xxx变量的值。
+提供了如下几类：
+Key：有关键位的文本变量，下面xxx指键位注册名。
+Key.xxx.KeyName：对应的按键。
+Key.xxx.Name：键位的名称。
+Key.xxx.Desc：键位的功能描述。
+Key.xxx.Category：键位的类别。
+Lib：有关EC装载库的文本变量，下面xxx指库注册名。
+Lib.List：逗号分隔的装载库列表。
+Lib.xxx.Ver：当前版本。
+Lib.xxx.LSV：最低兼容的版本。
+Lib.xxx.Desc：库的描述。
+Lib.xxx.Dep：逗号分隔的依赖列表。
+
+CSF.xxx：输出CSF的xxx条目。（如CSF:GUI_OK输出“确定”）
+ConsoleVar.xxx：输出调试控制台上的xxx变量（暂时没啥用）
+EnvVar.xxx：输出系统的环境变量（暂时没啥用）
+（后面两个和还没搞完的调试系统有关）
+------------------------------------------------------------
+IHCore V0.5.0 251001A：
+总之是先加了一个ResolveWICConflict选项，和一个OpenECDebugConsole选项：
+示例：
+{
+  "Setting":{
+    "OpenECDebugConsole": true,
+    "ResolveWICConflict": false
+  }
+}
+
+OpenECDebugConsole：打开EC调试控制台，具体情况再说，默认false
+ResolveWICConflict：设置为false会把INI长度扩展、INI读最后一行、中文NOSTR等杂七杂八功能解除限制，默认true
+（因为和WIC010撞钩子而在三个月之前限制了一些）
+------------------------------------------------------------
+IHCore V0.5.0 250629A：
+一点框架上的小修小补。
+添加了EC调试控制台的相关接口。
+同时对调试控制相关做了较大的修改。
+------------------------------------------------------------
+IHCore V0.4.2 250602B：
+暂时禁用了INI长度扩展与INI读最后一行的修复。
+------------------------------------------------------------
+IHCore V0.4.1 241229A：
+一、针对EC的接口做了很多升级。
+二、提供了自定义载入路径的json接口。
+三、添加了地图当中微观rules和art指定的功能。
+四、修复了有关载入服务的bug。
+五、稍微提高了字体载入的性能
+六、在报错时会输出except_ih.txt，在Syringe.log输出错乱时请参考此文件
+（备注：在dump的前面几行会固定出现一个IHCORE.DLL+1xxxx是正常的，是输出这个txt的函数）
+------------------------------------------------------------
+IHCore V0.4.0 241023A：
+一、修正了chm说明书。
+二、修复了找不到IHLibList.dll的bug。
+------------------------------------------------------------
+IHCore V0.4.0 241020A：
+一、提供了格式化文本的支持。（详见chm说明书）
+二、修正了零零散散的bug。
+三、提供了加载自定义MIX文件、文件黑白名单、文件SHA1校验的功能（详见chm说明书）
+四、扩展INI单行长度到200000。 （详见chm说明书）
+五、现在YRM不需要冒号，可以直接写中文名称了。此时编码默认UTF-8。
+------------------------------------------------------------
+IHCore V0.3.2 240920A：
+一、更新了启动服务的支持，
+    I.提供了4类10个启动服务
+    II.提供了自定义载入目录，自定义载入Mix，自定义载入CSF，自定义文件流，文件重定向的功能
+    III.提供了自定义服务的接口
+    IV.详见EC_ExampleDll项目的使用。
+附：10个服务的列表：
+InitialLoadParam_CustomPath ："IHFile::CustomPathListHead"，"IHFile::CustomPathListTail"，IHFile::CustomPathListFirst"
+InitialLoadParam_CustomFile ："IHFile::AddStringTable"，"IHFile::AddMixFile"
+InitialLoadParam_StringTablePair ：	"StringTable::AddPair"
+InitialLoadParam_RedirectFile ：	"IHFile::BindToStream"，"IHFile::RedirectFileName"
+InitialLoadParam_RegisterVTable ："IHFile::RegisterIHFile"
+InitialLoadParam_RegisterFunction ："IHFile::RegisterIHFileFilter"
+------------------------------------------------------------
+IHCore V0.3.1 240918A：
+一、添加了对“LLF格式文本——可编辑CSF”的兼容性。（https://bbs.ra2diy.com/forum.php?mod=viewthread&tid=24441）
+------------------------------------------------------------
+IHCore V0.3.0 240913A：
+一、提供了操作CSF的一套API，可以打开自定义的CSF。
+详见LoaderLib.h当中的Ext::CSFClass类。
+------------------------------------------------------------
+IHCore V0.3.0 240912A：
+一、CSF系统：
+被IH全盘换掉了，原有的钩子全部报废，Ares的功能仍然支持。
+现在CSF的条目个数无限制，每条长度无限制。
+二、添加了stringmd.ini
+（一）格式：
+[StringTable]
+1=xxx.csf或xxx.ini或xxx.json或yrm、map等
+（支持+=）
+（里面可以填rulesmd.ini什么的，包括文件自己）
+[CSF：]（！中文冒号）
+（label）=（value）
+就可以当CSF用。
+（二）包括的csf/ini/json：
+CSF：和原版一致。
+INI：[CSF：]段的功能同上。
+JSON: 格式：{"CSF：":{"key1":"value1","key2","value2"……}}
+INI和Json的value部分都可以写"\n"代替换行符。
+三、在rulesmd.ini当中，支持[StringTable]段的语法。
+四、
+[StringTable]
+段下面填的INI会读取[CSF：]一节，行为同stringmd.ini里面的同名节。
+段下面填的CSF会读取"CSF："一段并覆盖原有csf。
+段下面填的Json会读取并覆盖原有csf。
+如果地图里面定义了[StringTable]段，则：
+（1）可以给触发文本调用。
+（2）如果给UIName等使用，则必须！！在地图里面重写引用了CSF文本的行。
+五、现在INI会读取最后一行的内容。
+
+附：
+读入新CSF的顺序：
+ra2md.csf
+stringmd.ini
+stringmd引用的stringtable
+ares.csf
+stringtablexx.csf
+rulesmd引用的stringtable
+------------------------------------------------------------
+IHCore V0.2.0 240716A：
+第二期：中国人说中国话
+支持了一些新的功能。
+安装方式：
+把插件安装在游戏根目录。
+压缩包里面包含了一个Ares3.0，除了Syringe是修改过的，里面Ares.dll、Ares.dll.inj、Ares.mix是未经改动的。
+（一）中文名字的YRM地图
+原版的YR在给YRM取名时，如果填入中文，就会乱码
+现在，再也不会了。
+可以直接在"Name="一栏或是地编里面设置中文名字。
+使用方式：
+采取"：xxx"的格式。xxx处可以写入中文。支持GBK（或GB2312，GB18030）和UTF-8编码
+示例：
+比如你的地图名字叫“啊对对对”，那么可以在地图编辑器保存时，向名字一栏直接键入：
+“：啊对对对”的字样，（注意前面有个中文冒号），那么就会在游戏当中显示中文名字。
+假设地图是2~6个人，那么游戏里面会自动显示为：
+啊对对对 （2-6），不需要自己加上人数。
+注意：
+冒号应该是中文冒号。
+（二）NOSTR中文版
+Ares当中的NOSTR并不支持中文。
+所以引入了一个功能类似的，可以填入UIName系列的中文nostr。
+使用方式：
+使用“(：xxx)”来调用中文的nostr。
+xxx处可以写入中文。支持GBK（或GB2312，GB18030）和UTF-8编码
+示例：
+使用UIName=(：野兽先辈)
+那么游戏里面就会把单位名字显示为“野兽先辈”
+注意：
+括号是英文括号，冒号是中文冒号。
+（三）BUG修复
+1，重写了部分YRM的载入逻辑
+2，重写了部分INI的载入逻辑
+3，修复了一堆基础bug，基本打通了中文字符串的传输
+4，解除了游戏不能多开的限制，但是目前没有研究出来如何让多开的游戏之间联机。
+------------------------------------------------------------
+IHCore V0.1.0 240620A：
+第一期：额外的CSF支持
+第一期就先浅浅整一点小活。
+具体来说，这个功能允许各位在任何需要调用CSF的位置使用额外的CSF。
+安装方式：
+把插件安装在游戏根目录。
+压缩包里面包含了一个Ares3.0，除了Syringe是修改过的，里面Ares.dll、Ares.dll.inj、Ares.mix、Game.fnt是未经改动的。
+使用方式：
+类似Ares的NOSTR机制，使用“EXTS:”前缀来调用额外的CSF。
+目标CSF应放置于游戏根目录或打包到MIX中。
+调用时，按照“EXTS:文件名:CSF条目”的格式。
+文件名不区分大小写，不包括.csf的拓展名。
+CSF条目为原本会填的内容，区分大小写。
+示例：
+如果UIName要调用test.csf里的Name:WHAT条目，
+可以这样写：UIName=EXTS:TEST:Name:WHAT，
+之后就能成功调用了。
