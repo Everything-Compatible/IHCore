@@ -1161,6 +1161,9 @@
     <ClInclude Include="..\Common\IHLoader\PArray.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\IHCore\Version.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

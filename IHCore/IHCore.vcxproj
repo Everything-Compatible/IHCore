@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\IHCore\Version.h" />
     <ClInclude Include="..\Common\IHLoader\cJSON.h" />
     <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
     <ClInclude Include="..\Common\IHLoader\EC.h" />
