@@ -1,4 +1,4 @@
-#include"ExtFile.h"
+ï»¿#include"ExtFile.h"
 #include <cstring>
 #include <YRPP.h>
 
@@ -120,7 +120,7 @@ bool ExtFileClass::WriteLabel(const std::string& Str)const
     WriteData('\0');
     return true;
 }
-bool ExtFileClass::ReadLabel(std::string& Str)const//´ı²âÊÔ£¡£¡
+bool ExtFileClass::ReadLabel(std::string& Str)const//å¾…æµ‹è¯•ï¼ï¼
 {
     const size_t MaxSize = 65536;
     static char Buf[MaxSize];
@@ -140,20 +140,20 @@ bool ExtFileClass::ReadData(T& Data)const
     return Read(&Data, sizeof(T), 1);
 }
 template<typename T>
-bool ExtFileClass::WriteVector(const std::vector<T>& Data)const//´ı²âÊÔ£¡£¡
+bool ExtFileClass::WriteVector(const std::vector<T>& Data)const//å¾…æµ‹è¯•ï¼ï¼
 {
     if (!WriteData((int64_t)Data.size()))return false;
     return Write(Data.data(), sizeof(T), Data.size());
 }
 template<typename T>
-bool ExtFileClass::ReadVector(std::vector<T>& Data)const//´ı²âÊÔ£¡£¡
+bool ExtFileClass::ReadVector(std::vector<T>& Data)const//å¾…æµ‹è¯•ï¼ï¼
 {
     int64_t Size;
     if (!ReadData(Size))return false;
     Data.resize((size_t)Size);
     return Read(Data.data(), sizeof(T), Size);
 }
-int ExtFileClass::WriteVector(const std::vector<std::string>& Data)const//´ı²âÊÔ£¡£¡
+int ExtFileClass::WriteVector(const std::vector<std::string>& Data)const//å¾…æµ‹è¯•ï¼ï¼
 {
     if (!WriteData((int64_t)Data.size()))return 0;
     int Ret = 0;
@@ -164,7 +164,7 @@ int ExtFileClass::WriteVector(const std::vector<std::string>& Data)const//´ı²âÊÔ
     }
     return Ret;
 }
-int ExtFileClass::ReadVector(std::vector<std::string>& Data)const//´ı²âÊÔ£¡£¡
+int ExtFileClass::ReadVector(std::vector<std::string>& Data)const//å¾…æµ‹è¯•ï¼ï¼
 {
     int64_t Size;
     if (!ReadData(Size))return 0;
@@ -178,7 +178,7 @@ int ExtFileClass::ReadVector(std::vector<std::string>& Data)const//´ı²âÊÔ£¡£¡
     return Ret;
 }
 template<typename T>
-int ExtFileClass::WriteVector(const std::vector<T>& Data, const std::function<bool(const ExtFileClass&, const T&)>& Proc)const//´ı²âÊÔ£¡£¡
+int ExtFileClass::WriteVector(const std::vector<T>& Data, const std::function<bool(const ExtFileClass&, const T&)>& Proc)const//å¾…æµ‹è¯•ï¼ï¼
 {
     if (!WriteData((int64_t)Data.size()))return 0;
     int Ret = 0;
@@ -190,7 +190,7 @@ int ExtFileClass::WriteVector(const std::vector<T>& Data, const std::function<bo
     return Ret;
 }
 template<typename T>
-int ExtFileClass::WriteVector(std::vector<T>& Data, const std::function<bool(const ExtFileClass&, T&)>& Proc)const//´ı²âÊÔ£¡£¡
+int ExtFileClass::WriteVector(std::vector<T>& Data, const std::function<bool(const ExtFileClass&, T&)>& Proc)const//å¾…æµ‹è¯•ï¼ï¼
 {
     if (!WriteData((int64_t)Data.size()))return 0;
     int Ret = 0;
@@ -202,7 +202,7 @@ int ExtFileClass::WriteVector(std::vector<T>& Data, const std::function<bool(con
     return Ret;
 }
 template<typename T>
-int ExtFileClass::ReadVector(std::vector<T>& Data, const std::function<bool(const ExtFileClass&, T&)>& Proc)const//´ı²âÊÔ£¡£¡
+int ExtFileClass::ReadVector(std::vector<T>& Data, const std::function<bool(const ExtFileClass&, T&)>& Proc)const//å¾…æµ‹è¯•ï¼ï¼
 {
     int64_t Size;
     if (!ReadData(Size))return 0;
@@ -230,11 +230,11 @@ size_t ExtFileClass::GetSize()
     return Res;
 }
 
-BytePointerArray ExtFileClass::ReadWholeFile(size_t ReservedBytes)
+PArray<BYTE> ExtFileClass::ReadWholeFile(size_t ReservedBytes)
 {
-    BytePointerArray Result;
+    PArray<BYTE> Result;
     Result.Alloc(GetSize() + ReservedBytes);
-    Read(Result.Data, 1, Result.N);
+    Read((void*)const_cast<BYTE*>(Result.Data), 1, Result.N);
     return Result;
 }
 
@@ -423,12 +423,12 @@ size_t ExtCCFile::GetSize()
     if (!Available())return 0u;
     return pCC->GetFileSize();
 }
-BytePointerArray ExtCCFile::ReadWholeFile(size_t ReservedBytes) const
+PArray<BYTE> ExtCCFile::ReadWholeFile(size_t ReservedBytes) const
 {
-    BytePointerArray cc; cc.N = 0;
+    PArray<BYTE> cc; cc.N = 0;
     if (!Available())return cc;
     cc.Alloc(pCC->GetFileSize() + ReservedBytes);
-    pCC->ReadBytes(cc.Data, cc.N);
+    pCC->ReadBytes((void*)cc.Data, cc.N);
     return cc;
 }
 

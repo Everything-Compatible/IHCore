@@ -5,7 +5,8 @@
 #include<vector>
 #include<cstdint>
 #include<functional>
-
+#include"../Common/IHLoader/IH.Loader.h"
+#include"../Common/IHLoader/PArray.h"
 
 
 class CCFileClass;
@@ -39,7 +40,7 @@ public:
 	void Rewind()const;
 	int Flush()const;
 	size_t GetSize();
-	BytePointerArray ReadWholeFile(size_t ReservedBytes = 0);
+	PArray<BYTE> ReadWholeFile(size_t ReservedBytes = 0);
 
 	bool ReadData(std::string& Str)const;
 	bool WriteData(const std::string& Str)const;
@@ -102,7 +103,7 @@ public:
 	void Rewind();
 	bool Exists()const;
 	size_t GetSize();
-	BytePointerArray ReadWholeFile(size_t ReservedBytes = 0) const;
+	PArray<BYTE> ReadWholeFile(size_t ReservedBytes = 0) const;
 	CCFileClass* Release();
 
 	~ExtCCFile();
@@ -113,3 +114,14 @@ public:
 	static SeekMode GetSeekCur();
 	static SeekMode GetSeekEND();
 };
+
+template<typename FileLoader>
+std::string GetStringFromFile(const char* FileName)
+{
+	FileLoader File;
+	if (!File.Open(FileName, FileLoader::GetReadSign()))return "";
+	PArray<BYTE> Arr = File.ReadWholeFile(16);
+	std::string LoadStr{ (char*)Arr.Data };
+	Arr.Delete();
+	return LoadStr;
+}

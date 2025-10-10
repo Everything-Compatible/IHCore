@@ -147,7 +147,7 @@ namespace Ini
 		Empty = true;
 		return;
 	}
-	std::vector<std::string_view> GetLines(BytePointerArray Text, size_t ExtBytes)
+	std::vector<std::string_view> GetLines(PArray<BYTE> Text, size_t ExtBytes)
 	{
 		std::vector<std::string_view> Res;
 		auto Data = (char*)Text.Data;

@@ -1,4 +1,4 @@
-#include <Syringe.h>
+﻿#include <Syringe.h>
 #include <Helpers/Macro.h>
 #include <Dbghelp.h>
 #include <Unsorted.h>
@@ -250,6 +250,25 @@ std::wstring IHPrepareSnapshotDirectory() {
 #pragma warning(pop)
 #endif
 
+bool WWSBShouldCatch = false;
+wchar_t IHExceptionHandlerBuf[2000];
+DEFINE_HOOK(0x6BB996, IHExceptionHandler, 5)
+{
+	if (WWSBShouldCatch)return 0x4C8FE0;
+	else
+	{
+		GET_STACK(PEXCEPTION_POINTERS, pExcept, 0x4);
+		swprintf_s(IHExceptionHandlerBuf, L"炸了喵 EIP = %08X Code = %08X",
+			pExcept->ContextRecord->Eip, pExcept->ExceptionRecord->ExceptionCode);
+		MessageListClass::Instance->PrintMessage(IHExceptionHandlerBuf);
+		Debug::Log(UnicodetoANSI(IHExceptionHandlerBuf).c_str());
+		R->EAX(-1);
+		return 0x4C9144;
+	}
+}
+
+//6BB996 = IHExceptionHandler, 5
+
 void CallBeginWritingExceptIH();
 
 void TmpWriteLineV(ExtFileClass& File, char const* const pFormat, va_list ArgList) noexcept
@@ -283,41 +302,41 @@ void TmpWriteLine(ExtFileClass& File, char const* const pFormat, ...) noexcept
 #define STATUS_FAIL_FAST_EXCEPTION 0xC0000409
 const std::unordered_map<int, std::string> ExcMap
 { {
-EXCEPTION_ACCESS_VIOLATION,"������ͼԽȨ����ĳ����ַ��"}, {
-EXCEPTION_ARRAY_BOUNDS_EXCEEDED,"�߽��鷢�����������Խ�硣"}, {
-EXCEPTION_BREAKPOINT,"�����ϵ㡣"}, {
-EXCEPTION_DATATYPE_MISALIGNMENT,"�����Զ�дδ���������������ݡ�"}, {
-EXCEPTION_FLT_DENORMAL_OPERAND,"��������ʱ����ͼ�����޷���ʾΪ��׼����ֵ�Ĺ�С��������"}, {
-EXCEPTION_FLT_DIVIDE_BY_ZERO,"���и���������ʱ��ͼ����0��"}, {
-EXCEPTION_FLT_INEXACT_RESULT,"��������Ľ����Խ�˿�׼ȷ��ʾ�ķ�Χ��"}, {
-EXCEPTION_FLT_INVALID_OPERATION,"δ֪�ĸ����������"}, {
-EXCEPTION_FLT_OVERFLOW,"���븡���������ָ������"}, {
-EXCEPTION_FLT_STACK_CHECK,"��������ʱ����ջ��������������硣"}, {
-EXCEPTION_FLT_UNDERFLOW,"���븡���������ָ����С��"}, {
-EXCEPTION_ILLEGAL_INSTRUCTION,"������ִ����Ч��ָ��򲻴��ڵ�ָ�"}, {
-EXCEPTION_IN_PAGE_ERROR,"������ͼ����ϵͳ��ʱ�޷����ص��ڴ�ҳ�棬��ͨ���������г���ʱ�������ӶϿ��ȡ�"}, {
-EXCEPTION_INT_DIVIDE_BY_ZERO,"������������ʱ��ͼ����0��"}, {
-EXCEPTION_INT_OVERFLOW,"��������Ľ����������硣"}, {
-EXCEPTION_INVALID_DISPOSITION,"�쳣����������쳣�Ĵ�����Ч��ʹ�ø߼����Եĳ���Ա��Ӧ�������쳣��"}, {
-EXCEPTION_NONCONTINUABLE_EXCEPTION,"������ͼ�ڷ��������쳣��������С�"}, {
-EXCEPTION_PRIV_INSTRUCTION,"������ִ������Ȩִ�е�ָ�"}, {
-EXCEPTION_SINGLE_STEP,"���ڵ��������У���ִ��һ��ָ�"}, {
-EXCEPTION_STACK_OVERFLOW,"ջ�ռ䷢�����硣"}, {
-STATUS_FAIL_FAST_EXCEPTION ,"����ʧ�ܻ���Ҫ����������˳���"}, {
-EXCEPTION_UNKNOWN_ERROR_1 ,"�׳���C++�쳣�������񣬿�������ȱ�ٶ�Ӧ��catch�飬��C++������ʱ���ô����쳣��"}
+EXCEPTION_ACCESS_VIOLATION,"程序试图越权访问某个地址。"}, {
+EXCEPTION_ARRAY_BOUNDS_EXCEEDED,"边界检查发现了数组访问越界。"}, {
+EXCEPTION_BREAKPOINT,"遇到断点。"}, {
+EXCEPTION_DATATYPE_MISALIGNMENT,"程序尝试读写未对齐或错误对齐的数据。"}, {
+EXCEPTION_FLT_DENORMAL_OPERAND,"浮点运算时，试图除以无法表示为标准浮点值的过小浮点数。"}, {
+EXCEPTION_FLT_DIVIDE_BY_ZERO,"进行浮点数除法时试图除以0。"}, {
+EXCEPTION_FLT_INEXACT_RESULT,"浮点运算的结果超越了可准确表示的范围。"}, {
+EXCEPTION_FLT_INVALID_OPERATION,"未知的浮点运算错误。"}, {
+EXCEPTION_FLT_OVERFLOW,"参与浮点运算的数指数过大。"}, {
+EXCEPTION_FLT_STACK_CHECK,"浮点运算时，堆栈发生了上溢或下溢。"}, {
+EXCEPTION_FLT_UNDERFLOW,"参与浮点运算的数指数过小。"}, {
+EXCEPTION_ILLEGAL_INSTRUCTION,"程序尝试执行无效的指令或不存在的指令。"}, {
+EXCEPTION_IN_PAGE_ERROR,"程序试图访问系统暂时无法加载的内存页面，如通过网络运行程序时网络连接断开等。"}, {
+EXCEPTION_INT_DIVIDE_BY_ZERO,"进行整数除法时试图除以0。"}, {
+EXCEPTION_INT_OVERFLOW,"整数运算的结果过大而上溢。"}, {
+EXCEPTION_INVALID_DISPOSITION,"异常处理程序对异常的处置无效。使用高级语言的程序员不应遇到此异常。"}, {
+EXCEPTION_NONCONTINUABLE_EXCEPTION,"程序试图在发生致命异常后继续运行。"}, {
+EXCEPTION_PRIV_INSTRUCTION,"程序尝试执行其无权执行的指令。"}, {
+EXCEPTION_SINGLE_STEP,"正在单步调试中，已执行一个指令。"}, {
+EXCEPTION_STACK_OVERFLOW,"栈空间发生上溢。"}, {
+STATUS_FAIL_FAST_EXCEPTION ,"快速失败机制要求程序立即退出。"}, {
+EXCEPTION_UNKNOWN_ERROR_1 ,"抛出的C++异常不被捕获，可能由于缺少对应的catch块，或C++的运行时配置存在异常。"}
 };
 
 const std::unordered_map<int, std::string> TmpMap
 {
-	{0x10,"��ִ��"},
-	{0x20,"��/ִ��"},
-	{0x40,"��/д/ִ��"},
-	{0x80,"д��ʱ����/ִ��"},
-	{0x01,"���ɷ���"},
-	{0x02,"ֻ��"},
-	{0x04,"��/д"},
-	{0x08,"д��ʱ����"},
-	{0x00,"δ����/���ͷ�"},
+	{0x10,"仅执行"},
+	{0x20,"读/执行"},
+	{0x40,"读/写/执行"},
+	{0x80,"写入时复制/执行"},
+	{0x01,"不可访问"},
+	{0x02,"只读"},
+	{0x04,"读/写"},
+	{0x08,"写入时复制"},
+	{0x00,"未分配/已释放"},
 };
 
 std::string GetExcStr(int Exc)
@@ -325,7 +344,7 @@ std::string GetExcStr(int Exc)
 	auto it = ExcMap.find(Exc);
 	if (it == ExcMap.cend())
 	{
-		return "δ֪";
+		return "未知";
 	}
 	else
 	{
@@ -352,14 +371,14 @@ std::string GetAccessStr(HANDLE hProc, LPCVOID Ptr)
 		auto it = TmpMap.find(BInfo.Protect);
 		if (it == TmpMap.cend())
 		{
-			return "δ֪Ȩ�ޣ����������ڴ汣�����Գ�������ȷ����ֵ�ĺ��壩��" + std::to_string(BInfo.Protect);
+			return "未知权限（请搜索“内存保护属性常量”以确定此值的含义）：" + std::to_string(BInfo.Protect);
 		}
 		else
 		{
 			return it->second;
 		}
 	}
-	else return "��ȡʧ��";
+	else return "获取失败";
 }
 
 bool LongStackDump = false;
@@ -428,7 +447,7 @@ std::pair<DWORD, std::string> AnalyzeAddr(DWORD Addr)
 		{
 			char buf[30]{};
 			_itoa_s(pAddr->Addr, buf, 16);
-			return std::make_pair(Addr - pAddr->HookDataAddr, std::string("����") + buf + "�Ĺ���");
+			return std::make_pair(Addr - pAddr->HookDataAddr, std::string("钩在") + buf + "的钩子");
 		}
 		for (size_t i = 0; i < LibBaseAddr.size() - 1; i++)
 		{
@@ -458,34 +477,34 @@ void IHAnalyzeError(PEXCEPTION_POINTERS const pExs)
 	ExtFileClass ExceptFile;
 	pExcept = &ExceptFile;
 	ExceptFile.Open("except_ih.txt", "w");
-	TmpWriteLine(ExceptFile, "IHCore ���������ű�Q��");
+	TmpWriteLine(ExceptFile, "IHCore ：丸辣，芭比Q了");
 	CallBeginWritingExceptIH();
 	if (SyringeData::HasSyringeIH())
 	{
-		TmpWriteLine(ExceptFile, "IHCore �������� %s�������л�ȡ��Ҫ�ķ�����Ϣ��",SyringeData::GetExeData().SyringeVersionStr);
+		TmpWriteLine(ExceptFile, "IHCore ：已连接 %s，将从中获取必要的分析信息。",SyringeData::GetExeData().SyringeVersionStr);
 	}
 	else
 	{
-		TmpWriteLine(ExceptFile, "IHCore ���Ҳ���SyringeIH������������Ϣ��������ȱʧ��");
+		TmpWriteLine(ExceptFile, "IHCore ：找不到SyringeIH，分析所需信息可能严重缺失。");
 	}
 	if (!SyringeSetting.Available())
-		TmpWriteLine(ExceptFile, "IHCore ��δ�ҵ�Syringe.json����ȡĬ�����á�");
+		TmpWriteLine(ExceptFile, "IHCore ：未找到Syringe.json，采取默认设置。");
 	else
 	{
-		TmpWriteLine(ExceptFile, "IHCore ����Syringe.json��������һЩ���á�");
+		TmpWriteLine(ExceptFile, "IHCore ：从Syringe.json当中载入一些设置。");
 		TmpWriteLine(ExceptFile, "LongStackDump = \"%s\"", CStrBoolImpl(LongStackDump, StrBoolType::Str_true_false));
 		TmpWriteLine(ExceptFile, "OnlyShowStackFrame = \"%s\"", CStrBoolImpl(OnlyShowStackFrame, StrBoolType::Str_true_false));
 	}
 	auto [Rel, Str] = AnalyzeAddr((DWORD)exceptAddr);
 	TmpWriteLine(ExceptFile,
-		__FUNCTION__ ": �����쳣������: 0x%08X ", exceptCode);
+		__FUNCTION__ ": 发生异常，代码: 0x%08X ", exceptCode);
 	TmpWriteLine(ExceptFile, 
-		"(����ԭ��%s)", GetExcStr(exceptCode).c_str());
+		"(可能原因：%s)", GetExcStr(exceptCode).c_str());
 	TmpWriteLine(ExceptFile, 
-		"��ַ�� 0x%08X��%s+%X��[����Ȩ�ޣ�%s]",
+		"地址： 0x%08X（%s+%X）[访问权限：%s]",
 		exceptAddr, Str.c_str(), Rel, GetAccessStr(GetCurrentProcess(), exceptAddr).c_str());
-	if (IsExecutable(GetCurrentProcess(), (LPCVOID)exceptAddr))TmpWriteLine(ExceptFile, "�����쳣�ĵ�ַΪ��ִ�еĴ��롣");
-	else TmpWriteLine(ExceptFile, "�����쳣�ĵ�ַ���Ǵ��룬����Ϊ������ڴ档");
+	if (IsExecutable(GetCurrentProcess(), (LPCVOID)exceptAddr))TmpWriteLine(ExceptFile, "发生异常的地址为可执行的代码。");
+	else TmpWriteLine(ExceptFile, "发生异常的地址不是代码，可能为分配的内存。");
 
 
 	//TmpWriteLine(ExceptFile, __FUNCTION__ ": ACCESS VIOLATION at 0x%08X!", exceptAddr);
@@ -494,18 +513,18 @@ void IHAnalyzeError(PEXCEPTION_POINTERS const pExs)
 	char const* access = nullptr;
 	switch (pExs->ExceptionRecord->ExceptionInformation[0])
 	{
-	case 0: access = "��ȡ"; break;
-	case 1: access = "д��"; break;
-	case 8: access = "ִ��"; break;
+	case 0: access = "读取"; break;
+	case 1: access = "写入"; break;
+	case 8: access = "执行"; break;
 	}
 
 	auto [Rel2, Str2] = AnalyzeAddr((DWORD)AccessAddr);
-	TmpWriteLine(ExceptFile, "������ͼ%s 0x%08X��%s+%X��[����Ȩ�ޣ�%s]��",
-		access ? access : ("<δ֪��Ϊ��" + std::to_string(pExs->ExceptionRecord->ExceptionInformation[0]) + ">").c_str(),
+	TmpWriteLine(ExceptFile, "程序试图%s 0x%08X（%s+%X）[访问权限：%s]。",
+		access ? access : ("<未知行为：" + std::to_string(pExs->ExceptionRecord->ExceptionInformation[0]) + ">").c_str(),
 		AccessAddr, Str2.c_str(), Rel2,
 		GetAccessStr(GetCurrentProcess(), (LPCVOID)AccessAddr).c_str());
-	if (IsExecutable(GetCurrentProcess(), (LPCVOID)AccessAddr))TmpWriteLine(ExceptFile, "��ͼ���ʵĵ�ַΪ��ִ�еĴ��롣");
-	else TmpWriteLine(ExceptFile, "��ͼ���ʵĵ�ַ���Ǵ��룬����Ϊ������ڴ档");
+	if (IsExecutable(GetCurrentProcess(), (LPCVOID)AccessAddr))TmpWriteLine(ExceptFile, "试图访问的地址为可执行的代码。");
+	else TmpWriteLine(ExceptFile, "试图访问的地址不是代码，可能为分配的内存。");
 
 
 	CONTEXT context;
@@ -513,7 +532,7 @@ void IHAnalyzeError(PEXCEPTION_POINTERS const pExs)
 	GetThreadContext(currentThread, &context);
 
 	ExceptFile.Ln();
-	TmpWriteLine(ExceptFile, "�Ĵ�����");
+	TmpWriteLine(ExceptFile, "寄存器：");
 	TmpWriteLine(ExceptFile, "\tEAX = 0x%08X\tECX = 0x%08X\tEDX = 0x%08X",
 		context.Eax, context.Ecx, context.Edx);
 	TmpWriteLine(ExceptFile, "\tEBX = 0x%08X\tESP = 0x%08X\tEBP = 0x%08X",
@@ -524,7 +543,7 @@ void IHAnalyzeError(PEXCEPTION_POINTERS const pExs)
 
 
 
-	TmpWriteLine(ExceptFile, "\t��ջת����Ϣ���������ܵ�ջ֡�ֶΣ�");
+	TmpWriteLine(ExceptFile, "\t堆栈转储信息：（按可能的栈帧分段）");
 	auto const esp = reinterpret_cast<DWORD*>(context.Esp);
 	auto const eend = LongStackDump ? (DWORD*)0xFFFFFFFF : esp + 0x100;
 	for (auto p = esp; p < eend; ++p)
@@ -546,9 +565,9 @@ void IHAnalyzeError(PEXCEPTION_POINTERS const pExs)
 				}
 				auto pData = GetDataFromOpAddr(dw);
 				if (pData)
-					TmpWriteLine(ExceptFile, "\t0x%08X:\t0x%08X ������ %X �Ĺ��ӣ�[����Ȩ�ޣ�%s]",
+					TmpWriteLine(ExceptFile, "\t0x%08X:\t0x%08X （钩在 %X 的钩子）[访问权限：%s]",
 						p, dw, pData->Addr, GetAccessStr(GetCurrentProcess(), (LPCVOID)dw).c_str());
-				else TmpWriteLine(ExceptFile, "\t0x%08X:\t0x%08X ��%s+%X��[����Ȩ�ޣ�%s]",
+				else TmpWriteLine(ExceptFile, "\t0x%08X:\t0x%08X （%s+%X）[访问权限：%s]",
 					p, dw, Str1.c_str(), Rel1,
 					GetAccessStr(GetCurrentProcess(), (LPCVOID)dw).c_str());
 			}
@@ -562,7 +581,7 @@ void IHAnalyzeError(PEXCEPTION_POINTERS const pExs)
 			{
 				break;
 			}
-			TmpWriteLine(ExceptFile, "\t0x%08X:\t���޷���ȡ��", p);
+			TmpWriteLine(ExceptFile, "\t0x%08X:\t（无法读取）", p);
 		}
 	}
 }

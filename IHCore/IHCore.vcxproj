@@ -175,6 +175,7 @@
     <ClInclude Include="..\Common\IHLoader\IH.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Initial.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Loader.h" />
+    <ClInclude Include="..\Common\IHLoader\PArray.h" />
     <ClInclude Include="..\Common\IHLoader\SyringeEx.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Buff.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Define.h" />
@@ -555,7 +556,7 @@
     <ClCompile Include="ExtCD.cpp" />
     <ClCompile Include="ExtCsf.cpp" />
     <ClCompile Include="ExtFile.cpp" />
-    <ClCompile Include="ExtFont.cpp" />
+    <ClCompile Include="ExtFNT.cpp" />
     <ClCompile Include="ExtIni.cpp" />
     <ClCompile Include="ExtLog.cpp" />
     <ClCompile Include="ExtMix.cpp" />
@@ -563,12 +564,12 @@
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="ExtHotKey.cpp" />
     <ClCompile Include="IHConfig.cpp" />
+    <ClCompile Include="Init.Hooks.cpp" />
     <ClCompile Include="InitialLoad.cpp" />
     <ClCompile Include="InitSomewhere.cpp" />
     <ClCompile Include="Load.cpp" />
     <ClCompile Include="LocalLibFunc.cpp" />
     <ClCompile Include="MiscFunc.cpp" />
-    <ClCompile Include="Optional.Hooks.cpp" />
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -578,8 +579,8 @@
     </ClCompile>
     <ClCompile Include="StringManagerExt.cpp" />
     <ClCompile Include="Syringe.cpp" />
-    <ClCompile Include="Test.StableHooks.cpp" />
-    <ClCompile Include="Test1.cpp" />
+    <ClCompile Include="ExtYRM.cpp" />
+    <ClCompile Include="Update.cpp" />
     <ClCompile Include="YRPP\StaticInits.cpp" />
   </ItemGroup>
   <ItemGroup>

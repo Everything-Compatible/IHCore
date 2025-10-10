@@ -2,28 +2,11 @@
 
 #include <vector>
 #include <unordered_map>
-#include "DataStructure.h"
 #include "ToolFunc.h"
 #include <IH.h>
 #include <YRPPCore.h>
 #include <memory>
 
-//Every FuncPack should have this to EXPORT
-class HPFuncPackManager
-{
-public:
-	HPFuncPackHeader Header;
-	std::vector<HPDependency> Dependency;
-	bool (__cdecl* InitFuncPack)();
-
-};
-
-
-namespace HPRelationManager
-{
-	void RegisterFuncPack(const HPFuncPackManager& Pack);
-	void RegisterCallback(const std::string& FuncName, FuncHandle Callback);
-};
 
 class IHException :public std::exception
 {
@@ -39,23 +22,11 @@ namespace IHLibList
 {
 	bool IsAvailable();
 	bool Initialize();//如果没有调用该函数，使用时会自动补上调用
-	bool RegisterToLibList(FuncHandle Init);
+	bool RegisterToLibList(LibFuncHandle Init);
 	int GetMaxLibs();//-1 for error
-	const PointerArray<FuncHandle> GetEntries();
+	const PArray<LibFuncHandle> GetEntries();
 };
 
-namespace HPLocalData//At Lib
-{
-	//这些是需要在Init时自己填的
-	extern StdStringAW AbsPath;
-	extern StdStringAW AbsDir;
-	extern HPLoadII_t HPLoadII;
-	extern HMODULE Handle;
-
-	extern HPDLLInput* Input;
-	extern HPDLLOutput Output;
-
-};
 
 FuncInfo* IHCore_GetFunc(const char* Name, int Version);
 FuncInfo* Internal_GetFunc(const char* Name, int Version);
@@ -65,7 +36,7 @@ GenCallRetType ProcessSyringeRequestAlt(const std::string& Method, GeneratorPara
 
 namespace Local
 {
-	extern PointerArray<FuncHandle> InitFn;
+	extern PArray<LibFuncHandle> InitFn;
 	struct LibType
 	{
 		InitInput In;
@@ -148,7 +119,7 @@ namespace Local
 	extern std::unordered_map<std::string, LibType*> LibMap;
 	extern std::unordered_map<std::string, VClass> IHFileStreamer;
 	extern std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;//name to stream
-	extern std::unordered_map<std::string, FuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
+	extern std::unordered_map<std::string, LibFuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
 	extern std::unordered_map<std::string, std::vector<FuncInfo*>> NamedFunc;
 	extern std::unordered_map<std::string, ContextFunc_t> ContextMap;
 	extern std::unordered_map<std::string, BinderType> BinderMap;

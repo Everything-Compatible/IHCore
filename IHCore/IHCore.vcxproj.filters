@@ -16,9 +16,6 @@
     <Filter Include="Util">
       <UniqueIdentifier>{de6bf841-7e20-4fb7-aaa6-ffd7cbb19cf0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Test">
-      <UniqueIdentifier>{a39303ce-aa50-4e26-a978-cc70bdb390ea}</UniqueIdentifier>
-    </Filter>
     <Filter Include="File">
       <UniqueIdentifier>{557e34a7-b3bf-45da-bf90-e06723cab448}</UniqueIdentifier>
     </Filter>
@@ -37,9 +34,6 @@
     <Filter Include="YRPP\FileFormats">
       <UniqueIdentifier>{aecd3dbb-68a0-4f78-bb2f-32b8791d7070}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tailor">
-      <UniqueIdentifier>{b8cc4068-89bc-4c88-b032-98d9dda04ae1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="EC SDK">
       <UniqueIdentifier>{40910ebb-52e9-4948-b1da-f1f9df9b9173}</UniqueIdentifier>
     </Filter>
@@ -51,6 +45,9 @@
     </Filter>
     <Filter Include="Extended">
       <UniqueIdentifier>{0ca357d0-daac-4c46-82dd-86e7a903b164}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Init">
+      <UniqueIdentifier>{a39303ce-aa50-4e26-a978-cc70bdb390ea}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1161,6 +1158,9 @@
     <ClInclude Include="StringManagerExt.h">
       <Filter>Extended</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\PArray.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1177,9 +1177,6 @@
     </ClCompile>
     <ClCompile Include="MiscFunc.cpp">
       <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="Test1.cpp">
-      <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="ExtCsf.cpp">
       <Filter>File</Filter>
@@ -1211,9 +1208,6 @@
     <ClCompile Include="YRPP\StaticInits.cpp">
       <Filter>YRPP</Filter>
     </ClCompile>
-    <ClCompile Include="Test.StableHooks.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
     <ClCompile Include="ExtFile.cpp">
       <Filter>File</Filter>
     </ClCompile>
@@ -1222,9 +1216,6 @@
     </ClCompile>
     <ClCompile Include="LocalLibFunc.cpp">
       <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Optional.Hooks.cpp">
-      <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ExtJson.cpp">
       <Filter>EC SDK</Filter>
@@ -1236,7 +1227,7 @@
       <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="InitSomewhere.cpp">
-      <Filter>Test</Filter>
+      <Filter>Init</Filter>
     </ClCompile>
     <ClCompile Include="ExtMix.cpp">
       <Filter>File</Filter>
@@ -1246,9 +1237,6 @@
     </ClCompile>
     <ClCompile Include="InitialLoad.cpp">
       <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtFont.cpp">
-      <Filter>File</Filter>
     </ClCompile>
     <ClCompile Include="IHConfig.cpp">
       <Filter>Data</Filter>
@@ -1300,6 +1288,18 @@
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c">
       <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Update.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtYRM.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="Init.Hooks.cpp">
+      <Filter>Init</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtFNT.cpp">
+      <Filter>Extended</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

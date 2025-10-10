@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include<cstdio>
 #include<cstring>
 #include<string>
@@ -7,7 +7,7 @@
 #include<vector>
 #include <Windows.h>
 #include "ToolFunc.h"
-#include "..\Common\DataStructure.h"
+#include "../Common/IHLoader/PArray.h"
 
 namespace Ini
 {
@@ -24,12 +24,12 @@ namespace Ini
 		}
 	};
 
-	std::vector<std::string_view> GetLines(BytePointerArray Text,size_t ExtBytes);//ExtBytes > 0
+	std::vector<std::string_view> GetLines(PArray<BYTE> Text,size_t ExtBytes);//ExtBytes > 0
 	std::vector<IniToken> GetTokens(const std::vector<std::string_view>& Lines);
 	template<typename FileLoader>
 	std::vector<IniToken> GetTokensFromFile(FileLoader& Loader)
 	{
-		BytePointerArray Arr = Loader.ReadWholeFile(16);
+		PArray<BYTE> Arr = Loader.ReadWholeFile(16);
 		auto Ret = GetTokens(GetLines(Arr, 16));
 		Arr.Delete();
 		return Ret;

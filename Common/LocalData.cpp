@@ -11,56 +11,12 @@ extern struct CSFFile_ITable CSFFile_InstTable;
 
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);
 
-namespace HPRelationManager
-{
-	std::vector<const HPFuncPackManager*> FuncPack;//EXPORT
-	std::unordered_map<std::string, FuncHandle> Callback;//EXPORT
-	
-	std::vector<HPFuncPackData> FuncPackImpl;//由HPLocalData::Initialize自动生成
-	void MakeFuncPackImpl()
-	{
-		for (auto Pack : FuncPack)
-		{
-			FuncPackImpl.emplace_back();
-			auto& Last = FuncPackImpl.back();
-			Last.Header = const_cast<HPFuncPackHeader*>(&Pack->Header);
-			Last.Dependency = GetArrayView(Pack->Dependency);
-			Last.InitFuncPack = Pack->InitFuncPack;
-		}
-	}
-
-
-	void RegisterFuncPack(const HPFuncPackManager& Pack)
-	{
-		FuncPack.push_back(&Pack);
-	}
-	void RegisterCallback(const std::string& FuncName, FuncHandle _Callback)
-	{
-		Callback.insert({ FuncName,_Callback });
-	}
-
-	const FuncHandle GetCallback(Name_t FuncName)
-	{
-		auto It = Callback.find(FuncName);
-		if (It == Callback.end())return nullptr;
-		else return It->second;
-	}
-
-	void InitFuncPack()//OBSOLETE
-	{
-		for (auto Pack : FuncPack)
-		{
-			Pack->InitFuncPack();
-		}
-	}
-}
-
 namespace IHLibList
 {
 	int(__cdecl* _GetNLibs)(void);
 	int(__cdecl* _GetMaxLibs)(void);
-	bool(__cdecl* _RegisterEntry)(FuncHandle);
-	const FuncHandle* (__cdecl* _GetEntries)(void);
+	bool(__cdecl* _RegisterEntry)(LibFuncHandle);
+	const LibFuncHandle* (__cdecl* _GetEntries)(void);
 	bool Available{ false };
 	HMODULE LibListDLL;
 
@@ -99,7 +55,7 @@ namespace IHLibList
 		Available = true;
 		return true;
 	}
-	bool RegisterToLibList(FuncHandle Init)
+	bool RegisterToLibList(LibFuncHandle Init)
 	{
 		if (!CheckAvailable())return false;
 		else return _RegisterEntry(Init);
@@ -109,42 +65,12 @@ namespace IHLibList
 		if (!CheckAvailable())return -1;
 		else return _GetMaxLibs();
 	}
-	const PointerArray<FuncHandle> GetEntries()
+	const PArray<LibFuncHandle> GetEntries()
 	{
-		if (!CheckAvailable())return GetNullPointerArray<FuncHandle>();
-		else return { (unsigned)_GetNLibs(), const_cast<FuncHandle*>(_GetEntries()) };
+		if (!CheckAvailable())return GetNullPArray<LibFuncHandle>();
+		else return PArray<LibFuncHandle>{ (size_t)_GetNLibs(), (_GetEntries()) };
 	}
 };
-namespace HPLocalData
-{
-	StdStringAW AbsPath;
-	StdStringAW AbsDir;
-	HPLoadII_t HPLoadII;
-	HMODULE Handle;
-
-	HPDLLInput* Input;
-	HPDLLOutput Output;
-
-	const HPDLLOutput* __cdecl LoadIFunction(const HPDLLInput*)
-	{
-		//TODO
-		return &Output;
-	}
-
-	/*
-	void InitializeOutput()
-	{
-		Output.Header = &User::Header;
-		Output.HPLoadII = HPLoadII;
-		Output.AbsPath = AbsPath;
-		Output.AbsDir = AbsDir;
-		Output.Handle = Handle;
-		HPRelationManager::MakeFuncPackImpl();
-		Output.FuncPacks = GetArrayView(HPRelationManager::FuncPackImpl);
-		Output.GetCallback = HPRelationManager::GetCallback;
-	}*/
-
-}
 
 //template<>
 bool operator<(const GeneratorParam& lhs, const GeneratorParam& rhs)

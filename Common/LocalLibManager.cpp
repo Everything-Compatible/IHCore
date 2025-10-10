@@ -9,11 +9,6 @@
 #include <SyringeEx.h>
 #include "..\IHCore\ECDbgConsole.h"
 
-namespace HPLocalData
-{
-	const HPDLLOutput* __cdecl LoadIFunction(const HPDLLInput*);
-}
-
 void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);
 
@@ -36,13 +31,13 @@ char* __fastcall StrDup_Ex(const char* Str);
 
 namespace Local
 {
-	PointerArray<FuncHandle> InitFn;
+	PArray<LibFuncHandle> InitFn;
 	std::vector<LibType> Libs;
 	std::vector<BasicLibData> BasicLibs;
 	std::unordered_map<std::string, LibType*> LibMap;
 	std::unordered_map<std::string, VClass> IHFileStreamer;
 	std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;
-	std::unordered_map<std::string, FuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
+	std::unordered_map<std::string, LibFuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
 	std::unordered_map<std::string, std::vector<FuncInfo*>> NamedFunc;
 	std::unordered_map<std::string, ContextFunc_t> ContextMap;
 	std::unordered_map<std::string, BinderType> BinderMap;
@@ -409,8 +404,3 @@ namespace Local
 	
 }
 
-DEFINE_HOOK(0x6BC0CD, ECInitialize, 5)
-{
-	Local::LocalInit();
-	return 0;
-}
