@@ -2,6 +2,8 @@
 
 #include <CommandClass.h>
 
+//get the description of WWKey
+//same as the setting menu
 void __fastcall GetWWKeyDesc(WWKey Key, wchar_t* DescBuf)
 {
 	JMP_STD(0x61EF70);
