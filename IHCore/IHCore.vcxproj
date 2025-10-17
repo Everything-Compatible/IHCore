@@ -539,6 +539,7 @@
     <ClCompile Include="..\Common\IHLoader\EC.ObjBase.cpp" />
     <ClCompile Include="..\Common\IHLoader\ExtJson.cpp" />
     <ClCompile Include="..\Common\IHLoader\IH.Ext.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.File.cpp" />
     <ClCompile Include="..\Common\IHLoader\IH.Initial.cpp" />
     <ClCompile Include="..\Common\IHLoader\IH.Loader.cpp" />
     <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp" />

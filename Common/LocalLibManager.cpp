@@ -211,6 +211,7 @@ namespace Local
 	{
 		//const char8_t* GetTextDrawVariable(const std::u8string_view Key)
 		auto v = GetTextDrawVariable(conv Key);
+		//MessageBoxW(NULL, UTF8toUnicode(v? conv v : "").c_str(), UTF8toUnicode(Key).c_str(), MB_OK);
 		return v ? v : u8"";
 	}
 

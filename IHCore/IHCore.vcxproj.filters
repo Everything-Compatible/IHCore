@@ -1304,6 +1304,9 @@
     <ClCompile Include="ExtFNT.cpp">
       <Filter>Extended</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.File.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SkirmishDialog.rc">

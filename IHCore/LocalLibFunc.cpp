@@ -160,7 +160,6 @@ namespace Internal
 	}
 }
 
-
 std::unordered_map<std::string, FuncInfo>Internal_Funcs
 {
 	{"SetValue",FuncInfo(Internal::SetValue ,FuncType::Action)},
@@ -168,7 +167,7 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"GetCSFString",FuncInfo(Internal::GetCSFString ,FuncType::Action)},
 	{"GetDrawTextValue",FuncInfo(Internal::GetDrawTextValue ,FuncType::Action)},
 	{"PrintArg",FuncInfo(Internal::PrintArg ,FuncType::Action)},
-	{"Exit",FuncInfo(Internal::Exit ,FuncType::Procedure)},
+	{"Exit",FuncInfo(Internal::Exit ,FuncType::Action)},
 	{"Print",FuncInfo(Internal::Print ,FuncType::Action)},
 	{"Resume",FuncInfo(Internal::Resume ,FuncType::Procedure)},
 	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)}
