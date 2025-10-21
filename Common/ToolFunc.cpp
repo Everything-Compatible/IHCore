@@ -1,55 +1,55 @@
-
+ï»¿
 #include "ToolFunc.h"
 #include <Windows.h>
 #include <ctime>
 
-// ANSI×Ö·û¼¯×ª»»³ÉUnicode
+// ANSIå­—ç¬¦é›†è½¬æ¢æˆUnicode
 std::wstring ANSItoUnicode(const std::string& MBCS)
 {
-    int nLength = MultiByteToWideChar(CP_ACP, 0, MBCS.c_str(), -1, NULL, NULL);   // »ñÈ¡»º³åÇø³¤¶È£¬ÔÙ·ÖÅäÄÚ´æ
+    int nLength = MultiByteToWideChar(CP_ACP, 0, MBCS.c_str(), -1, NULL, NULL);   // è·å–ç¼“å†²åŒºé•¿åº¦ï¼Œå†åˆ†é…å†…å­˜
     WCHAR* tch = new WCHAR[nLength + 4]();
-    nLength = MultiByteToWideChar(CP_ACP, 0, MBCS.c_str(), -1, tch, nLength);     // ½«MBCS×ª»»³ÉUnicode
+    nLength = MultiByteToWideChar(CP_ACP, 0, MBCS.c_str(), -1, tch, nLength);     // å°†MBCSè½¬æ¢æˆUnicode
     std::wstring ret = tch;
     delete[] tch;
     return ret;
 }
-// UTF-8×Ö·û¼¯×ª»»³ÉUnicode
+// UTF-8å­—ç¬¦é›†è½¬æ¢æˆUnicode
 std::wstring UTF8toUnicode(const std::string& UTF8)
 {
-    int nLength = MultiByteToWideChar(CP_UTF8, 0, UTF8.c_str(), -1, NULL, NULL);   // »ñÈ¡»º³åÇø³¤¶È£¬ÔÙ·ÖÅäÄÚ´æ
+    int nLength = MultiByteToWideChar(CP_UTF8, 0, UTF8.c_str(), -1, NULL, NULL);   // è·å–ç¼“å†²åŒºé•¿åº¦ï¼Œå†åˆ†é…å†…å­˜
     WCHAR* tch = new WCHAR[nLength + 4]{};
-    MultiByteToWideChar(CP_UTF8, 0, UTF8.c_str(), -1, tch, nLength);     // ½«UTF-8×ª»»³ÉUnicode
+    MultiByteToWideChar(CP_UTF8, 0, UTF8.c_str(), -1, tch, nLength);     // å°†UTF-8è½¬æ¢æˆUnicode
     std::wstring ret = tch;
     delete[] tch;
     return ret;
 }
-// Unicode×Ö·û¼¯×ª»»³ÉUTF-8
+// Unicodeå­—ç¬¦é›†è½¬æ¢æˆUTF-8
 std::string UnicodetoUTF8(const std::wstring& Unicode)
 {
-    int UTF8len = WideCharToMultiByte(CP_UTF8, 0, Unicode.c_str(), -1, 0, 0, 0, 0);// »ñÈ¡UTF-8±àÂë³¤¶È
+    int UTF8len = WideCharToMultiByte(CP_UTF8, 0, Unicode.c_str(), -1, 0, 0, 0, 0);// è·å–UTF-8ç¼–ç é•¿åº¦
     char* UTF8 = new CHAR[UTF8len + 4]{};
-    WideCharToMultiByte(CP_UTF8, 0, Unicode.c_str(), -1, UTF8, UTF8len, 0, 0); //×ª»»³ÉUTF-8±àÂë
+    WideCharToMultiByte(CP_UTF8, 0, Unicode.c_str(), -1, UTF8, UTF8len, 0, 0); //è½¬æ¢æˆUTF-8ç¼–ç 
     std::string ret = UTF8;
     delete[] UTF8;
     return ret;
 }
 
-// Unicode×Ö·û¼¯×ª»»³ÉANSI
+// Unicodeå­—ç¬¦é›†è½¬æ¢æˆANSI
 std::string UnicodetoANSI(const std::wstring& Unicode)
 {
-    int ANSIlen = WideCharToMultiByte(CP_ACP, 0, Unicode.c_str(), -1, 0, 0, 0, 0);// »ñÈ¡UTF-8±àÂë³¤¶È
+    int ANSIlen = WideCharToMultiByte(CP_ACP, 0, Unicode.c_str(), -1, 0, 0, 0, 0);// è·å–UTF-8ç¼–ç é•¿åº¦
     char* ANSI = new CHAR[ANSIlen + 4]{};
-    WideCharToMultiByte(CP_ACP, 0, Unicode.c_str(), -1, ANSI, ANSIlen, 0, 0); //×ª»»³ÉUTF-8±àÂë
+    WideCharToMultiByte(CP_ACP, 0, Unicode.c_str(), -1, ANSI, ANSIlen, 0, 0); //è½¬æ¢æˆUTF-8ç¼–ç 
     std::string ret = ANSI;
     delete[] ANSI;
     return ret;
 }
-// ANSI×Ö·û¼¯×ª»»³ÉUTF-8
+// ANSIå­—ç¬¦é›†è½¬æ¢æˆUTF-8
 std::string ANSItoUTF8(const std::string& MBCS)
 {
     return UnicodetoUTF8(ANSItoUnicode(MBCS));
 }
-// UTF-8×Ö·û¼¯×ª»»³ÉANSI
+// UTF-8å­—ç¬¦é›†è½¬æ¢æˆANSI
 std::string UTF8toANSI(const std::string& MBCS)
 {
     return UnicodetoANSI(UTF8toUnicode(MBCS));
@@ -64,7 +64,7 @@ uint64_t GetSysTimeMicros()
     GetSystemTimeAsFileTime(&ft);
     li.LowPart = ft.dwLowDateTime;
     li.HighPart = ft.dwHighDateTime;
-    // ´Ó1970Äê1ÔÂ1ÈÕ0:0:0:000µ½ÏÖÔÚµÄÎ¢ÃëÊı(UTCÊ±¼ä)
+    // ä»1970å¹´1æœˆ1æ—¥0:0:0:000åˆ°ç°åœ¨çš„å¾®ç§’æ•°(UTCæ—¶é—´)
     tt = (li.QuadPart - EpochFIleTime) / 10;
     return tt;
 }
@@ -72,18 +72,18 @@ uint64_t GetSysTimeMicros()
 
 
 
-//const static char ÔÂ·İ[12][20] = 
-//{ "Ò»ÔÂ", "¶şÔÂ", "ÈıÔÂ", "ËÄÔÂ", "ÎåÔÂ", "ÁùÔÂ", "ÆßÔÂ", "°ËÔÂ", "¾ÅÔÂ", "Ê®ÔÂ", "Ê®Ò»ÔÂ", "Ê®¶şÔÂ", };
-//{ "1ÔÂ", "2ÔÂ", "3ÔÂ", "4ÔÂ", "5ÔÂ", "6ÔÂ", "7ÔÂ", "8ÔÂ", "9ÔÂ", "10ÔÂ", "11ÔÂ", "12ÔÂ", };
+//const static char æœˆä»½[12][20] = 
+//{ "ä¸€æœˆ", "äºŒæœˆ", "ä¸‰æœˆ", "å››æœˆ", "äº”æœˆ", "å…­æœˆ", "ä¸ƒæœˆ", "å…«æœˆ", "ä¹æœˆ", "åæœˆ", "åä¸€æœˆ", "åäºŒæœˆ", };
+//{ "1æœˆ", "2æœˆ", "3æœˆ", "4æœˆ", "5æœˆ", "6æœˆ", "7æœˆ", "8æœˆ", "9æœˆ", "10æœˆ", "11æœˆ", "12æœˆ", };
 std::string TimeNow()
 {
-    const static char ĞÇÆÚ[7][20] =
-    { "ĞÇÆÚÈÕ", "ĞÇÆÚÒ»", "ĞÇÆÚ¶ş", "ĞÇÆÚÈı", "ĞÇÆÚËÄ", "ĞÇÆÚÎå", "ĞÇÆÚÁù" };
+    const static char æ˜ŸæœŸ[7][20] =
+    { "æ˜ŸæœŸæ—¥", "æ˜ŸæœŸä¸€", "æ˜ŸæœŸäºŒ", "æ˜ŸæœŸä¸‰", "æ˜ŸæœŸå››", "æ˜ŸæœŸäº”", "æ˜ŸæœŸå…­" };
     char* TBuf = new char[5000]();
     std::tm stm;
     std::time_t tt = std::time(0);
     localtime_s(&stm, &tt);
-    sprintf(TBuf, "%04dÄê%02dÔÂ%02dÈÕ %s %02d:%02d:%02d", stm.tm_year + 1900, stm.tm_mon + 1, stm.tm_mday, ĞÇÆÚ[stm.tm_wday], stm.tm_hour, stm.tm_min, stm.tm_sec);
+    sprintf(TBuf, "%04då¹´%02dæœˆ%02dæ—¥ %s %02d:%02d:%02d", stm.tm_year + 1900, stm.tm_mon + 1, stm.tm_mday, æ˜ŸæœŸ[stm.tm_wday], stm.tm_hour, stm.tm_min, stm.tm_sec);
     std::string rt = TBuf;
     delete[]TBuf;
     return rt;
@@ -134,6 +134,22 @@ const char* operator-(const conv_t&, const char8_t* str)
 const char8_t* operator-(const conv_t&, const char* str)
 {
 	return reinterpret_cast<const char8_t*>(str);
+}
+std::string_view& operator~(std::u8string_view& str)
+{
+	return *(std::string_view*)&str;
+}
+std::u8string_view& operator~(std::string_view& str)
+{
+	return *(std::u8string_view*)&str;
+}
+const std::string_view& operator~(const std::u8string_view& str)
+{
+	return *(const std::string_view*)&str;
+}
+const std::u8string_view& operator~(const std::string_view& str)
+{
+	return *(const std::u8string_view*)&str;
 }
 
 size_t UpperHashStr(const char* str)
@@ -201,14 +217,14 @@ std::vector<std::u8string> SplitParam(const std::u8string_view Text)//ORIG
 using std::vector;
 using std::u8string;
 
-// ¸¨Öúº¯Êı£º¼ì²éÊÇ·ñÊÇÊ®Áù½øÖÆÊı×Ö
+// è¾…åŠ©å‡½æ•°ï¼šæ£€æŸ¥æ˜¯å¦æ˜¯åå…­è¿›åˆ¶æ•°å­—
 bool IsHexDigit(char8_t c) {
     return (c >= '0' && c <= '9') ||
         (c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F');
 }
 
-// ¸¨Öúº¯Êı£º½«Ê®Áù½øÖÆ×Ö·û×ª»»ÎªÊıÖµ
+// è¾…åŠ©å‡½æ•°ï¼šå°†åå…­è¿›åˆ¶å­—ç¬¦è½¬æ¢ä¸ºæ•°å€¼
 int HexCharToValue(char8_t c) {
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
@@ -216,7 +232,7 @@ int HexCharToValue(char8_t c) {
     return 0;
 }
 
-// ¸¨Öúº¯Êı£º´¦Àí°Ë½øÖÆ×ªÒåĞòÁĞ
+// è¾…åŠ©å‡½æ•°ï¼šå¤„ç†å…«è¿›åˆ¶è½¬ä¹‰åºåˆ—
 void ProcessOctalEscape(const u8string& input, size_t& i, u8string& current) {
     int value = 0;
     int digits_processed = 0;
@@ -232,7 +248,7 @@ void ProcessOctalEscape(const u8string& input, size_t& i, u8string& current) {
     current += static_cast<char8_t>(value);
 }
 
-// ¸¨Öúº¯Êı£º´¦ÀíÊ®Áù½øÖÆ×ªÒåĞòÁĞ (\xXX)
+// è¾…åŠ©å‡½æ•°ï¼šå¤„ç†åå…­è¿›åˆ¶è½¬ä¹‰åºåˆ— (\xXX)
 void ProcessHexEscape(const u8string& input, size_t& i, u8string& current, int max_digits) {
     int value = 0;
     int digits_processed = 0;
@@ -248,7 +264,7 @@ void ProcessHexEscape(const u8string& input, size_t& i, u8string& current, int m
     current += static_cast<char8_t>(value);
 }
 
-// ¸¨Öúº¯Êı£º´¦ÀíUnicode×ªÒåĞòÁĞ (\u+XXXX)
+// è¾…åŠ©å‡½æ•°ï¼šå¤„ç†Unicodeè½¬ä¹‰åºåˆ— (\u+XXXX)
 void ProcessUnicodeEscape(const u8string& input, size_t& i, u8string& current) {
     if (i >= input.size()) return;
 
@@ -265,7 +281,7 @@ void ProcessUnicodeEscape(const u8string& input, size_t& i, u8string& current) {
 
 	printf("Processing Unicode escape: value = %X\n", value);
 
-    // ½«UnicodeÂëµã×ª»»ÎªUTF-8
+    // å°†Unicodeç ç‚¹è½¬æ¢ä¸ºUTF-8
     if (value <= 0x7F) {
         current += static_cast<char8_t>(value);
     }
@@ -295,7 +311,7 @@ vector<u8string> SplitParamEx(const u8string& input) {
     for (size_t i = 0; i < input.size(); i++) {
         auto c = input[i];
 
-        // ´¦Àí×ªÒå×Ö·û
+        // å¤„ç†è½¬ä¹‰å­—ç¬¦
         if (escape_next) {
             switch (c) {
             case 'a': current += '\a'; break;
@@ -320,7 +336,7 @@ vector<u8string> SplitParamEx(const u8string& input) {
             case 'x':
                 if (i + 1 < input.size() && IsHexDigit(input[i + 1])) 
                 {
-					i++; // Ìø¹ı 'x'
+					i++; // è·³è¿‡ 'x'
                     ProcessHexEscape(input, i, current, 2);
                     i--;
                     break;
@@ -330,7 +346,7 @@ vector<u8string> SplitParamEx(const u8string& input) {
             case 'u':
                 if (i + 1 < input.size()) 
                 {
-					i++; // Ìø¹ı 'u'
+					i++; // è·³è¿‡ 'u'
                     ProcessUnicodeEscape(input, i, current);
                     i--;
                     break;
@@ -341,23 +357,23 @@ vector<u8string> SplitParamEx(const u8string& input) {
             continue;
         }
 
-        // ¼ì²éÊÇ·ñÔÚÒıºÅÄÚ
+        // æ£€æŸ¥æ˜¯å¦åœ¨å¼•å·å†…
         if (c == '"') {
             if (in_quotes) {
-                // Èç¹ûµ±Ç°ÔÚÒıºÅÄÚÇÒ²»ÊÇ×ªÒåµÄÒıºÅ£¬½áÊøÒıºÅ
+                // å¦‚æœå½“å‰åœ¨å¼•å·å†…ä¸”ä¸æ˜¯è½¬ä¹‰çš„å¼•å·ï¼Œç»“æŸå¼•å·
                 result.push_back(current);
                 current.clear();
                 in_quotes = false;
             }
             else {
-                // ¿ªÊ¼Ò»¸öĞÂµÄÒıºÅ¶Î
+                // å¼€å§‹ä¸€ä¸ªæ–°çš„å¼•å·æ®µ
                 in_quotes = true;
             }
             continue;
         }
 
         if (in_quotes) {
-            // ÔÚÒıºÅÄÚ£¬Ö±½Ó×·¼Ó£¨°üÀ¨´¦Àí×ªÒå×Ö·û£©
+            // åœ¨å¼•å·å†…ï¼Œç›´æ¥è¿½åŠ ï¼ˆåŒ…æ‹¬å¤„ç†è½¬ä¹‰å­—ç¬¦ï¼‰
             if (c == '\\') {
                 escape_next = true;
             }
@@ -366,7 +382,7 @@ vector<u8string> SplitParamEx(const u8string& input) {
             }
         }
         else {
-            // ²»ÔÚÒıºÅÄÚ£¬¼ì²éÊÇ·ñÊÇ·Ö¸ô·û
+            // ä¸åœ¨å¼•å·å†…ï¼Œæ£€æŸ¥æ˜¯å¦æ˜¯åˆ†éš”ç¬¦
             if (std::isspace(c)) {
                 if (!current.empty()) {
                     result.push_back(current);
@@ -379,7 +395,7 @@ vector<u8string> SplitParamEx(const u8string& input) {
         }
     }
 
-    // ´¦Àí×îºóÒ»¸öÔªËØ
+    // å¤„ç†æœ€åä¸€ä¸ªå…ƒç´ 
     if (!current.empty() && !in_quotes) {
         result.push_back(current);
     }

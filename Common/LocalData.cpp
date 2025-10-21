@@ -5,6 +5,8 @@
 #include "..\IHCore\Debug.h"
 #include "..\IHCore\SomeData.h"
 #include "..\IHCore\ECDbgConsole.h"
+#include "..\IHCore\ECInterprocess.h"
+#include "IHCore/Version.h"
 #include <YRPP.h>
 
 extern struct CSFFile_ITable CSFFile_InstTable;
@@ -225,13 +227,16 @@ namespace Local
 		if (!strcmp(pLib, "IHCore"))return IHCore_GetFunc(pFunc, Version);
 		
 		auto it = LibMap.find(pLib);
-		if (it == LibMap.end())return nullptr;
-		if (!it->second->Available)return nullptr;
-		if (Version != DoNotCheckVersion && Version > it->second->Out->Info->Version)return nullptr;
-		auto pInfo = it->second->Out->GetFunc(pFunc, (Version == DoNotCheckVersion ? it->second->Out->Info->Version : Version));
-		if (!pInfo)return nullptr;
-		if (pInfo->ClassVersion > FuncInfo::GClassVersion)return nullptr;
-		return pInfo;
+		if (it != LibMap.end())
+		{
+			if (!it->second->Available)return nullptr;
+			if (Version != DoNotCheckVersion && Version > it->second->Out->Info->Version)return nullptr;
+			auto pInfo = it->second->Out->GetFunc(pFunc, (Version == DoNotCheckVersion ? it->second->Out->Info->Version : Version));
+			if (!pInfo)return nullptr;
+			if (pInfo->ClassVersion > FuncInfo::GClassVersion)return nullptr;
+			return pInfo;
+		}
+		else return RemoteComponentManager::GetRemoteMethodInfo(pLib, pFunc, Version);
 	}
 	//std::unordered_map<std::string, std::vector<LibFuncHandle>> NamedFunc;
 
@@ -248,6 +253,11 @@ namespace Local
 				pVec.push_back(pInfo);
 		}
 		return PArray<FuncInfo*>(pVec);
+	}
+
+	int GetVersion()
+	{
+		return PRODUCT_VERSION;
 	}
 
 	void RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor)
@@ -957,7 +967,29 @@ namespace Local
 		NamedFunc.clear();
 	}
 
+	void RemoteReturnInfo_Destroy(RemoteReturnInfo* Info)
+	{
+		ReturnInfoPtr& info = *(ReturnInfoPtr*)Info;
+		info.Release();
+	}
 
+	UTF8_CString RemoteReturnInfo_GetErrorMessage(const RemoteReturnInfo* Info)
+	{
+		const ReturnInfoPtr& info = *(const ReturnInfoPtr*)Info;
+		return info.GetErrorMessage();
+	}
+
+	bool RemoteReturnInfo_Succeeded(const RemoteReturnInfo* Info)
+	{
+		const ReturnInfoPtr& info = *(const ReturnInfoPtr*)Info;
+		return info.Succeeded();
+	}
+
+	JsonObject RemoteReturnInfo_GetResponseData(const RemoteReturnInfo* Info)
+	{
+		const ReturnInfoPtr& info = *(const ReturnInfoPtr*)Info;
+		return info.GetResponseData();
+	}
 
 
 
@@ -1030,6 +1062,17 @@ namespace Local
 	{
 		IHFileStreamer[StreamName] = vc;
 		return true;
+	}
+
+	bool PostAsyncRemoteCall(const char* pLib, const char* pFunc, int Version, JsonObject Context)
+	{
+		RemoteCallSendInfo Info;
+		Info.Source = u8"";
+		Info.Component = conv pLib;
+		Info.Version = Version;
+		Info.Method = conv pFunc;
+		Info.Context = Context;
+		return RemoteComponentManager::PostComponentMethod(Info);
 	}
 
 	/*
@@ -1121,6 +1164,7 @@ namespace Local
 
 
 
+
 	//FuncInfo
 	FuncInfo* __cdecl Export_GetFuncFromLib(const char* pLib, const char* pFunc, int Version)
 	{
@@ -1130,7 +1174,10 @@ namespace Local
 	{
 		return GetFuncByName(pFunc);
 	}
-	//PLACEHOLDER 1
+	int  __cdecl Export_GetVersion()
+	{
+		return GetVersion();
+	}
 	//PLACEHOLDER 2
 
 	//注册函数
@@ -1363,6 +1410,31 @@ namespace Local
 		return ::GetTextDrawVariable(Key);
 	}
 
+	void __cdecl Export_RemoteReturnInfo_Destroy(RemoteReturnInfo* Info)
+	{
+		RemoteReturnInfo_Destroy(Info);
+	}
+
+	UTF8_CString __cdecl Export_RemoteReturnInfo_GetErrorMessage(const RemoteReturnInfo* Info)
+	{
+		return RemoteReturnInfo_GetErrorMessage(Info);
+	}
+
+	bool __cdecl Export_RemoteReturnInfo_Succeeded(const RemoteReturnInfo* Info)
+	{
+		return RemoteReturnInfo_Succeeded(Info);
+	}
+
+	JsonObject __cdecl Export_RemoteReturnInfo_GetResponseData(const RemoteReturnInfo* Info)
+	{
+		return RemoteReturnInfo_GetResponseData(Info);
+	}
+
+	bool __cdecl Export_PostAsyncRemoteCall(const char* pLib, const char* pFunc, int Version, JsonObject Context)
+	{
+		return PostAsyncRemoteCall(pLib, pFunc, Version, Context);
+	}
+
 	LibInputFnTable IHCoreFnTable
 	{
 		LibInputFnTable::GClassVersion,
@@ -1370,7 +1442,7 @@ namespace Local
 
 		Export_GetFuncFromLib,
 		Export_GetFuncByName,
-		nullptr,
+		Export_GetVersion,
 		nullptr,
 		Export_RegisterContextProcessor,
 
@@ -1456,6 +1528,12 @@ namespace Local
 		Export_DbgFunc_SetErrorCode,
 		Export_DbgFunc_GetErrorCode,
 		Export_DbgFunc_GetLastResult,
-		Export_DbgFunc_GetVar
+		Export_DbgFunc_GetVar,
+
+		Export_RemoteReturnInfo_Destroy,
+		Export_RemoteReturnInfo_GetErrorMessage,
+		Export_RemoteReturnInfo_Succeeded,
+		Export_RemoteReturnInfo_GetResponseData,
+		Export_PostAsyncRemoteCall
 	};
 }

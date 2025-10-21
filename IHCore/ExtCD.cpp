@@ -1,4 +1,4 @@
-#include "ExtCD.h"
+ï»¿#include "ExtCD.h"
 #include "Debug.h"
 #include "Patch.h"
 #include "ConfData.h"
@@ -88,7 +88,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 	if (First)
 	{
 		auto cfg = GetIHCoreJson();
-		if (cfg.Available())
+		if (cfg)
 		{
 			auto Obj = cfg.GetObjectItem("ExtraPath_First");
 			if (Obj.Available() && Obj.IsNotEmptyArray())
@@ -188,7 +188,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 		for (auto& p : CDExt_Instance.PathHead)
 		{
 			This->BufferIOFileClass::SetFileName((p + pFileName).c_str());
-			//²»»áÐü´¹£¬BufferIOFileClass::SetFileName»áµ÷ÓÃstrdup¸´ÖÆÒ»·Ý
+			//ä¸ä¼šæ‚¬åž‚ï¼ŒBufferIOFileClass::SetFileNameä¼šè°ƒç”¨strdupå¤åˆ¶ä¸€ä»½
 			if (This->BufferIOFileClass::Exists(0))
 				return This->GetFileName();
 		}

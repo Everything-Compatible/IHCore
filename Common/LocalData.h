@@ -8,6 +8,7 @@
 #include <memory>
 
 
+
 class IHException :public std::exception
 {
 	std::string Info;
@@ -30,6 +31,7 @@ namespace IHLibList
 
 FuncInfo* IHCore_GetFunc(const char* Name, int Version);
 FuncInfo* Internal_GetFunc(const char* Name, int Version);
+std::vector<std::string> GetInternalSupportedFunctions();
 std::u8string FormatMessageU8(DWORD ErrorValue);
 GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Arguments);
 GenCallRetType ProcessSyringeRequestAlt(const std::string& Method, GeneratorParam Arg);
@@ -44,6 +46,7 @@ namespace Local
 		bool Available;
 		BasicLibData* Basic;
 		LibInputFnTable Tbl;
+		bool RemoteComponent{ false };
 
 		struct DependencyProcessData
 		{
@@ -142,6 +145,7 @@ namespace Local
 	//FuncInfo
 	FuncInfo* GetFuncFromLib(const char* pLib, const char* pFunc, int Version);
 	PArray<FuncInfo*> GetFuncByName(const char* pFunc);
+	int GetVersion();
 	void RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor);
 	void RegisterBinder(const char* Type, const char* BindType, Binder_t pBinder);
 	void RegisterGenerator(const char* BindType, BindingGenerator_t pGenerator);
@@ -202,8 +206,9 @@ namespace Local
 	//FuncInfo
 	FuncInfo* __cdecl Export_GetFuncFromLib(const char* pLib, const char* pFunc, int Version);
 	PArray<FuncInfo*> __cdecl Export_GetFuncByName(const char* pFunc);
-		//PLACEHOLDER 1
-		//PLACEHOLDER 2
+	int  __cdecl Export_GetVersion();
+	//PLACEHOLDER 2
+
 	//注册函数
 	void __cdecl Export_RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor);
 		//void Export_RegisterBinder(const char* Type, const char* BindType, Binder_t pBinder);
@@ -278,4 +283,9 @@ namespace Local
 	void __cdecl Export_DbgFunc_GetLastResult(UTF8_CString& Ret, UTF8_CString& ErrorStr, int& ErrorCode);
 	UTF8_CString __cdecl Export_DbgFunc_GetVar(UTF8_CString Key);
 
+	void __cdecl Export_RemoteReturnInfo_Destroy(RemoteReturnInfo* Info);
+	UTF8_CString __cdecl Export_RemoteReturnInfo_GetErrorMessage(const RemoteReturnInfo* Info);
+	bool __cdecl Export_RemoteReturnInfo_Succeeded(const RemoteReturnInfo* Info);
+	JsonObject __cdecl Export_RemoteReturnInfo_GetResponseData(const RemoteReturnInfo* Info);
+	bool __cdecl Export_PostAsyncRemoteCall(const char* pLib, const char* pFunc, int Version, JsonObject Context);
 }

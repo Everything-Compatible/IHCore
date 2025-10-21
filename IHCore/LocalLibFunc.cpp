@@ -173,6 +173,16 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)}
 };
 
+std::vector<std::string> GetInternalSupportedFunctions()
+{
+	std::vector<std::string> Ret;
+	for (const auto& [Name, Info] : Internal_Funcs)
+	{
+		Ret.push_back(Name);
+	}
+	return Ret;
+}
+
 FuncInfo* Internal_GetFunc(const char* Name, int Version)
 {
 	if (Version != DoNotCheckVersion && PRODUCT_VERSION < Version)return nullptr;
@@ -225,7 +235,7 @@ GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Argum
 	auto ResponseObj = ResultJson.GetObj().GetObjectItem("Response");
 	auto ErrorObj = ResultJson.GetObj().GetObjectItem("Error");
 
-	if (!ResponseObj.Available() || !ResponseObj.IsTypeString() || !ErrorObj.Available() || !ErrorObj.IsTypeNumber())
+	if (!ResponseObj || !ResponseObj.IsTypeString() || !ErrorObj || !ErrorObj.IsTypeNumber())
 	{
 		ECCommand::ReturnStdError(ERROR_INVALID_DATA);
 		return GenCallRetType::Void;

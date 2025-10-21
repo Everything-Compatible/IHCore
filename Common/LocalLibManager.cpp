@@ -8,6 +8,9 @@
 #include "..\IHCore\Patch.h"
 #include <SyringeEx.h>
 #include "..\IHCore\ECDbgConsole.h"
+#include "..\IHCore\ECInterprocess.h"
+#include <CRT.h>
+
 
 void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);
@@ -288,6 +291,7 @@ namespace Local
 			Libs[i].Tbl = IHCoreFnTable;
 			Libs[i].In.FunctionTable = &Libs[i].Tbl;
 			Libs[i].In.ECInitializeStage = &ECInitStage;
+			Libs[i].RemoteComponent = false;
 			Libs[i].Out = fn(&Libs[i].In);
 			Libs[i].Available = true;
 			if (!Libs[i].Out)Libs[i].Available = false;
@@ -313,7 +317,41 @@ namespace Local
 			BasicLibs[i].Reserved[0] = i;
 			if(Libs[i].Available)
 				BasicLibs[i].ReservedB = (void*)Libs[i].Out->Info->LibName;
+			else BasicLibs[i].ReservedB = nullptr;
 		}
+
+		InitInput RI;
+		RI.ECInitializeStage = &ECInitStage;
+		RI.FunctionTable = &IHCoreFnTable;
+		RemoteComponentManager::Initialize(RI);
+
+		auto RL = RemoteComponentManager::GetRemoteComponentLibType();
+		for (size_t i = 0; i < RL.size(); i++)
+		{
+			Libs.push_back(LibType());
+			BasicLibs.push_back(BasicLibData());
+
+			auto& lib = Libs.back();
+			auto& blib = BasicLibs.back();
+			
+			lib.Tbl = IHCoreFnTable;
+			lib.In.ECInitializeStage = RI.ECInitializeStage;
+			lib.In.FunctionTable = &lib.Tbl;
+			lib.Out = RL[i];
+			lib.RemoteComponent = true;
+			lib.Available = RemoteComponentManager::IsAvailableRemoteComponent(std::u8string(conv lib.Out->Info->LibName));
+			lib.Basic = &blib;
+
+			blib.Available = lib.Available;
+			blib.In = &lib.In;
+			blib.Out = lib.Out;
+			blib.ReservedA = (void*)&lib;
+			blib.Reserved[0] = Libs.size() - 1;
+			if (lib.Available)
+				blib.ReservedB = (void*)lib.Out->Info->LibName;
+			else BasicLibs[i].ReservedB = nullptr;
+		}
+
 
 		ECInitStage = 10;
 		try
@@ -326,7 +364,8 @@ namespace Local
 				if (it == LibMap.end())continue;
 				if (!it->second->Available)continue;
 				Debug::Log("[EC]  Call in the dependency order :\"%s\"\n", it->second->Out->Info->LibName);
-				if (it->second->Out->OrderedInit)it->second->Out->OrderedInit();
+				if (it->second->RemoteComponent)RemoteComponentManager::OrderedInit(~s);
+				else if (it->second->Out->OrderedInit)it->second->Out->OrderedInit();
 			}
 			ECInitStage = 100;
 		}
@@ -367,12 +406,15 @@ namespace Local
 	{
 		if (!Lib)return nullptr;
 		if (!Lib->Available)return nullptr;
-		auto pInfo = Lib->Out->GetFunc(Name, (Version == DoNotCheckVersion ? Lib->Out->Info->Version : Version));
-		return pInfo;
+		auto ActualVer = (Version == DoNotCheckVersion ? Lib->Out->Info->Version : Version);
+		if (!Lib->Out->GetFunc)
+			return GetFuncFromLib(Lib->Out->Info->LibName, Name, ActualVer);
+		else return Lib->Out->GetFunc(Name, ActualVer);
 	}
 
 	void __cdecl ExitClearImpl()
 	{
+		RemoteComponentManager::Uninitialize();
 		ExitClear();
 		ECDebug::CloseDebugConsole();
 	}
@@ -381,7 +423,7 @@ namespace Local
 
 	void LocalInit()
 	{
-		atexit(ExitClearImpl);
+		CRT::atexit(ExitClearImpl);
 		InitLibs();
 	}
 

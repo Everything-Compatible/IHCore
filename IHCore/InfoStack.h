@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include<vector>
 #include<mutex>
@@ -75,5 +75,13 @@ public:
         Lock.lock();
         Store.push_back(std::move(Ct));
         Lock.unlock();
+    }
+    T Pop()
+    {
+		Lock.lock();
+		T Ret = std::move(Store.back());
+		Store.pop_back();
+		Lock.unlock();
+		return Ret;
     }
 };

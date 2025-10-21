@@ -16,6 +16,17 @@ namespace ECExec
 	bool TryLockConsole();
 }
 
+namespace ECCommandRemoteBuf
+{
+	extern std::u8string Ret;
+	extern std::u8string ErrorStr;
+	extern int ErrorCode;
+	extern bool ReturnedValue;
+
+	void Enter();
+	void Exit();
+}
+
 namespace ECCommand
 {
 	extern std::unordered_map<std::u8string, std::u8string> GlobalVariables;
@@ -37,6 +48,9 @@ namespace ECCommand
 	void GetLastResult(std::u8string& Ret, std::u8string& ErrorStr, int& ErrorCode);
 
 	const std::u8string& GetVar(const std::u8string& Key);
+
+	//Pick out pattern #Type@HEX of ArgumentStr
+	std::optional<GeneratorParam> GetGeneratorParamFromStr(std::string_view Str);
 }
 
 namespace ECDebug

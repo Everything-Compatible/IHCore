@@ -53,6 +53,8 @@ namespace Test
 
 	void FrameUpdate()
 	{
+		void RemoteCommFrameUpdate();
+
 		if (CurrentFrame() < LastFrame)
 		{
 			GameStart();
@@ -62,7 +64,7 @@ namespace Test
 		Local::ExecutorRunLoop();
 		Local::LocalFrameUpdate();
 
-		ECDebug::FlushCommands();
+		RemoteCommFrameUpdate();
 	}
 }
 

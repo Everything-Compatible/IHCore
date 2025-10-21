@@ -49,6 +49,9 @@
     <Filter Include="Init">
       <UniqueIdentifier>{a39303ce-aa50-4e26-a978-cc70bdb390ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Interprocess">
+      <UniqueIdentifier>{eb1d2467-1306-4145-b99d-45213ab53dad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -1164,6 +1167,15 @@
     <ClInclude Include="..\Common\IHCore\Version.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="ECInterprocess.h">
+      <Filter>Interprocess</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteCommBase.h">
+      <Filter>Interprocess</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteComponents.h">
+      <Filter>Interprocess</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1306,6 +1318,21 @@
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\IH.File.cpp">
       <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicCaller.cpp">
+      <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="ExternalCaller.cpp">
+      <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="ExternalRegister.cpp">
+      <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteComMngr.cpp">
+      <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteCaller.cpp">
+      <Filter>Interprocess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

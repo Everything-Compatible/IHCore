@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <string>
 #include <cstdint>
@@ -26,17 +26,17 @@ namespace std
     }
 }
 
-// ANSI×Ö·û¼¯×ª»»³ÉUnicode
+// ANSIå­—ç¬¦é›†è½¬æ¢æˆUnicode
 std::wstring ANSItoUnicode(const std::string& MBCS);
-// UTF-8×Ö·û¼¯×ª»»³ÉUnicode
+// UTF-8å­—ç¬¦é›†è½¬æ¢æˆUnicode
 std::wstring UTF8toUnicode(const std::string& UTF8);
-// Unicode×Ö·û¼¯×ª»»³ÉUTF-8
+// Unicodeå­—ç¬¦é›†è½¬æ¢æˆUTF-8
 std::string UnicodetoUTF8(const std::wstring& Unicode);
-// Unicode×Ö·û¼¯×ª»»³ÉANSI
+// Unicodeå­—ç¬¦é›†è½¬æ¢æˆANSI
 std::string UnicodetoANSI(const std::wstring& Unicode);
-// ANSI×Ö·û¼¯×ª»»³ÉUTF-8
+// ANSIå­—ç¬¦é›†è½¬æ¢æˆUTF-8
 std::string ANSItoUTF8(const std::string& MBCS);
-// UTF-8×Ö·û¼¯×ª»»³ÉANSI
+// UTF-8å­—ç¬¦é›†è½¬æ¢æˆANSI
 std::string UTF8toANSI(const std::string& MBCS);
 
 uint64_t GetSysTimeMicros();
@@ -52,6 +52,10 @@ std::u8string&& operator~(std::string&& str);
 std::string&& operator~(std::u8string&& str);
 const std::u8string&& operator~(const std::string&& str);
 const std::string&& operator~(const std::u8string&& str);
+std::string_view& operator~(std::u8string_view& str);
+std::u8string_view& operator~(std::string_view& str);
+const std::string_view& operator~(const std::u8string_view& str);
+const std::u8string_view& operator~(const std::string_view& str);
 struct conv_t final {};
 inline const conv_t conv_x;
 #define conv conv_x-
@@ -59,7 +63,7 @@ const char* operator-(const conv_t&, const char8_t* str);
 const char8_t* operator-(const conv_t&, const char* str);
 
 
-//¶¨ÒåÔÚExtIni.cpp
+//å®šä¹‰åœ¨ExtIni.cpp
 const size_t MAX_LINE_LENGTH = 6000;
 using hash_t = size_t;
 using BufString = char[MAX_LINE_LENGTH];

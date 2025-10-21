@@ -1,7 +1,7 @@
 ﻿
 #include "ECDbgConsole.h"
 #include "ToolFunc.h"
-
+#include "ECInterprocess.h"
 #include "StringManagerExt.h"
 #include <Windows.h>
 #include <thread>
@@ -66,6 +66,7 @@ namespace ECExec
 		{
 			ReleaseMutex(ConsoleMutex);
 		}
+
 		return Locked;
 	}
 
@@ -99,6 +100,32 @@ namespace ECExec
 	}
 }
 
+namespace ECCommandRemoteBuf
+{
+	std::u8string Ret;
+	std::u8string ErrorStr;
+	int ErrorCode;
+	std::atomic_bool UseValue = false;
+	bool ReturnedValue;
+	std::mutex RWMutex;//always 1 read 1 write
+
+	void Enter()
+	{
+		RWMutex.lock();
+		UseValue = true;
+		ReturnedValue = false;
+		Ret.clear();
+		ErrorStr.clear();
+		ErrorCode = 0;
+	}
+
+	void Exit()
+	{
+		UseValue = false;
+		RWMutex.unlock();
+	}
+}
+
 namespace ECCommand
 {
 	bool OutputReturnedValue = true;
@@ -121,23 +148,46 @@ namespace ECCommand
 
 	void DoNotEcho()
 	{
+		if (ECCommandRemoteBuf::UseValue) return;
 		OutputReturnedValue = false;
 	}
 
 	void ReturnString(const std::u8string& Str)
 	{
-		ReturnedValue = true;
-		if (Str.empty())return;
-		GlobalVariables[u8"RET"] = Str;
-		GlobalVariables[u8"ERROR_STRING"] = u8"";
+		if (ECCommandRemoteBuf::UseValue)
+		{
+			ECCommandRemoteBuf::ErrorStr = u8"";
+			ECCommandRemoteBuf::Ret = Str;
+			ECCommandRemoteBuf::ErrorCode = 0;
+			ECCommandRemoteBuf::ReturnedValue = true;
+		}
+		else
+		{
+			ReturnedValue = true;
+			if (Str.empty())return;
+			GlobalVariables[u8"RET"] = Str;
+			GlobalVariables[u8"ERROR_STRING"] = u8"";
+			SetErrorCode(0);
+		}
+		
 	}
 
 	void ReturnError(const std::u8string& Str, int Code)
 	{
-		ReturnedValue = true;
-		GlobalVariables[u8"RET"] = u8"\033[31m[ERROR]\033[0m" + Str;
-		GlobalVariables[u8"ERROR_STRING"] = Str;
-		SetErrorCode(Code);
+		if (ECCommandRemoteBuf::UseValue)
+		{
+			ECCommandRemoteBuf::ErrorStr = Str;
+			ECCommandRemoteBuf::Ret = u8"\033[31m[ERROR]\033[0m" + Str;
+			ECCommandRemoteBuf::ErrorCode = Code;
+			ECCommandRemoteBuf::ReturnedValue = true;
+		}
+		else
+		{
+			ReturnedValue = true;
+			GlobalVariables[u8"RET"] = u8"\033[31m[ERROR]\033[0m" + Str;
+			GlobalVariables[u8"ERROR_STRING"] = Str;
+			SetErrorCode(Code);
+		}
 	}
 
 	void ReturnStdError(long Code)
@@ -147,7 +197,14 @@ namespace ECCommand
 
 	void SetErrorCode(int Code)
 	{
-		ErrorCode = Code;
+		if (ECCommandRemoteBuf::UseValue)
+		{
+			ECCommandRemoteBuf::ErrorCode = Code;
+		}
+		else
+		{
+			ErrorCode = Code;
+		}
 	}
 
 	int GetErrorCode()
@@ -215,6 +272,8 @@ namespace ECCommand
 
 	DbgCommand ProcessCommand(const std::u8string& _Command)
 	{
+		std::scoped_lock lock(ECCommandRemoteBuf::RWMutex);
+
 		//Command Format
 		auto Command = _Command;
 		for (auto& p : GlobalVariables)
@@ -440,19 +499,38 @@ namespace ECCommand
 				using namespace std::string_literals;
 				OutputReturnedValue = true;
 				ReturnedValue = false;
-				auto Result = IsSyringeCmd ?
-					ProcessSyringeRequest(~CommandFn, std::move(Arg)) :
-					Local::GeneralCall(*CommandInfo, Arg);
-				if(!OutputReturnedValue)std::cout << std::endl;
-				if (!ReturnedValue)
+				
+				if (CommandInfo->Type == FuncType::Remote)
 				{
-					SetResult(Result);
-					if (Result == GenCallRetType::True) return OutputReturnedValue ? u8"True"s : u8""s;
-					else if (Result == GenCallRetType::False) return OutputReturnedValue ? u8"False"s : u8""s;
-					else if (Result == GenCallRetType::Void) return u8""s;
-					else return u8"\033[31m无法识别参数。\033[33m"s;
+					auto Result = ((RemoteCaller_t)CommandInfo->Func)(Arg);
+
+					auto ResponseStr { ~Result.GetResponseData().GetText() };
+					auto ResponseStrEx { ~Result.GetResponseData().GetTextEx() };
+
+					GlobalVariables[u8"RET"] = ResponseStr;
+					GlobalVariables[u8"ERROR_STRING"] = Result.Succeeded() ? u8""s : Result.GetErrorMessage();
+					SetErrorCode(Result.Succeeded() ? 0 : 1);
+					ReturnedValue = true;
+					OutputReturnedValue = false;
+					std::cout << ~ResponseStrEx << std::endl;
+					return u8""s;
 				}
-				else return OutputReturnedValue ? GlobalVariables[u8"RET"] : u8""s;
+				else
+				{
+					auto Result = IsSyringeCmd ?
+						ProcessSyringeRequest(~CommandFn, std::move(Arg)) :
+						Local::GeneralCall(*CommandInfo, Arg);
+					if (!OutputReturnedValue)std::cout << std::endl;
+					if (!ReturnedValue)
+					{
+						SetResult(Result);
+						if (Result == GenCallRetType::True) return OutputReturnedValue ? u8"True"s : u8""s;
+						else if (Result == GenCallRetType::False) return OutputReturnedValue ? u8"False"s : u8""s;
+						else if (Result == GenCallRetType::Void) return u8""s;
+						else return u8"\033[31m无法识别参数。\033[33m"s;
+					}
+					else return OutputReturnedValue ? GlobalVariables[u8"RET"] : u8""s;
+				}
 			};
 		}
 	}
@@ -653,16 +731,13 @@ void SyringeDaemonMonitorThreadFunc()
 	}
 	SyringeDaemonMonitor_Connecting = false;
 
+	Game::IsActive = false;
+
 	while (1)
 	{
 		if (!SyringeData::IsDaemonConnected())return;
 		if (SyringeData::ShouldCloseDaemonPipe())break;
-		if (ECDebug::CommandStack.Empty())
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(50));
-			continue;
-		}
-		ECDebug::FlushCommands();
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 	SyringeData::DaemonDisconnect();
 }

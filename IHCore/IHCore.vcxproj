@@ -189,6 +189,7 @@
     <ClInclude Include="ConfData.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="ECDbgConsole.h" />
+    <ClInclude Include="ECInterprocess.h" />
     <ClInclude Include="ExtCD.h" />
     <ClInclude Include="ExtCsf.h" />
     <ClInclude Include="ExtFile.h" />
@@ -204,6 +205,8 @@
     <ClInclude Include="MiscFunc.h" />
     <ClInclude Include="Patch.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RemoteCommBase.h" />
+    <ClInclude Include="RemoteComponents.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sha1.h" />
     <ClInclude Include="SomeData.h" />
@@ -557,6 +560,9 @@
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="ExtCD.cpp" />
     <ClCompile Include="ExtCsf.cpp" />
+    <ClCompile Include="DynamicCaller.cpp" />
+    <ClCompile Include="ExternalCaller.cpp" />
+    <ClCompile Include="ExternalRegister.cpp" />
     <ClCompile Include="ExtFile.cpp" />
     <ClCompile Include="ExtFNT.cpp" />
     <ClCompile Include="ExtIni.cpp" />
@@ -579,6 +585,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RemoteCaller.cpp" />
+    <ClCompile Include="RemoteComMngr.cpp" />
     <ClCompile Include="StringManagerExt.cpp" />
     <ClCompile Include="Syringe.cpp" />
     <ClCompile Include="ExtYRM.cpp" />
