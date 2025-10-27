@@ -227,7 +227,7 @@ namespace Local
 		if (!strcmp(pLib, "IHCore"))return IHCore_GetFunc(pFunc, Version);
 		
 		auto it = LibMap.find(pLib);
-		if (it != LibMap.end())
+		if (it != LibMap.end() && !it->second->RemoteComponent)
 		{
 			if (!it->second->Available)return nullptr;
 			if (Version != DoNotCheckVersion && Version > it->second->Out->Info->Version)return nullptr;

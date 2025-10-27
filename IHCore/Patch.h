@@ -1,4 +1,4 @@
-/**
+﻿/**
 *  yrpp-spawner
 *
 *  Copyright(C) 2022-present CnCNet
@@ -20,6 +20,8 @@
 #pragma once
 #include <windows.h>
 #include <initializer_list>
+
+using byte = BYTE;
 
 // no more than 8 characters
 #define PATCH_SECTION_NAME ".patch"

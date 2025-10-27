@@ -2,7 +2,9 @@
 #include <functional>
 #include "InfoStack.h"
 #include "ExtJson.h"
+#include <optional>
 
+struct GeneratorParam;
 using DbgCommand = std::function<std::u8string(void)>;
 
 namespace ECExec

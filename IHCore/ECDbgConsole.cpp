@@ -348,6 +348,9 @@ namespace ECCommand
 
 		bool IsSyringeCmd = (CommandLib == u8"Syringe");
 
+		//Debug::Log("[EC] Processing Command: Lib=\"%s\", Fn=\"%s\", Ver=%d, IsSyringe=%d\n",
+		//	conv CommandLib.data(), conv CommandFn.data(), CommandVersion, IsSyringeCmd ? 1 : 0);
+
 
 		auto CommandInfo = IsSyringeCmd ? nullptr : Local::GetFuncFromLib(conv CommandLib.c_str(), conv CommandFn.c_str(), CommandVersion);
 
@@ -502,18 +505,26 @@ namespace ECCommand
 				
 				if (CommandInfo->Type == FuncType::Remote)
 				{
-					auto Result = ((RemoteCaller_t)CommandInfo->Func)(Arg);
+					ReturnInfoPtr pInfo;
+					//Debug::Log("[EC] Console : CommandInfo->Func = 0x%08X ; Arg = 0x%08X ; &pInfo = 0x%08X\n", CommandInfo->Func, Arg.GetRaw(), std::addressof(pInfo));
+					((RemoteCaller_t)CommandInfo->Func)(pInfo, Arg);
+					//Debug::Log("[EC] Console : &Ret 0x%08X, Ret 0x%08X\n",&pInfo, pInfo.Ptr.get());
+
+					auto& Result = pInfo;
 
 					auto ResponseStr { ~Result.GetResponseData().GetText() };
 					auto ResponseStrEx { ~Result.GetResponseData().GetTextEx() };
 
 					GlobalVariables[u8"RET"] = ResponseStr;
 					GlobalVariables[u8"ERROR_STRING"] = Result.Succeeded() ? u8""s : Result.GetErrorMessage();
+					auto Ret = Result.Succeeded() ? u8""s : u8"\033[31m" + *Result.Ptr->ErrorMessage + u8"\033[0m";
 					SetErrorCode(Result.Succeeded() ? 0 : 1);
 					ReturnedValue = true;
 					OutputReturnedValue = false;
 					std::cout << ~ResponseStrEx << std::endl;
-					return u8""s;
+
+					Result.Release();
+					return Ret;
 				}
 				else
 				{

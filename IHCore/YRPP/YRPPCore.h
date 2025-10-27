@@ -1,8 +1,10 @@
-#pragma once
+﻿#pragma once
 
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef unsigned long DWORD;
+
+using byte = BYTE;
 
 // the most basic globals
 #include <Fundamentals.h>

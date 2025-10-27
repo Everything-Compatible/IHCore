@@ -1,4 +1,5 @@
 ﻿#include "ECInterprocess.h"
+#include "Debug.h"
 
 bool RemoteComponent::HasMethod(const std::u8string& MethodName) const
 {
@@ -8,13 +9,30 @@ bool RemoteComponent::HasMethod(const std::u8string& MethodName) const
 bool RemoteComponent::Register(const InitInput& Input)//generate InitResult
 {
 	auto F{ RemoteComponentManager::GenerateRegisterContext(Input) };
-	auto Result = CallMethod(RemoteCallSendInfo{
-		.Source = u8"",
-		.Component = RegName,
-		.Method = RemoteCallInfoBase::GetRegisterMethodName(),
-		.Version = RemoteCallInfoBase::GetInternalMethodVersion(),
-		.Context = F.GetObj()
+
+	//暂时托管本组件的消息处理
+	std::jthread ComponentMessageTempProc([this](std::stop_token stok) {
+		while (!stok.stop_requested())
+		{
+			RemoteComponentManager::RemoteReceiverProcess(this);
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
 	});
+
+	auto Result = CallMethod(RemoteCallSendInfo{
+	.Source = u8"",
+	.Component = RegName,
+	.Method = RemoteCallInfoBase::GetRegisterMethodName(),
+	.Version = RemoteCallInfoBase::GetInternalMethodVersion(),
+	.Context = F.GetObj()
+		});
+
+	IPC_Log("[EC] RemoteComponent::Register Result :\nErrorMsg : %s\nData : \n%s\n",
+		Result.ErrorMessage ? Result.ErrorMessage->c_str() : u8"null", Result.ResponseData.GetObj().GetText().c_str());
+
+	//结束托管
+	ComponentMessageTempProc.request_stop();
+	ComponentMessageTempProc.join();
 
 	if (Result.ErrorMessage)
 		return false;
@@ -46,6 +64,8 @@ bool RemoteComponent::Register(const InitInput& Input)//generate InitResult
 	Register_InitRes.Info = &Register_VerInfo;
 	Register_InitRes.OrderedInit = nullptr;//use RemoteComponent::OrderedInit
 	Register_InitRes.Dependencies = Register_Dependencies;
+
+	return true;
 }
 void RemoteComponent::OrderedInit()
 {

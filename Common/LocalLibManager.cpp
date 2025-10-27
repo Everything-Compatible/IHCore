@@ -37,6 +37,8 @@ namespace Local
 	PArray<LibFuncHandle> InitFn;
 	std::vector<LibType> Libs;
 	std::vector<BasicLibData> BasicLibs;
+	std::vector<LibType> RemoteLibs;
+	std::vector<BasicLibData> RemoteBasicLibs;
 	std::unordered_map<std::string, LibType*> LibMap;
 	std::unordered_map<std::string, VClass> IHFileStreamer;
 	std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;
@@ -324,15 +326,17 @@ namespace Local
 		RI.ECInitializeStage = &ECInitStage;
 		RI.FunctionTable = &IHCoreFnTable;
 		RemoteComponentManager::Initialize(RI);
+		RemoteComponentManager::WaitAllInitialized();
 
 		auto RL = RemoteComponentManager::GetRemoteComponentLibType();
+		RemoteLibs.reserve(RL.size());
 		for (size_t i = 0; i < RL.size(); i++)
 		{
-			Libs.push_back(LibType());
-			BasicLibs.push_back(BasicLibData());
+			RemoteLibs.push_back(LibType());
+			RemoteBasicLibs.push_back(BasicLibData());
 
-			auto& lib = Libs.back();
-			auto& blib = BasicLibs.back();
+			auto& lib = RemoteLibs.back();
+			auto& blib = RemoteBasicLibs.back();
 			
 			lib.Tbl = IHCoreFnTable;
 			lib.In.ECInitializeStage = RI.ECInitializeStage;
@@ -346,10 +350,12 @@ namespace Local
 			blib.In = &lib.In;
 			blib.Out = lib.Out;
 			blib.ReservedA = (void*)&lib;
-			blib.Reserved[0] = Libs.size() - 1;
+			blib.Reserved[0] = Libs.size() + RemoteLibs.size() - 1;
 			if (lib.Available)
 				blib.ReservedB = (void*)lib.Out->Info->LibName;
-			else BasicLibs[i].ReservedB = nullptr;
+			else RemoteBasicLibs[i].ReservedB = nullptr;
+
+			LibMap[lib.Out->Info->LibName] = &lib;
 		}
 
 
@@ -363,7 +369,6 @@ namespace Local
 				auto it = LibMap.find(s);
 				if (it == LibMap.end())continue;
 				if (!it->second->Available)continue;
-				Debug::Log("[EC]  Call in the dependency order :\"%s\"\n", it->second->Out->Info->LibName);
 				if (it->second->RemoteComponent)RemoteComponentManager::OrderedInit(~s);
 				else if (it->second->Out->OrderedInit)it->second->Out->OrderedInit();
 			}

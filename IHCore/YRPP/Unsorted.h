@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <ArrayClasses.h>
 #include <GeneralDefinitions.h>
 #include <CCFileClass.h>
 #include <Helpers/CompileTime.h>
+#include <objidl.h>
 
 struct TacticalSelectableStruct;
 class SideClass;

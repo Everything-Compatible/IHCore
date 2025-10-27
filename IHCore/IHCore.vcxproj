@@ -104,7 +104,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>IHCore;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;IHCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;IHCore;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;IHCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -206,6 +206,7 @@
     <ClInclude Include="Patch.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemoteCommBase.h" />
+    <ClInclude Include="RemoteCommType.h" />
     <ClInclude Include="RemoteComponents.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sha1.h" />
@@ -587,6 +588,7 @@
     </ClCompile>
     <ClCompile Include="RemoteCaller.cpp" />
     <ClCompile Include="RemoteComMngr.cpp" />
+    <ClCompile Include="RemoteCommType.cpp" />
     <ClCompile Include="StringManagerExt.cpp" />
     <ClCompile Include="Syringe.cpp" />
     <ClCompile Include="ExtYRM.cpp" />

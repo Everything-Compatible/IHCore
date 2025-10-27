@@ -10,6 +10,28 @@
 #include <Mutex>
 #include "InfoStack.h"
 
+//Set to 1 when testing Interprocess Communication
+#define IPC_DebugMode 1
+#if IPC_DebugMode
+#define IPC_Log Debug::Log
+#else
+#define IPC_Log(...)
+#endif
+
+#if IPC_DebugMode
+#include "ExtLog.h"
+#include "ToolFunc.h"
+#include "Debug.h"
+inline LogClass RemoteCommFlow("CommFlow.log");
+inline struct __Ipcdbg_ClearLog {
+	__Ipcdbg_ClearLog() { RemoteCommFlow.ClearLog(); }
+}_ipcdbg_ClearLog;
+#define LogCommFlow(str) \
+	{ RemoteCommFlow.AddLog(conv (TimeNowU8() + str).c_str());  }
+#else
+#define LogCommFlow(...)
+#endif
+
 /*
 
 Dynamic Functions Created at Runtime
@@ -18,8 +40,8 @@ Dynamic Functions Created at Runtime
 
 struct CallerContext;
 struct ReturnInfoPtr;
-using RemoteCaller_t = ReturnInfoPtr (__cdecl*)(JsonObject Obj);
-using RemotePackedCaller_t = ReturnInfoPtr(__cdecl*)(JsonObject Obj, CallerContext* Ctx);
+using RemoteCaller_t = void (__cdecl*)(ReturnInfoPtr& Ret, JsonObject Obj);
+using RemotePackedCaller_t = void (__cdecl*)(ReturnInfoPtr& Ret, JsonObject Obj, CallerContext* Ctx);
 
 struct CallerContext
 {
@@ -33,7 +55,7 @@ struct CallerContext
 	bool operator< (const CallerContext&) const;
 };
 
-ReturnInfoPtr __cdecl ExternalFunctionCaller(JsonObject Obj, CallerContext* Ctx);
+void __cdecl ExternalFunctionCaller(ReturnInfoPtr& Ret, JsonObject Obj, CallerContext* Ctx);
 
 RemoteCaller_t GetRemoteFunctionAddr(const char* Target, const char* Method, int Version);
 
@@ -173,6 +195,7 @@ template<typename RemoteInfo>
 struct RemoteCallInfoTraits
 {
 	RemoteInfo* inst() { return reinterpret_cast<RemoteInfo*>(this); }
+	const RemoteInfo* inst() const { return reinterpret_cast<const RemoteInfo*>(this); }
 	bool MethodIsRegister() const { return inst()->Method == u8"_Register"; }
 	bool MethodIsPing() const { return inst()->Method == u8"_Ping"; }
 	bool MethodIsInit() const { return inst()->Method == u8"_Init"; }
@@ -185,7 +208,9 @@ struct RemoteCallInfoTraits
 
 	//Send : Source, Component, Method, Version, CallID, Context
 	//R"({{"Source": "{}","Component": "{}","Method": "{}","Version": {},"CallID": "{}","Context": {}}})", 
+	//NOTE : CallID is string of base-10 int64_t
 	std::u8string GenerateText() const;
+	std::u8string GenerateText(int64_t CallID) const;
 	std::u8string GenerateCompactText() const;
 };
 
@@ -282,6 +307,7 @@ protected:
 	InitResult Register_InitRes;//auto generated
 	bool Connected{ false };
 public:
+
 	RemoteComponent(RemoteComponentNameType&& Info)
 		:RegName(std::move(Info.RegName)),
 		RunCommand(std::move(Info.RunCommand)),
@@ -316,6 +342,8 @@ namespace RemoteComponentManager
 {
 	bool Initialize(const InitInput& Input);
 
+	void WaitAllInitialized();
+
 	void Uninitialize();
 
 	//Note : result->GetFunc should be nullptr to fallback to Local::GetFuncFromLib
@@ -335,6 +363,8 @@ namespace RemoteComponentManager
 	-----------------------
 	*/
 
+	void RemoteReceiverProcess(RemoteComponent* comp);
+
 	void RemoteReceiverThreadFunction(std::stop_token stok);
 
 	void FrameInactiveMessageHandlerThreadFunction(std::stop_token stok);
@@ -353,7 +383,7 @@ namespace RemoteComponentManager
 
 	bool IsLocalTaskAsyncHandling();
 
-	RemoteCallRecvInfo RespondLocalCall(const RemoteCallSendInfo& Info);
+	RemoteCallRecvInfo RespondLocalCall(const RemoteCallSendInfo& Info, int64_t CallID);
 
 	/*
 	--------------------------------------------------------
@@ -363,6 +393,7 @@ namespace RemoteComponentManager
 	RemoteCallReturnInfo CannotInvokeDefaultMethod(const RemoteCallSendInfo& Info);
 	RemoteCallReturnInfo CannotInvokeCommMethod(const RemoteCallSendInfo& Info);
 	RemoteCallReturnInfo CannotConvertToGenParam(const RemoteCallSendInfo& Info);
+	RemoteCallReturnInfo ComponentDisconnected(const RemoteCallSendInfo& Info);
 	RemoteCallReturnInfo FromECCommandRemote(GenCallRetType Ret);
 	
 	JsonFile GenerateRegisterContext(const InitInput& In);
@@ -370,23 +401,59 @@ namespace RemoteComponentManager
 
 void RemoteCommFrameUpdate();
 
-
-struct RemoteComm_NamedPipe
-{
-	bool Connect(std::u8string_view PipeName, std::u8string_view);
-	void Disconnect();
-
-	std::u8string ReadString();
-	void WriteString(std::u8string_view Str);
-	bool HasStringToRead();
+struct ServiceProcessInfo {
+	PROCESS_INFORMATION process_info = { 0 };
+	bool console_redirected = false;
+	InfoStack<std::u8string> InputBuffer;
 };
 
-struct RemoteComm_TCP
+struct ServiceProcessManager : public ServiceProcessInfo
 {
-	bool Connect(std::u8string_view PipeName, std::u8string_view);
-	void Disconnect();
-
-	std::u8string ReadString();
-	void WriteString(std::u8string_view Str);
-	bool HasStringToRead();
+	bool StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation);
+	void WaitForLocationReset(HANDLE child_stdout_rd, std::u8string& NewLocation, bool RedirectConsole);
+	void StopServiceProcess();
+	bool IsServiceProcessRunning();
+	void StartConsoleRedirection(HANDLE child_stdout_rd, HANDLE child_stdin_wr);
 };
+
+namespace ServiceProcessComm
+{
+	enum class Target
+	{
+		Host,
+		Service,
+		Broadcast
+	};
+
+	void RegisterProcessComm(const std::u8string& Name, ServiceProcessInfo& Info);
+	void UnregisterProcessComm(const std::u8string& Name);
+	std::u8string GetProcessNameByComm(ServiceProcessInfo* Info);
+	ServiceProcessInfo* GetProcessCommByName(const std::u8string& Name);
+	
+	void PushCommTarget(Target t, const std::u8string& Name = u8"");
+	void PopCommTarget();
+	void SetLocalCommTarget(Target t, const std::u8string& Name = u8"");
+	void SetCommTargetAsLocal();
+	void BeginCommSession();
+	void EndCommSession();
+
+	extern thread_local bool IsCurrentThreadOnConsole;
+
+	struct CommTargetHalper
+	{
+		bool Used;
+		CommTargetHalper() = delete;
+		CommTargetHalper(const CommTargetHalper&) = delete;
+		CommTargetHalper(CommTargetHalper&&) = delete;
+
+		CommTargetHalper(bool used, Target t, const std::u8string& Name = u8"")
+		{
+			Used = used;
+			if(used)PushCommTarget(t, Name);
+		}
+		~CommTargetHalper()
+		{
+			if (Used)PopCommTarget();
+		}
+	};
+}

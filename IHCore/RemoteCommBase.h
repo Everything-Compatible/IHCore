@@ -2,17 +2,19 @@
 #include "ECInterprocess.h"
 
 template<typename T>
-concept RemoteCommType = requires(T Comm)
+concept RemoteCommType = requires(T Comm, std::u8string& U)
 {
 	{ Comm.WriteString(std::u8string_view{}) } -> std::same_as<void>;
 	{ Comm.ReadString() } -> std::same_as<std::u8string>;
 	{ Comm.HasStringToRead() } -> std::same_as<bool>;
+	{ Comm.HasStringToRead() } -> std::same_as<bool>;
 
-	{ Comm.Connect(std::u8string_view{}, std::u8string_view{}) } -> std::same_as<bool>;
-	{ Comm.Disconnect() } -> std::same_as<void>;
+	{ Comm.BaseConnect(std::u8string_view{}, std::u8string_view{},  U) } -> std::same_as<bool>;
+	{ Comm.BaseDisconnect() } -> std::same_as<void>;
+	{ Comm.BaseConnected() } -> std::same_as<bool>;
 };
 
-template <RemoteCommType T>
+template <typename T>
 class RemoteComponentBase
 {
 	std::unique_ptr<std::jthread> RemoteCommThread;
@@ -24,12 +26,12 @@ class RemoteComponentBase
 
 	T* inst() { return reinterpret_cast<T*>(this); }
 public:
-	static void RemoteCommThreadFunction(std::stop_token stok);
+	void RemoteCommThreadFunction(std::stop_token stok);
 
 	void SendCallUnchecked(const RemoteCallSendInfo& Info, int64_t CallID, bool Discard);
 	RemoteCallRecvInfo ReceiveCall();
 	bool HasReceivedCall();
-	bool Connect(std::u8string_view CmdLine, std::u8string_view Location);
+	bool Connect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location);
 	void Disconnect();
 	void InterruptRecv(RemoteCallRecvInfo&& Recv);
 };
@@ -70,17 +72,33 @@ inline std::vector<JsonFile> GetJSONFromText(std::string Str)
 	return result;
 }
 
-template <RemoteCommType T>
+
+
+template <typename T>
 void RemoteComponentBase<T>::RemoteCommThreadFunction(std::stop_token stok)
 {
 	while (!stok.stop_requested())
 	{
+		for (RemoteCallRecvInfo& Send : SyncSendQueue.Release())
+		{
+			auto Text = Send.GenerateCompactText();
+
+			LogCommFlow(u8" SEND: " + Text + u8"\n");
+
+			inst()->WriteString(Text);
+		}
+
 		if (inst()->HasStringToRead())
 		{
 			auto Str = inst()->ReadString();
+
+			LogCommFlow(u8" RECV RAW: " + Str + u8"\n");
+
 			auto fs = GetJSONFromText(~Str);
 			for (JsonFile& f : fs)
 			{
+				LogCommFlow(u8" RECV OBJECT: \n" + ~f.GetObj().GetText());
+
 				RemoteCallRecvInfo Recv;
 				auto o = f.GetObj();
 				auto oCID = o.GetObjectItem("CallID");
@@ -115,15 +133,11 @@ void RemoteComponentBase<T>::RemoteCommThreadFunction(std::stop_token stok)
 			}
 		}
 
-		for (RemoteCallRecvInfo& Send : SyncSendQueue.Release())
-		{
-			auto Text = Send.GenerateCompactText();
-			inst()->WriteString(Text);
-		}
+		
 	}
 }
 
-template <RemoteCommType T>
+template <typename T>
 void RemoteComponentBase<T>::SendCallUnchecked(const RemoteCallSendInfo& Info, int64_t CallID, bool Discard)
 {
 	if (Discard)
@@ -143,32 +157,41 @@ void RemoteComponentBase<T>::SendCallUnchecked(const RemoteCallSendInfo& Info, i
 	SyncSendQueue.Push(std::move(Recv));
 }
 
-template <RemoteCommType T>
+template <typename T>
 RemoteCallRecvInfo RemoteComponentBase<T>::ReceiveCall()
 {
+	IPC_Log("[EC] IPC Lock SyncRecvQueue: " __FUNCTION__ "\n");
 	while (SyncRecvQueue.Empty())Sleep(0);
 	return SyncRecvQueue.Pop();
 }
 
-template <RemoteCommType T>
+template <typename T>
 bool RemoteComponentBase<T>::HasReceivedCall()
 {
 	return !SyncRecvQueue.Empty();
 }
 
-template <RemoteCommType T>
-bool RemoteComponentBase<T>::Connect(std::u8string_view CmdLine, std::u8string_view Location)
+template <typename T>
+bool RemoteComponentBase<T>::Connect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location)
 {
-	inst()->Connect(CmdLine, Location);
+	IPC_Log("[EC] RCB : Connecting Base \"%s\" Initial Location \"%s\"\n", conv RegName.data(), conv Location.c_str());
+	if (!inst()->BaseConnect(RegName, CmdLine, Location))return false;
+	IPC_Log("[EC] RCB : Complete. Location Redirected to \"%s\"\n", conv Location.c_str());
 
 	SyncRecvQueue.Clear();
 	SyncSendQueue.Clear();
 	DiscardedCallIDs.clear();
 
-	RemoteCommThread = std::make_unique<std::jthread>(RemoteCommThreadFunction);
+	RemoteCommThread = std::make_unique<std::jthread>([this](std::stop_token stok)
+		{
+			RemoteCommThreadFunction(stok);
+		});
+	IPC_Log("[EC] RCB : Comm Thread Started\n");
+
+	return inst()->BaseConnected();
 }
 
-template <RemoteCommType T>
+template <typename T>
 void RemoteComponentBase<T>::Disconnect()
 {
 	if (RemoteCommThread)
@@ -178,11 +201,13 @@ void RemoteComponentBase<T>::Disconnect()
 		RemoteCommThread.reset();
 	}
 
-	inst()->Disconnect();
+	inst()->BaseDisconnect();
 }
 
-template <RemoteCommType T>
+template <typename T>
 void RemoteComponentBase<T>::InterruptRecv(RemoteCallRecvInfo&& Recv)
 {
-	SyncRecvQueue.Push(std::move(Recv));
+	IPC_Log("[EC] IPC Lock SyncRecvQueue: " __FUNCTION__ "\n");
+	IPC_Log("[EC] RCB : Interrupting Recv Call : \n%s\n", Recv.GenerateText().c_str());
+	SyncRecvQueue.Push(std::move(Recv));;
 }

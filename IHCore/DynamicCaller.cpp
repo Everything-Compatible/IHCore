@@ -2,6 +2,7 @@
 #include <LocalData.h> 
 #include <set>
 #include "ECInterprocess.h"
+#include "Debug.h"
 
 
 
@@ -24,25 +25,44 @@ bool CallerContext::operator< (const CallerContext& rhs) const
 const BYTE INIT = 0xFF;
 /*
 
+
+
+
+extern "C" __declspec(dllexport) __declspec(noinline) void __cdecl Function2(int a1, int a2, int a3)
+{
+	printf("%d %d %d", a1, a2, a3);
+}
+
+extern "C" __declspec(dllexport) __declspec(noinline) void __cdecl Function1(int a1, int a2)
+{
+	Function2(a1, a2, 0x114514);
+}
+
+
+
 Final Function:
 
 push    ebp          55
 mov     ebp, esp     8B EC
 push    offset Ctx   68 xx xx xx xx  (Fill in with Ctx)
-push    [ebp+Obj]    FF 75 08
+push    [ebp+C]      FF 75 0C
+push    [ebp+8]      FF 75 08
 call    pFunc        E8 xx xx xx xx  (Call Offset)
-add     esp, 8       83 C4 08
+add     esp, 0xC     83 C4 0C
 pop     ebp          5D
 retn                 C3
 
 */
+
+
 const BYTE DynamicFunc_Template[] = {
 	0x55,
 	0x8B, 0xEC,
 	0x68, INIT, INIT, INIT, INIT,
+	0xFF, 0x75, 0x0C,
 	0xFF, 0x75, 0x08,
 	0xE8, INIT, INIT, INIT, INIT,
-	0x83, 0xC4, 0x08,
+	0x83, 0xC4, 0x0C,
 	0x5D,
 	0xC3
 };
@@ -51,6 +71,8 @@ const size_t DynamicFunc_FuncSize = ((sizeof(DynamicFunc_Template) + 0xF) >> 4) 
 
 void GenerateDynamicFunction(RemotePackedCaller_t pFunc, const CallerContext* Ctx, BYTE* Address)
 {
+	//Debug::Log("[EC] GDF : Generating Dynamic Function at 0x%08X for Ctx at 0x%08X\n", Address, Ctx);
+
 	//Write to Address
 	memset(Address, 0xCC, DynamicFunc_FuncSize);
 	memcpy(Address, DynamicFunc_Template, sizeof(DynamicFunc_Template));
@@ -59,8 +81,8 @@ void GenerateDynamicFunction(RemotePackedCaller_t pFunc, const CallerContext* Ct
 	memcpy(Address + 0x4, &Ctx, 4);
 
 	//Fill in Call Offset
-	DWORD_PTR CallOffset = (DWORD_PTR)pFunc - ((DWORD_PTR)Address + 0x10);
-	memcpy(Address + 0xC, &CallOffset, 4);
+	DWORD_PTR CallOffset = (DWORD_PTR)pFunc - ((DWORD_PTR)Address + 0x13);
+	memcpy(Address + 0xF, &CallOffset, 4);
 }
 
 
@@ -100,14 +122,14 @@ BYTE* AllocateDynamicFunctionSpace()
 	
 }
 
-std::set<CallerContext> Callers;
+std::set<std::unique_ptr<CallerContext>> Callers;
 
 BYTE* GetRemoteFunctionAddrHelper(const char* Target, const char* Method, int Version)
 {
-	auto [Iter, Success] = Callers.insert(CallerContext{ conv Target, conv Method, Version });
+	auto [Iter, Success] = Callers.insert(std::make_unique<CallerContext>(conv Target, conv Method, Version));
 	if (!Success)
 	{
-		return (BYTE*)Iter->Function;
+		return (BYTE*)Iter->get()->Function;
 	}
 	else
 	{
@@ -117,8 +139,8 @@ BYTE* GetRemoteFunctionAddrHelper(const char* Target, const char* Method, int Ve
 			Callers.erase(Iter);
 			return nullptr;
 		}
-		GenerateDynamicFunction(ExternalFunctionCaller, std::addressof(*Iter), pFunc);
-		Iter->Function = (RemoteCaller_t)pFunc;
+		GenerateDynamicFunction(ExternalFunctionCaller, Iter->get(), pFunc);
+		Iter->get()->Function = (RemoteCaller_t)pFunc;
 		return pFunc;
 	}
 }

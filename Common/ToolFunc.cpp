@@ -89,6 +89,20 @@ std::string TimeNow()
     return rt;
 }
 
+std::u8string TimeNowU8()
+{
+	const static char8_t 星期[7][20] =
+	{ u8"星期日", u8"星期一", u8"星期二", u8"星期三", u8"星期四", u8"星期五", u8"星期六" };
+	char8_t* TBuf = new char8_t[5000]();
+	std::tm stm;
+	std::time_t tt = std::time(0);
+	localtime_s(&stm, &tt);
+	sprintf_s((char*)TBuf, 5000, conv u8"%04d年%02d月%02d日 %s %02d:%02d:%02d", stm.tm_year + 1900, stm.tm_mon + 1, stm.tm_mday, (const char*)星期[stm.tm_wday], stm.tm_hour, stm.tm_min, stm.tm_sec);
+	std::u8string rt = TBuf;
+	delete[]TBuf;
+	return rt;
+}
+
 
 bool IsTrueString(const std::string& s1)
 {

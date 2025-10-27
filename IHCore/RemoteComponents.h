@@ -2,16 +2,12 @@
 #include "RemoteCommBase.h"
 
 template<typename T>
-concept CommTypeFinal = RemoteCommType<T> && !std::is_base_of_v<RemoteComponentBase<T>, T>;
+concept CommTypeFinal = RemoteCommType<T> && std::is_base_of_v<RemoteComponentBase<T>, T>;
 
 template <CommTypeFinal T>
 class RemoteComponent_CommType : public RemoteComponent
 {
 	T CommBase;
-	RemoteComponentBase<T>* Base()
-	{
-		return reinterpret_cast<RemoteComponentBase<T>*>(this);
-	}
 public:
 	RemoteComponent_CommType(RemoteComponentNameType&& Info) :
 		RemoteComponent(std::move(Info))
@@ -20,16 +16,22 @@ public:
 
 	virtual ~RemoteComponent_CommType()
 	{
+		IPC_Log("[EC] RemoteComponent_CommType::DTOR");
 		Disconnect();
 	}
 
 	virtual bool Connect()
 	{
-		Base()->Connect();
+		//assume _Register is supported
+		BasicInfo.SupportedMethods.insert(RemoteCallInfoBase::GetRegisterMethodName());
+
+		Connected = CommBase.Connect(RegName, RunCommand, Location);
+		return Connected;
 	}
 	virtual void Disconnect()
 	{
-		Base()->Disconnect();
+		Connected = false;
+		CommBase.Disconnect();
 	}
 
 	bool CheckHasMethod(const RemoteCallSendInfo& Info, int64_t CallID);
@@ -43,29 +45,46 @@ public:
 	virtual int64_t SendCall(const RemoteCallSendInfo& Info, int64_t CallID)
 	{
 		if(CheckHasMethod(Info, CallID))
-			Base()->SendCallUnchecked(Info, CallID, false);
+			CommBase.SendCallUnchecked(Info, CallID, false);
 		return CallID;
 	}
 	virtual void PostCall(const RemoteCallSendInfo& Info)
 	{
 		int64_t CallID = Info.GenerateCallID();
 		if (CheckHasMethod(Info, CallID))
-			Base()->SendCallUnchecked(Info, CallID, true);
+			CommBase.SendCallUnchecked(Info, CallID, true);
 	}
 	virtual RemoteCallRecvInfo ReceiveCall()
 	{
-		return Base()->ReceiveCall();
+		return CommBase.ReceiveCall();
 	}
 	virtual bool HasReceivedCall()
 	{
-		return Base()->HasReceivedCall();
+		return CommBase.HasReceivedCall();
 	}
 };
 
 template <CommTypeFinal T>
 bool RemoteComponent_CommType<T>::CheckHasMethod(const RemoteCallSendInfo& Info, int64_t CallID)
 {
-	if (HasMethod(Info.Method))return true;
+	if (!CommBase.BaseConnected())
+	{
+		Connected = false;
+
+		//generate Connection Closed response
+		//short circuit handling
+		RemoteCallRecvInfo recv;
+		recv.CallID = CallID;
+		recv.Component = Info.Source;
+		recv.Source = Info.Component;
+		recv.Method = Info.GetResponseMethodName();
+		recv.Version = Info.GetInternalMethodVersion();
+		recv.Context = RemoteCallReturnInfo::GenerateContext(
+			RemoteComponentManager::ComponentDisconnected(Info)
+		);
+		CommBase.InterruptRecv(std::move(recv));
+	}
+	else if (HasMethod(std::u8string(Info.Method)))return true;
 	else
 	{
 		//generate not supported response
@@ -79,9 +98,10 @@ bool RemoteComponent_CommType<T>::CheckHasMethod(const RemoteCallSendInfo& Info,
 		recv.Context = RemoteCallReturnInfo::GenerateContext(
 			RemoteComponentManager::MethodNotSupported(Info)
 		);
-		Base()->InterruptRecv(std::move(recv));
+		CommBase.InterruptRecv(std::move(recv));
+
 	}
+
+	return false;
 }
 
-using RemoteComponent_NamedPipe = RemoteComponent_CommType<RemoteComm_NamedPipe>;
-using RemoteComponent_TCP = RemoteComponent_CommType<RemoteComm_TCP>;

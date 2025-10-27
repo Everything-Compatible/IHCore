@@ -41,6 +41,7 @@ std::string UTF8toANSI(const std::string& MBCS);
 
 uint64_t GetSysTimeMicros();
 std::string TimeNow();
+std::u8string TimeNowU8();
 
 bool IsTrueString(const std::string& s);
 

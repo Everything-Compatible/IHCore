@@ -84,7 +84,7 @@ Target :
 *.json
 
 */
-std::vector<RemoteComponentNameType> ReadRemoteComponents(const std::filesystem::path& file)
+std::vector<RemoteComponentNameType> ReadRemoteComponents_File(const std::filesystem::path& file)
 {
 	ReadRemoteComponents_ErrorContext::CurrentFileName = file.u8string();
 	JsonFile F;
@@ -111,7 +111,7 @@ std::vector<RemoteComponentNameType> ReadRemoteComponents(const std::filesystem:
 
 	auto ComponentsArr = root.ItemArrayObject("Components");
 	result.resize(ComponentsArr.size());
-	for (auto i = 0; i < ComponentsArr.size(); i++)
+	for (size_t i = 0; i < ComponentsArr.size(); i++)
 	{
 		result[i].Load(ComponentsArr[i]);
 	}
@@ -130,10 +130,11 @@ std::vector<RemoteComponentNameType> ReadRemoteComponents(const std::filesystem:
 		if (p.is_regular_file() && p.path().extension() == ".json")
 		{
 			Debug::Log("[EC] Found Remote Component Definition File: \"%s\"\n", p.path().u8string().c_str());
-			auto content = ReadRemoteComponents(p.path());
+			auto content = ReadRemoteComponents_File(p.path());
 			result.insert(result.end(), content.begin(), content.end());
 		}
 	}
+	return result;
 }
 
 

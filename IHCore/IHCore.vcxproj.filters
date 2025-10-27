@@ -1176,6 +1176,9 @@
     <ClInclude Include="RemoteComponents.h">
       <Filter>Interprocess</Filter>
     </ClInclude>
+    <ClInclude Include="RemoteCommType.h">
+      <Filter>Interprocess</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1332,6 +1335,9 @@
       <Filter>Interprocess</Filter>
     </ClCompile>
     <ClCompile Include="RemoteCaller.cpp">
+      <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteCommType.cpp">
       <Filter>Interprocess</Filter>
     </ClCompile>
   </ItemGroup>
