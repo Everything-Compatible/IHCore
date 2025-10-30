@@ -236,7 +236,9 @@ namespace Local
 			if (pInfo->ClassVersion > FuncInfo::GClassVersion)return nullptr;
 			return pInfo;
 		}
-		else return RemoteComponentManager::GetRemoteMethodInfo(pLib, pFunc, Version);
+		else if(RemoteComponentManager::GetComponentByName(conv pLib))
+			return RemoteComponentManager::GetRemoteMethodInfo(pLib, pFunc, Version);
+		else return nullptr;
 	}
 	//std::unordered_map<std::string, std::vector<LibFuncHandle>> NamedFunc;
 

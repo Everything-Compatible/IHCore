@@ -109,62 +109,7 @@ bool IsTrueString(const std::string& s1)
     return s1 == "true" || s1 == "yes" || s1 == "1" || s1 == "T" || s1 == "True" || s1 == "Yes" || s1 == "t" || s1 == "Y" || s1 == "y";
 }
 
-std::u8string& operator~(std::string& str)
-{
-	return *(std::u8string*)&str;
-}
-std::string& operator~(std::u8string& str)
-{
-	return *(std::string*)&str;
-}
-const std::u8string& operator~(const std::string& str)
-{
-	return *(const std::u8string*)&str;
-}
-const std::string& operator~(const std::u8string& str)
-{
-	return *(const std::string*)&str;
-}
-std::u8string&& operator~(std::string&& str)
-{
-	return reinterpret_cast<std::u8string&&>(str);
-}
-std::string&& operator~(std::u8string&& str)
-{
-    return reinterpret_cast<std::string&&>(str);
-}
-const std::u8string&& operator~(const std::string&& str)
-{
-    return reinterpret_cast<const std::u8string&&>(str);
-}
-const std::string&& operator~(const std::u8string&& str)
-{
-    return reinterpret_cast<const std::string&&>(str);
-}
-const char* operator-(const conv_t&, const char8_t* str)
-{
-	return reinterpret_cast<const char*>(str);
-}
-const char8_t* operator-(const conv_t&, const char* str)
-{
-	return reinterpret_cast<const char8_t*>(str);
-}
-std::string_view& operator~(std::u8string_view& str)
-{
-	return *(std::string_view*)&str;
-}
-std::u8string_view& operator~(std::string_view& str)
-{
-	return *(std::u8string_view*)&str;
-}
-const std::string_view& operator~(const std::u8string_view& str)
-{
-	return *(const std::string_view*)&str;
-}
-const std::u8string_view& operator~(const std::string_view& str)
-{
-	return *(const std::u8string_view*)&str;
-}
+
 
 size_t UpperHashStr(const char* str)
 {

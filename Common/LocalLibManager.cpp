@@ -280,6 +280,18 @@ namespace Local
 
 	void InitLibs()
 	{
+		if (ECDebug::HasConsole())
+		{
+			if (ECDebug::OpenDebugConsole())
+			{
+				Debug::Log("[EC] Debug Console Opened\n");
+			}
+			else
+			{
+				Debug::Log("[EC] Failed to Open Debug Console\n");
+			}
+		}
+
 		Debug::Log("[EC] Initialize Libs\n");
 
 		if (!IHLibList::Initialize())return;
@@ -379,17 +391,7 @@ namespace Local
 			MessageBoxA(NULL, e.what(), "[EC] ERROR", MB_OK);
 		}
 
-		if (ECDebug::HasConsole())
-		{
-			if (ECDebug::OpenDebugConsole())
-			{
-				Debug::Log("[EC] Debug Console Opened\n");
-			}
-			else
-			{
-				Debug::Log("[EC] Failed to Open Debug Console\n");
-			}
-		}
+		
 
 		SetLibInfoToTextDrawVariables();
 	}

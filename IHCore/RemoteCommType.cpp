@@ -197,7 +197,7 @@ void ServiceProcessManager::StartConsoleRedirection(HANDLE child_stdout_rd, HAND
 			// 确保字符串以null结尾
 			buffer[bytes_read] = '\0';
 
-			auto U8 = ANSItoUTF8(buffer);
+			std::string U8 = buffer;//ANSItoUTF8(buffer);
 
 			LogCommFlow(u8" STDOUT of " + ServiceProcessComm::GetProcessNameByComm(this) + u8" :\n " + ~U8);
 

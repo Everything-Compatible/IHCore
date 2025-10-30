@@ -45,6 +45,8 @@ std::u8string TimeNowU8();
 
 bool IsTrueString(const std::string& s);
 
+#ifndef UTF8_CONV
+#define UTF8_CONV
 std::u8string& operator~(std::string& str);
 std::string& operator~(std::u8string& str);
 const std::u8string& operator~(const std::string& str);
@@ -62,6 +64,7 @@ inline const conv_t conv_x;
 #define conv conv_x-
 const char* operator-(const conv_t&, const char8_t* str);
 const char8_t* operator-(const conv_t&, const char* str);
+#endif
 
 
 //定义在ExtIni.cpp
