@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "..\Common\IHLoader\IH.Config.h"
 #include <cstdint>
+#include <atomic>
 
 std::vector<FuncHandle> Handles;
 std::unordered_map<std::string, std::vector<IHInitialLoadService>> ServiceRequests;
@@ -9,7 +10,29 @@ std::unordered_map<std::string, std::unordered_map<std::string, LPCVOID>> NamedP
 std::unordered_map<std::string, std::unordered_map<LPCVOID, std::string>> NamedPointersInv;
 ConfData Data;
 std::mt19937 Randomizer;
-int MaxID{ 1919810 };
+
+class UniqueValueGenerator {
+private:
+	std::atomic<int> counter{ 0 };
+
+public:
+	int getUnique() {
+		int expected = counter.load(std::memory_order_relaxed);
+		int desired;
+
+		do {
+			desired = expected + 1;
+			// 处理整数溢出
+			if (desired <= expected) desired = 1;
+		} while (!counter.compare_exchange_weak(
+			expected, desired,
+			std::memory_order_acq_rel,
+			std::memory_order_relaxed
+		));
+
+		return expected; 
+	}
+}IDGen;
 
 extern "C"
 {
@@ -28,7 +51,7 @@ extern "C"
 	}
 	EXPORT int __cdecl GenerateID()
 	{
-		return MaxID++;
+		return IDGen.getUnique();
 	}
 	EXPORT unsigned int __cdecl RandomUINT()
 	{
