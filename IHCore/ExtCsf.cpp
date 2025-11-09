@@ -1,4 +1,4 @@
-
+ï»¿
 #include "ExtCsf.h"
 #include "ExtFile.h"
 #include "ToolFunc.h"
@@ -269,12 +269,12 @@ const wchar_t* AnalyzeMyString(const char* Name)
 		return IHCSFLoader::AnalyzeHexString(Name + 4);
 	}
 
-	if (!strncmp(Name, "(£º", 3))
+	if (!strncmp(Name, "(ï¼š", 3))
 	{
 		return IHCSFLoader::AnalyzeGBKString(Name + 3);
 	}
 
-	if (!strncmp(Name, (const char*)u8"(£º", 4))
+	if (!strncmp(Name, (const char*)u8"(ï¼š", 4))
 	{
 		return IHCSFLoader::AnalyzeUTF8String(Name + 4);
 	}
@@ -286,8 +286,8 @@ bool IsMyString(const char* Name)
 	if (!strncmp(Name, "NOSTR:", 6))return true;
 	if (!strncmp(Name, "EXTS:", 5))return true;
 	if (!strncmp(Name, "HEX:", 4))return true;
-	if (!strncmp(Name, "(£º", 3))return true;
-	if (!strncmp(Name, (const char*)u8"(£º", 4))return true;
+	if (!strncmp(Name, "(ï¼š", 3))return true;
+	if (!strncmp(Name, (const char*)u8"(ï¼š", 4))return true;
 	return false;
 }
 
@@ -372,106 +372,3 @@ void IHExtCSF::Assign(const IHExtCSF& rhs)
 	*this = rhs;
 }
 
-/*
-//FOR EXT & JSON
-DEFINE_HOOK(0x734E83, CSF_LoadStringA, 6)
-{
-	GET(char*, Name, EBX);
-	//IH_ENTER_FN_LOG(CSF_LoadStringA, AnalyzeMyString);
-	const wchar_t* string = AnalyzeMyString(Name);
-	if (string != nullptr)
-	{
-		R->EAX(string);
-		return 0x734F0F;
-	}
-	//IH_EXIT_FN_LOG(CSF_LoadStringA, AnalyzeMyString);
-	return 0;
-}
-
-DEFINE_HOOK(0x410B58, CSF_UINameLabelFix, 6)
-{
-	static char Stack[200010];
-	GET_STACK(INIClass*, pINI, 0x440);
-	GET(ObjectTypeClass*, pObj, EBX);
-	try
-	{
-		if (!pINI || !pObj)return 0;
-		Stack[pINI->ReadString(pObj->ID, "UIName", Stack, Stack, 200000)] = 0;
-		//Debug::Log("UIName Entry=\"%s\"\n", Stack);
-		const wchar_t* string = AnalyzeMyString(Stack);
-		if (string)R->EAX(string);
-	}
-	catch (std::exception& e)
-	{
-		Debug::Log("IHCore Error : %s", e.what());
-	}
-	return 0;
-
-	bool IHExtCSF::LoadFromCCFile(const char* name)
-{
-	static char gbuf[10000];
-
-	CCFileClass* pFile = GameCreate<CCFileClass>(name);
-	if (!pFile->Exists())return Loaded = false;
-	if (!pFile->Open(FileAccessMode::Read))return Loaded = false;
-
-
-	gbuf[4] = 0;
-	pFile->ReadBytes(gbuf,4);
-
-	if (std::string(gbuf) != " FSC")
-		{ pFile->Close(); GameDelete(pFile); return Loaded = false; }
-	pFile->Read(Version);
-	pFile->Read(LblN);
-	pFile->Read(StrN);
-	pFile->Read(Language);
-	pFile->Read(Reserved);
-
-	uint32_t NLblStr, StrLen;
-	std::string Key, Ext;
-	std::wstring Value;
-	bool HasExt;
-	for (size_t i = 0; i < LblN; i++)
-	{
-		gbuf[4] = 0;
-		pFile->ReadBytes(gbuf, 4);
-		if (std::string(gbuf) != " LBL")
-			{ pFile->Close(); GameDelete(pFile); return Loaded = false; }
-		pFile->Read(NLblStr);
-		pFile->Read(StrLen);
-		gbuf[StrLen] = 0;
-		pFile->ReadBytes(gbuf, StrLen);
-		Key = gbuf;
-		//cout<<Key<<endl;
-
-		gbuf[4] = 0;
-		pFile->ReadBytes(gbuf, 4);
-		if (std::string(gbuf) != " RTS" && std::string(gbuf) != "WRTS")
-			{ pFile->Close(); GameDelete(pFile); return Loaded = false; }
-		HasExt = (std::string(gbuf) == "WRTS");
-		pFile->Read(StrLen);
-		gbuf[StrLen << 1] = gbuf[StrLen << 1 | 1] = 0;
-		pFile->ReadBytes(gbuf, StrLen << 1);
-		for (size_t j = 0; j < (StrLen << 1); j++)gbuf[j] = ~gbuf[j];
-		Value = (const wchar_t*)gbuf;
-
-		if (HasExt)
-		{
-			pFile->Read(StrLen);
-			gbuf[StrLen] = 0;
-			pFile->ReadBytes(gbuf, StrLen);
-			Ext = gbuf;
-			//cout<<Ext<<endl;
-		}
-		else
-		{
-			Ext.clear();
-		}
-
-		CsfMap[Key] = { Value,Ext };
-	}
-	pFile->Close();
-	GameDelete(pFile);
-	return Loaded = true;
-}
-}*/
