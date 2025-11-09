@@ -122,6 +122,12 @@ std::vector<RemoteComponentNameType> ReadRemoteComponents_File(const std::filesy
 
 std::vector<RemoteComponentNameType> ReadRemoteComponents(const std::filesystem::path& dir)
 {
+	if (!std::filesystem::exists(dir) || !std::filesystem::is_directory(dir))
+	{
+		Debug::Log("[EC] Remote Components Directory Not Found: \"%s\"\n", dir.u8string().c_str());
+		return {};
+	}
+
 	Debug::Log("[EC] Reading Remote Components from Directory: \"%s\"\n", dir.u8string().c_str());
 	std::vector<RemoteComponentNameType> result;
 	for (auto& p : std::filesystem::directory_iterator(dir))
@@ -129,8 +135,10 @@ std::vector<RemoteComponentNameType> ReadRemoteComponents(const std::filesystem:
 		//filter *.json file
 		if (p.is_regular_file() && p.path().extension() == ".json")
 		{
-			Debug::Log("[EC] Found Remote Component Definition File: \"%s\"\n", p.path().u8string().c_str());
 			auto content = ReadRemoteComponents_File(p.path());
+			if (content.empty())
+				continue;
+			Debug::Log("[EC] Found Remote Component Definition File: \"%s\"\n", p.path().u8string().c_str());
 			result.insert(result.end(), content.begin(), content.end());
 		}
 	}
