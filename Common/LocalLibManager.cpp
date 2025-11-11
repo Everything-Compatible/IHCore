@@ -293,6 +293,7 @@ namespace Local
 		}
 
 		Debug::Log("[EC] Initialize Libs\n");
+		if (ECDebug::IsConsoleOpen())std::printf("[EC] Initialize Libs\n");
 
 		if (!IHLibList::Initialize())return;
 		//IHLibList::RegisterToLibList(HPLocalData::LoadIFunction);
@@ -309,18 +310,19 @@ namespace Local
 			Libs[i].Out = fn(&Libs[i].In);
 			Libs[i].Available = true;
 			if (!Libs[i].Out)Libs[i].Available = false;
-			else {
-				if (!Libs[i].Out->GetFunc)Libs[i].Available = false;
-				if (!Libs[i].Out->Info)Libs[i].Available = false;
-			}
+			if (!Libs[i].Out->GetFunc)Libs[i].Available = false;
+			if (!Libs[i].Out->Info)Libs[i].Available = false;
+			
 			LibMap[Libs[i].Out->Info->LibName] = &Libs[i];
 			if (Libs[i].Available)
 			{
 				Debug::Log("[EC] Loading Library \"%s\" Successfully\n", Libs[i].Out->Info->LibName);
+				if (ECDebug::IsConsoleOpen())std::printf("[EC] Loading Library \"%s\" Successfully\n", Libs[i].Out->Info->LibName);
 			}
 			else
 			{
 				Debug::Log("[EC] Failed to Load Library");
+				if (ECDebug::IsConsoleOpen())std::printf("[EC] Failed to Load Library\n");
 			}
 
 			Libs[i].Basic = &BasicLibs[i];
@@ -337,8 +339,15 @@ namespace Local
 		InitInput RI;
 		RI.ECInitializeStage = &ECInitStage;
 		RI.FunctionTable = &IHCoreFnTable;
+
+		Debug::Log("[EC] Initialize Remote Components\n");
+		if (ECDebug::IsConsoleOpen())std::printf("[EC] Initialize Remote Components\n");
+
 		RemoteComponentManager::Initialize(RI);
 		RemoteComponentManager::WaitAllInitialized();
+
+		Debug::Log("[EC] Remote Components Initialized\n");
+		if (ECDebug::IsConsoleOpen())std::printf("[EC] Remote Components Initialized\n");
 
 		auto RL = RemoteComponentManager::GetRemoteComponentLibType();
 		RemoteLibs.reserve(RL.size());
@@ -369,7 +378,9 @@ namespace Local
 
 			LibMap[lib.Out->Info->LibName] = &lib;
 		}
-
+		
+		Debug::Log("[EC] Processing Dependency Order...\n");
+		if (ECDebug::IsConsoleOpen())std::printf("[EC] Processing Dependency Order...\n");
 
 		ECInitStage = 10;
 		try
@@ -391,9 +402,11 @@ namespace Local
 			MessageBoxA(NULL, e.what(), "[EC] ERROR", MB_OK);
 		}
 
-		
+		Debug::Log("[EC] Library Init Complete.\n");
+		if (ECDebug::IsConsoleOpen())std::printf("[EC] Library Init Complete.\n");
 
 		SetLibInfoToTextDrawVariables();
+		ECDebug::HandleConsole();
 	}
 
 	BasicLibData* GetLib(const char* Name)

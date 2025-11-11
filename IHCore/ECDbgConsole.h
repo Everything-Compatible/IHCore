@@ -64,6 +64,8 @@ namespace ECDebug
 
 	bool HasConsole();
 
+	void HandleConsole();
+
 	bool IsConsoleOpen();
 
 	bool OpenDebugConsole();

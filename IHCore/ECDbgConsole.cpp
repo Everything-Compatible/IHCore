@@ -562,6 +562,16 @@ namespace ECDebug
 	}
 
 	bool ConsoleOpen{ false };
+	bool ShouldHandleConsole{ false };
+
+	void HandleConsole()
+	{
+		if (ShouldHandleConsole)
+		{
+			ECDbgConsoleManagerThread = std::make_unique<std::thread>(ECDbgConsoleManagerThreadFunc);
+			ECDbgConsoleManagerThread->detach();
+		}
+	}
 
 	bool IsConsoleOpen()
 	{
@@ -612,8 +622,7 @@ namespace ECDebug
 				if (!ECDbgConsoleManagerThread)
 				{
 					ManagerTerminate = false;
-					ECDbgConsoleManagerThread = std::make_unique<std::thread>(ECDbgConsoleManagerThreadFunc);
-					ECDbgConsoleManagerThread->detach();
+					ShouldHandleConsole = true;
 				}
 
 				if (!SetConsoleOutputCP(CP_UTF8)) {
