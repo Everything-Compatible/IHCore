@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <StringTable.h>
 #include <SyringeEx.h>
 #include <unordered_map>
@@ -87,8 +87,8 @@ bool IHExtCSF::Load(FileLoader& fp)
 	fp.Read(&Version, 4, 1);
 	fp.Read(&LblN, 4, 1);
 	fp.Read(&StrN, 4, 1);
-	fp.Read(&Language, 4, 1);
 	fp.Read(&Reserved, 4, 1);
+	fp.Read(&Language, 4, 1);
 	//cout<<Version<<endl<<LblN<<endl<<StrN<<endl<<Language<<endl;
 	uint32_t NLblStr, StrLen;
 	std::string Key, Ext;
