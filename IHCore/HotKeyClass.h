@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <CommandClass.h>
+#include <CRT.h>
 
 //get the description of WWKey
 //same as the setting menu
@@ -38,7 +39,7 @@ struct HotKeyListClass
 	{
 		if (!Sorted)
 		{
-			qsort(HotKeys, HotKeyCount, sizeof(HotKeyClass), KeyCompare);
+			CRT::qsort(HotKeys, HotKeyCount, sizeof(HotKeyClass), KeyCompare);
 			LastPressedKey = nullptr;
 			Sorted = true;
 		}

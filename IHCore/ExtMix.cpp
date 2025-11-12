@@ -1,4 +1,4 @@
-#include <YRPP.h>
+ï»¿#include <YRPP.h>
 #include "InitialLoad.h"
 #include "SyringeEx.h"
 #include "Global.h"
@@ -32,7 +32,7 @@ void ConfigJson_InitBeforeEverything()
 		if (IHCoreData)
 		{
 			IHCoreJson.Parse(SyringeData::GetSettingText(*IHCoreData));
-			//SyringeIH»áÍê³ÉcheckµÄ
+			//SyringeIHä¼šå®Œæˆcheckçš„
 		}
 	}
 	else
@@ -41,16 +41,16 @@ void ConfigJson_InitBeforeEverything()
 		auto Str = GetStringFromFile<ExtFileClass>(Name);
 		if (!Str.empty())
 		{
-			auto Info = IHCoreJson.ParseChecked(Str, "¡¾³ö´íÎ»ÖÃ¡¿");
+			auto Info = IHCoreJson.ParseChecked(Str, "ã€å‡ºé”™ä½ç½®ã€‘");
 			if (!Info.empty())
 			{
 				MessageBoxA(
-					nullptr, (std::string(PathFindFileNameA(Name)) + "ÊÇ·Ç·¨µÄJSONÎÄ¼ş¡£\n´íÎóÒÑÊä³öµ½¸ùÄ¿Â¼ÏÂµÄih_error.log¡£").c_str(),
+					nullptr, (std::string(PathFindFileNameA(Name)) + "æ˜¯éæ³•çš„JSONæ–‡ä»¶ã€‚\né”™è¯¯å·²è¾“å‡ºåˆ°æ ¹ç›®å½•ä¸‹çš„ih_error.logã€‚").c_str(),
 					PRODUCT_FULLNAME_STR, MB_OK | MB_ICONINFORMATION);
 				{
 					ExtFileClass es;
 					es.Open("ih_error.log", "w");
-					es.WriteData(std::string(PathFindFileNameA(Name)) + "ÊÇ·Ç·¨µÄJSONÎÄ¼ş¡£\n");
+					es.WriteData(std::string(PathFindFileNameA(Name)) + "æ˜¯éæ³•çš„JSONæ–‡ä»¶ã€‚\n");
 					es.WriteData(Info);
 				}
 			}
@@ -86,21 +86,21 @@ void InitMix()
 	if (Obj.Available())
 		for (auto& s : Obj.GetArrayString())
 			Mixes.push_back(GameCreate<MixFileClass>(s.c_str()));
-	/*
+
 	Obj = IHCoreJson.GetObj().GetObjectItem("WhiteList");
 	if (Obj.Available() && Obj.IsNotEmptyArray())
 	{
 		for (auto& s : Obj.GetArrayString())
 			WhiteList.insert(s);
 	}
-
 	else
-	{*/
-	Obj = IHCoreJson.GetObj().GetObjectItem("BlackList");
-	if (Obj.Available())
-		for (auto& s : Obj.GetArrayString())
-			BlackList.insert(s);
-	//}
+	{
+		Obj = IHCoreJson.GetObj().GetObjectItem("BlackList");
+		if (Obj.Available() && Obj.IsNotEmptyArray())
+			for (auto& s : Obj.GetArrayString())
+				BlackList.insert(s);
+	}
+
 	Obj = IHCoreJson.GetObj().GetObjectItem("Mixfiles");
 	if (Obj.Available())
 		for (auto& s : Obj.GetPVObject())
@@ -125,7 +125,7 @@ void InitMix()
 						GameData::ShowInternalErrorDialog();
 						Game::RaiseError(0xEA114514);
 					}
-					//Ğ£ÑéÊ§°Ü¡£¼Ä¡£
+					//æ ¡éªŒå¤±è´¥ã€‚å¯„ã€‚
 				}
 				it = s.second.GetObjectItem("hash");
 				if (it.Available() && it.IsTypeString())
@@ -141,7 +141,7 @@ void InitMix()
 							GameData::ShowInternalErrorDialog();
 							Game::RaiseError(0xEA114514);
 						}
-						//Ğ£ÑéÊ§°Ü¡£¼Ä¡£
+						//æ ¡éªŒå¤±è´¥ã€‚å¯„ã€‚
 					}
 					GameDelete(pFile);
 				}
@@ -156,7 +156,7 @@ void InitMix()
 					GameData::ShowInternalErrorDialog();
 					Game::RaiseError(0xEA114514);
 				}
-				//Ğ£ÑéÊ§°Ü¡£¼Ä¡£
+				//æ ¡éªŒå¤±è´¥ã€‚å¯„ã€‚
 			}
 			GameDelete(pCC);
 			if (Success)Mixes.push_back(GameCreate<MixFileClass>(s.first.c_str()));

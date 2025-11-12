@@ -225,10 +225,27 @@ const char* FileClassExt::RawFileClass_GetFileName()
 	return This->FileName;
 }
 
+bool FileClassExt::BufferIOFileClass_Exists(bool WriteShared)
+{
+	auto This = reinterpret_cast<BufferIOFileClass*>(this);
+	auto Name = This->GetFileName();
+	std::string_view p = Name;
+	if (!p.ends_with(".mix") && !p.ends_with(".MIX") && !WhiteList.empty() && !WhiteList.count(PathFindFileNameA(Name)))
+	{
+		if (!MixFileClass::Offset(Name, nullptr, nullptr, nullptr, nullptr))
+			Debug::Log("IHCore : Requested File \"%s\" is NOT in the WhiteList\n", Name);
+		return false;
+	}
+	if (BlackList.count(PathFindFileNameA(Name)))return false;
+	if (This->AsBufferedIOFile)return true;
+	else return This->RawFileClass::Exists(false);
+}
+
 void ExtCD_InitBeforeEverything()
 {
 	Patch::Apply_LJMP(0x47AE10, union_cast<void*>(&FileClassExt::CDFileClass_SetFileName));
 	Patch::Apply_LJMP(0x401940, union_cast<void*>(&FileClassExt::RawFileClass_GetFileName));
+	Patch::Apply_LJMP(0x431F10, union_cast<void*>(&FileClassExt::BufferIOFileClass_Exists));
 };
 
 

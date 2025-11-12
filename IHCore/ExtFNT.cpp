@@ -427,6 +427,7 @@ namespace DrawStyle
 
 char Magic_Bitmap[80] = { (char)0 };
 char Magic_Bitmap_Alt[80] = { (char)0 };
+
 DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
 {
     GET_STACK(wchar_t, Char, 0x4);
@@ -586,7 +587,7 @@ DEFINE_HOOK(0x4352FB, BitFont_Blit2Ret2, 5)
 
 
 #if 0
-DEFINE_HOOK(0x433DF, ResetFontTest, 6)
+DEFINE_HOOK(0x4338DF, ResetFontTest, 6)
 {
     GET(BitFont*, pFont, ESI);
 
@@ -657,101 +658,4 @@ DEFINE_HOOK(0x433DF, ResetFontTest, 6)
     return 0;
 }
 
-int Test_CurColor = -1;
-bool Test_ChangingColor = false;
-bool Test_NextChanging = false;
-wchar_t FmtColorIntro = L'航', FmtEndAll = L'酱';
-unsigned char OrigBuf[50];
-unsigned char* pOrigBuf;
-//short OrigModule[2];
-//short* pOrigModule[2];
-
-//434500、434B90、434CD0
-DEFINE_HOOK(0x434120, BitFont_Blit, 5)
-{
-    GET_STACK(wchar_t, Character, 0x4);
-    REF_STACK(int, Color16, 0x10);
-
-    if (Character == FmtColorIntro)
-    {
-        Test_ChangingColor = true;
-    }
-    if (Test_ChangingColor)
-    {
-        //Color16 = 0b0000011111111111;
-        auto pb = BitFont::Instance->GetCharacterBitmap(Character);
-        if (pb)
-        {
-            pOrigBuf = pb;
-            memcpy(OrigBuf, pb, 49);
-            for (int i = 0; i < 16; i++)
-            {
-                if (pb[0] < 15)++pb[0];
-                auto s = *((short*)(pb + i * 3 + 1));
-                *((short*)(pb + i * 3 + 1)) = (s << 1) | s;
-            }
-            /*
-            OrigModule[0] = *((short*)(pb + 22));
-            *((short*)(pb + 22)) = 0xFFFF;
-            *(pb + 23) |= 1; *(pb + 26) |= 1;
-            pOrigModule[0] = ((short*)(pb + 22));
-            OrigModule[1] = *((short*)(pb + 25));
-            *((short*)(pb + 25)) = 0xFFFF;
-            pOrigModule[1] = ((short*)(pb + 25));
-            */
-        }
-    }
-    else {
-        pOrigBuf = nullptr;
-        /*OrigModule[0] = 0; pOrigModule[0] = nullptr;
-        OrigModule[1] = 0; pOrigModule[1] = nullptr;*/
-    }
-    if (Character == FmtEndAll)
-    {
-        Test_ChangingColor = false;
-    }
-    /*
-    if (Character == L'吃')// && Color16 != -1
-    {
-        Color16 = 0b0000011111100000;
-    }
-    if (iswdigit(Character)) //&& Color16 != -1
-    {
-        Color16 = 0b1111100000011111;
-    }
-    */
-    return 0;
-};
-
-DEFINE_HOOK(0x4344E4, BitFont_Blit0, 7)
-{
-    if (pOrigBuf)
-    {
-        memcpy(pOrigBuf, OrigBuf, 49);
-        pOrigBuf = nullptr;
-    }
-    /*
-    if (pOrigModule[0])
-    {
-        *pOrigModule[0] = OrigModule[0];
-        pOrigModule[0][1] -= 1; pOrigModule[1][1] -= 1;
-        *pOrigModule[1] = OrigModule[1];
-        OrigModule[0] = 0; pOrigModule[0] = nullptr;
-        OrigModule[1] = 0; pOrigModule[1] = nullptr;
-    }
-    */
-    return 0;
-}
-
-DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
-{
-    GET_STACK(const wchar_t*, Text, 0xC);
-    return 0;
-};
-
-DEFINE_HOOK(0x434CD0, BitFont_Blit2, 5)
-{
-    GET_STACK(const wchar_t*, Text, 0xC);
-    return 0;
-}
 #endif

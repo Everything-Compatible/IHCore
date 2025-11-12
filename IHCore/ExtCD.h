@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <YRPP.h>
 #include <CD.h>
 #include <CRT.h>
@@ -57,7 +57,7 @@ public:
 		JMP_STD(0x47AAC0);
 	}
 
-	static BOOL __fastcall MakeCDPath(const char* PathStr)//ÒÔ;·Ö¸ôÂ·¾¶
+	static BOOL __fastcall MakeCDPath(const char* PathStr)//ä»¥;åˆ†éš”è·¯å¾„
 	{
 		JMP_STD(0x47AB10);
 	}
@@ -97,23 +97,7 @@ class FileClassExt
 public:
 	const char* CDFileClass_SetFileName(char* pOriginalFileName);
 	const char* RawFileClass_GetFileName();
-	/*
-	bool BufferIOFileClass_Exists(bool WriteShared)
-	{
-		auto This = reinterpret_cast<BufferIOFileClass*>(this);
-		auto Name = This->GetFileName();
-		std::string_view p = Name;
-		if (!p.ends_with(".mix") && !p.ends_with(".MIX") && !WhiteList.empty() && !WhiteList.count(PathFindFileNameA(Name)))
-		{
-			if(!MixFileClass::Offset(Name, nullptr, nullptr, nullptr, nullptr))
-				Debug::Log("IHCore : Requested File \"%s\" is NOT in the WhiteList\n", Name);
-			return false;
-		}
-		if (BlackList.count(PathFindFileNameA(Name)))return false;
-		if (This->AsBufferedIOFile)return true;
-		else return This->RawFileClass::Exists(false);
-	}
-	*/
+	bool BufferIOFileClass_Exists(bool WriteShared);
 	
 	/*
 	bool CDFileClass_Open(FileAccessMode Mode)
@@ -134,5 +118,5 @@ public:
 		return This->BufferIOFileClass::Open(Mode);
 	}
 	*/
-	//Patch::Apply_LJMP(0x431F10, union_cast<void*>(&FileClassExt::BufferIOFileClass_Exists));
+	
 };
