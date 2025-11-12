@@ -3,6 +3,7 @@
 #include "..\Common\IHLoader\IH.Config.h"
 #include <cstdint>
 #include <atomic>
+#include <shared_mutex>
 
 std::vector<FuncHandle> Handles;
 std::unordered_map<std::string, std::vector<IHInitialLoadService>> ServiceRequests;
@@ -10,6 +11,7 @@ std::unordered_map<std::string, std::unordered_map<std::string, LPCVOID>> NamedP
 std::unordered_map<std::string, std::unordered_map<LPCVOID, std::string>> NamedPointersInv;
 ConfData Data;
 std::mt19937 Randomizer;
+std::shared_mutex NamedPointerMutex;
 
 class UniqueValueGenerator {
 private:
@@ -38,14 +40,17 @@ extern "C"
 {
 	EXPORT LPCVOID  __cdecl GetNamedPointer(const char* Usage, const char* Name)
 	{
+		std::shared_lock<std::shared_mutex> lock(NamedPointerMutex);//读锁
 		return NamedPointers[Usage][Name];
 	}
 	EXPORT const char*  __cdecl NamedPointer_GetName(const char* Usage, LPCVOID Pointer)
 	{
+		std::shared_lock<std::shared_mutex> lock(NamedPointerMutex);//读锁
 		return NamedPointersInv[Usage][Pointer].c_str();
 	}
 	EXPORT void  __cdecl SetNamedPointer(const char* Usage, const char* Name, LPCVOID Pointer)
 	{
+		std::unique_lock<std::shared_mutex> lock(NamedPointerMutex);//写锁
 		NamedPointers[Usage][Name] = Pointer;
 		NamedPointersInv[Usage][Pointer] = Name;
 	}
