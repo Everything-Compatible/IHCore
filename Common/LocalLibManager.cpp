@@ -153,6 +153,7 @@ namespace Local
 			sprintf_s(IHExcBuf, "IHCore: Ring dependency formed. One of the ring is\n%s", sv.c_str());
 			throw IHException(IHExcBuf);
 		}
+
 	}
 
 	void MarkOrder(LibType& lib, std::vector<std::string>& ans)
@@ -298,8 +299,9 @@ namespace Local
 		if (!IHLibList::Initialize())return;
 		//IHLibList::RegisterToLibList(HPLocalData::LoadIFunction);
 		InitFn = IHLibList::GetEntries();
-		Libs.resize(InitFn.N);
-		BasicLibs.resize(InitFn.N);
+		// +1 for IHCore itself
+		Libs.resize(InitFn.N + 1);
+		BasicLibs.resize(InitFn.N + 1);
 		for (size_t i = 0; i < InitFn.N; i++)
 		{
 			auto fn = (InitFunc_t)InitFn.Data[i];
@@ -334,6 +336,39 @@ namespace Local
 			if(Libs[i].Available)
 				BasicLibs[i].ReservedB = (void*)Libs[i].Out->Info->LibName;
 			else BasicLibs[i].ReservedB = nullptr;
+		}
+
+		/*
+		Add IHCore itself
+		*/
+		{
+			static InitResult Result;
+			static LibVersionInfo Ver;
+			auto& lib = Libs[InitFn.N];
+			auto& blib = BasicLibs[InitFn.N];
+
+			Ver.LibName = "IHCore";
+			Ver.Version = Local::GetVersion();
+			Ver.LowestSupportedVersion = Local::GetLSV();
+			Ver.Description = u8"IH Game Extension & EC Framework support";
+			Result.Dependencies = GetNullPArray<InitDependency>();
+			Result.GetFunc = &IHCore_GetFunc;
+			Result.OrderedInit = +[] {};
+			Result.Info = &Ver;
+			lib.Tbl = IHCoreFnTable;
+			lib.In.ECInitializeStage = &ECInitStage;
+			lib.In.FunctionTable = &lib.Tbl;
+			lib.RemoteComponent = false;
+			lib.Out = &Result;
+			lib.Available = true;
+			lib.Basic = &blib;
+			blib.Available = true;
+			blib.In = &lib.In;
+			blib.Out = lib.Out;
+			blib.ReservedA = (void*)&lib;
+			blib.Reserved[0] = InitFn.N;
+			blib.ReservedB = (void*)Result.Info->LibName;
+			LibMap[Result.Info->LibName] = &lib;
 		}
 
 		InitInput RI;

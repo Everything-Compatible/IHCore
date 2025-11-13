@@ -224,7 +224,6 @@ namespace Local
 	FuncInfo* GetFuncFromLib(const char* pLib, const char* pFunc, int Version)
 	{
 		if (!strlen(pLib))return Internal_GetFunc(pFunc, Version);
-		if (!strcmp(pLib, "IHCore"))return IHCore_GetFunc(pFunc, Version);
 		
 		auto it = LibMap.find(pLib);
 		if (it != LibMap.end() && !it->second->RemoteComponent)
@@ -245,6 +244,11 @@ namespace Local
 	std::unordered_map<std::string, FuncInfo*> GetFuncMap(const char* pFunc)
 	{
 		std::unordered_map<std::string, FuncInfo*> Result;
+
+		auto pInt = Internal_GetFunc(pFunc, DoNotCheckVersion);
+		if (pInt && pInt->ClassVersion <= FuncInfo::GClassVersion)
+			Result["Internal"] = pInt;
+
 		for (auto& Lib : Libs)
 		{
 			if (!Lib.Available)continue;
@@ -262,6 +266,11 @@ namespace Local
 		auto it = NamedFunc.find(pFunc);
 		if (it != NamedFunc.end())return PArray<FuncInfo*>(it->second);
 		auto& pVec = NamedFunc[pFunc];
+
+		auto pInt = Internal_GetFunc(pFunc, DoNotCheckVersion);
+		if (pInt && pInt->ClassVersion <= FuncInfo::GClassVersion)
+			pVec.push_back(pInt);
+
 		for (auto& Lib : Libs)
 		{
 			if (!Lib.Available)continue;
@@ -325,6 +334,11 @@ namespace Local
 	int GetVersion()
 	{
 		return PRODUCT_VERSION;
+	}
+
+	int GetLSV()
+	{
+		return PRODUCT_LOWEST_SUPPORTED_VERSION;
 	}
 
 	void RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor)

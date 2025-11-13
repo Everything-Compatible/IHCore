@@ -149,6 +149,7 @@ namespace Local
 	FuncInfo* GetFuncFromLib(const char* pLib, const char* pFunc, int Version);
 	PArray<FuncInfo*> GetFuncByName(const char* pFunc);
 	int GetVersion();
+	int GetLSV();
 	void RegisterContextProcessor(const char* Type, ContextFunc_t pProcessor);
 	void RegisterBinder(const char* Type, const char* BindType, Binder_t pBinder);
 	void RegisterGenerator(const char* BindType, BindingGenerator_t pGenerator);

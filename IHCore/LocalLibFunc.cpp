@@ -37,7 +37,7 @@ std::u8string FormatMessageU8(DWORD ErrorValue)
 
 std::unordered_map<std::string, FuncInfo>IHCore_Funcs
 {
-	{"ShowIEDialog",FuncInfo(ShowIEDialog ,FuncType::Procedure)},
+	{"IEDialog",FuncInfo(ShowIEDialog ,FuncType::Procedure)},
 	{"OpenWebsite",FuncInfo(OpenWebsite ,FuncType::Default)},//bool (__cdecl*)(const char*)
 	{"GetCSFString",FuncInfo(StringManagerExt::GetCSFString ,FuncType::Default)}
 };
