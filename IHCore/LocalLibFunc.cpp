@@ -41,6 +41,7 @@ void __cdecl WatchAD(JsonObject obj)
 	//puts(obj.GetText().c_str());
 	auto Args = obj.ItemArrayString("Args");
 	if (Args.empty())return;
+	//puts(Args[0].c_str());
 	ShellExecuteW(NULL, L"open", UTF8toUnicode(Args[0]).c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
