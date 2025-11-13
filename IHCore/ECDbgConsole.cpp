@@ -712,11 +712,20 @@ namespace ECDebug
 		}
 		CommandStack.Push(std::move(ECCommand::ProcessCommand(~input)));
 		int iWait = 0;
+		int iOutput = 0;
 		while (CommandOutput.Empty() && !ECExec::IsConsoleLocked() && !NeedsDaemonMonitor())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
-			if((iWait++)>20)putchar('*');//after 1s : risk of time out
+			if (iWait > 20 && iWait & 1)
+			{
+				putchar('*');//after 1s : risk of time out
+				iOutput++;
+			}
+			iWait++;
 		}
+
+		if (iOutput)putchar('\n');
+
 		//Locked == process itself
 		if (NeedsDaemonMonitor())
 		{
