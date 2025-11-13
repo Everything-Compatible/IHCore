@@ -284,7 +284,7 @@ namespace ECCommand
 				Command.replace(pos, p.first.size() + 2, ~EscapeString(~p.second));
 			}
 		}
-		puts(conv Command.c_str());
+		//puts(conv Command.c_str());
 
 		//CommandName Json(Args)
 		auto argbegin = Command.find_first_of(u8"{");
@@ -733,12 +733,13 @@ namespace ECDebug
 			SyringeDaemonMonitorThread = std::make_unique<std::thread>(SyringeDaemonMonitorThreadFunc);
 			SyringeDaemonMonitorThread->detach();
 			CommandStack.Clear();
-			puts(conv u8"\033[33m进入调试模式……\033[0m");
+			printf(conv u8"\033[33m进入调试模式……");
 			while(SyringeDaemonMonitor_Connecting)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 				putchar('.');
 			}
+			puts("\033[0m");
 		}
 		if (!CommandOutput.Empty())
 		{
