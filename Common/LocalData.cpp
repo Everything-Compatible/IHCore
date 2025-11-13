@@ -246,8 +246,7 @@ namespace Local
 		std::unordered_map<std::string, FuncInfo*> Result;
 
 		auto pInt = Internal_GetFunc(pFunc, DoNotCheckVersion);
-		if (pInt && pInt->ClassVersion <= FuncInfo::GClassVersion)
-			Result["Internal"] = pInt;
+		if (pInt)Result[""] = pInt;
 
 		for (auto& Lib : Libs)
 		{
@@ -268,8 +267,7 @@ namespace Local
 		auto& pVec = NamedFunc[pFunc];
 
 		auto pInt = Internal_GetFunc(pFunc, DoNotCheckVersion);
-		if (pInt && pInt->ClassVersion <= FuncInfo::GClassVersion)
-			pVec.push_back(pInt);
+		if (pInt)pVec.push_back(pInt);
 
 		for (auto& Lib : Libs)
 		{
