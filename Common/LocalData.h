@@ -6,7 +6,8 @@
 #include <IH.h>
 #include <YRPPCore.h>
 #include <memory>
-
+#include <variant>
+#include <optional>
 
 
 class IHException :public std::exception
@@ -139,7 +140,9 @@ namespace Local
 	FuncInfo* QueryFunction(BasicLibData* Lib, const char* Name, int Version);
 
 
-
+	//没有找到//找到且唯一//找到但不唯一
+	std::variant<std::nullopt_t, FuncInfo*, std::unordered_map<std::string, FuncInfo*>>
+		PickFunctionForCommand(const char* pLib, const char* pFunc, int Version);
 
 
 	//FuncInfo

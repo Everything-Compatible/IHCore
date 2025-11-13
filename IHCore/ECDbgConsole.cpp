@@ -351,12 +351,35 @@ namespace ECCommand
 		//Debug::Log("[EC] Processing Command: Lib=\"%s\", Fn=\"%s\", Ver=%d, IsSyringe=%d\n",
 		//	conv CommandLib.data(), conv CommandFn.data(), CommandVersion, IsSyringeCmd ? 1 : 0);
 
-
-		auto CommandInfo = IsSyringeCmd ? nullptr : Local::GetFuncFromLib(conv CommandLib.c_str(), conv CommandFn.c_str(), CommandVersion);
-
-		if (!CommandInfo && !IsSyringeCmd)
+		FuncInfo* CommandInfo;
+		
+		if(IsSyringeCmd)
+			CommandInfo = nullptr;
+		else
 		{
-			return [] { return u8"\033[31m指令未找到！\033[0m"; };
+			auto FuncOption = Local::PickFunctionForCommand(conv CommandLib.c_str(), conv CommandFn.c_str(), CommandVersion);
+			if (std::holds_alternative<std::nullopt_t>(FuncOption))
+			{
+				return [] { return u8"\033[31m指令未找到！\033[0m"; };
+			}
+			else if (std::holds_alternative<FuncInfo*>(FuncOption))
+			{
+				CommandInfo = std::get<FuncInfo*>(FuncOption);
+			}
+			else
+			{
+				auto& FuncMap = std::get<std::unordered_map<std::string, FuncInfo*>>(FuncOption);
+				//unresolved and return
+				std::u8string Result = u8"\033[31m可能的指令不唯一，请指定指令来源！\033[33m\n可能是：\n";
+				for (auto& [LibName, pf] : FuncMap)
+				{
+					Result += u8"  " + ~LibName + u8"." + CommandFn + u8"\n";
+				}
+				Result += u8"\033[0m";
+				return [R = std::move(Result)] {
+					return R;
+				};
+			}
 		}
 
 		auto GenParam = GetGeneratorParamFromArgStr(~ArgumentStr);

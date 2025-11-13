@@ -242,7 +242,20 @@ namespace Local
 	}
 	//std::unordered_map<std::string, std::vector<LibFuncHandle>> NamedFunc;
 
-
+	std::unordered_map<std::string, FuncInfo*> GetFuncMap(const char* pFunc)
+	{
+		std::unordered_map<std::string, FuncInfo*> Result;
+		for (auto& Lib : Libs)
+		{
+			if (!Lib.Available)continue;
+			FuncInfo* pInfo;
+			if (Lib.RemoteComponent)pInfo = RemoteComponentManager::GetRemoteMethodInfo(Lib.Out->Info->LibName, pFunc, Lib.Out->Info->Version);
+			else pInfo = Lib.Out->GetFunc(pFunc, Lib.Out->Info->Version);
+			if (pInfo && pInfo->ClassVersion <= FuncInfo::GClassVersion)
+				Result[Lib.Out->Info->LibName] = pInfo;
+		}
+		return Result;
+	}
 
 	PArray<FuncInfo*> GetFuncByName(const char* pFunc)
 	{
@@ -266,6 +279,47 @@ namespace Local
 			}
 		}
 		return PArray<FuncInfo*>(pVec);
+	}
+
+	//没有找到//找到且唯一//找到但不唯一
+	std::variant<std::nullopt_t, FuncInfo*, std::unordered_map<std::string, FuncInfo*>>
+		PickFunctionForCommand(const char* pLib, const char* pFunc, int Version)
+	{
+		if (!strlen(pLib))
+		{
+			auto Funcs = GetFuncMap(pFunc);
+			std::vector<FuncInfo*> Result;
+			std::string LastName;
+			for (auto& [Name, pf] : Funcs)
+			{
+				if (!pf->IsConsiderAsCommand())continue;
+				LastName = Name;
+				Result.push_back(pf);
+			}
+
+			if (Result.size() == 1)
+			{
+				auto pf = GetFuncFromLib(LastName.c_str(), pFunc, Version);
+				if (pf) return pf;
+				//此处分离出nullptr
+				//在类型上区分
+				else return std::nullopt;
+			}
+			else if(Result.size() == 0)
+			{
+				return std::nullopt;
+			}
+			else
+			{
+				return Funcs;
+			}
+		}
+		else
+		{
+			auto pf = GetFuncFromLib(pLib, pFunc, Version);
+			if (pf && pf->IsConsiderAsCommand()) return pf;
+			else return std::nullopt;
+		}
 	}
 
 	int GetVersion()
