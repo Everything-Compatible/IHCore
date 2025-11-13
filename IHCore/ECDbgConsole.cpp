@@ -384,6 +384,10 @@ namespace ECCommand
 
 		auto GenParam = GetGeneratorParamFromArgStr(~ArgumentStr);
 
+		bool ArrayArg;
+		if (IsSyringeCmd)ArrayArg = false;
+		else ArrayArg = CommandInfo->IsReceiveArrayArgs();
+
 		if (GenParam)
 		{
 			return [CommandInfo, IsSyringeCmd, CommandFn, Param = *GenParam]
@@ -412,7 +416,7 @@ namespace ECCommand
 			std::unordered_map<std::u8string, bool> ExtArgs_Bool;
 			std::unordered_map<std::u8string, int> ExtArgs_int;
 			std::unordered_map<std::u8string, double> ExtArgs_Double;
-			if (CommandArg.size() > 1)
+			if (CommandArg.size() > 1 && !ArrayArg)
 			{
 				//as params 
 				//-Key1 Value1 -Key2 Value2
@@ -518,6 +522,14 @@ namespace ECCommand
 			for (auto& [p, v] : ExtArgs_Double)
 			{
 				ArgJson.GetObj().AddDouble(~p, v);
+			}
+
+			if(ArrayArg)
+			{
+				std::vector<std::string> s;
+				for(int i=1;i<CommandArg.size();i++)
+					s.push_back(~CommandArg[i]);
+				ArgJson.GetObj().AddArrayString("Args", s);
 			}
 
 			return [CommandInfo, IsSyringeCmd, CommandFn,Arg = std::move(ArgJson)] () mutable

@@ -8,6 +8,7 @@
 #include "StringManagerExt.h"
 #include "ECDbgConsole.h"
 #include <iostream>
+#include <shellapi.h>
 
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);
 
@@ -34,10 +35,19 @@ std::u8string FormatMessageU8(DWORD ErrorValue)
 	return ~UnicodetoUTF8(Buffer);
 }
 
+//整活指令之让你看广告
+void __cdecl WatchAD(JsonObject obj)
+{
+	//puts(obj.GetText().c_str());
+	auto Args = obj.ItemArrayString("Args");
+	if (Args.empty())return;
+	ShellExecuteW(NULL, L"open", UTF8toUnicode(Args[0]).c_str(), NULL, NULL, SW_SHOWNORMAL);
+}
 
 std::unordered_map<std::string, FuncInfo>IHCore_Funcs
 {
 	{"IEDialog",FuncInfo(ShowIEDialog ,FuncType::Procedure)},
+	{"WatchAD",FuncInfo(WatchAD ,FuncType::Action, true, true)},
 	{"OpenWebsite",FuncInfo(OpenWebsite ,FuncType::Default)},//bool (__cdecl*)(const char*)
 	{"GetCSFString",FuncInfo(StringManagerExt::GetCSFString ,FuncType::Default)}
 };
