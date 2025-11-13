@@ -242,6 +242,8 @@ namespace Local
 	}
 	//std::unordered_map<std::string, std::vector<LibFuncHandle>> NamedFunc;
 
+
+
 	PArray<FuncInfo*> GetFuncByName(const char* pFunc)
 	{
 		auto it = NamedFunc.find(pFunc);
@@ -250,9 +252,18 @@ namespace Local
 		for (auto& Lib : Libs)
 		{
 			if (!Lib.Available)continue;
-			auto pInfo = Lib.Out->GetFunc(pFunc, Lib.Out->Info->Version);
-			if (pInfo && pInfo->ClassVersion <= FuncInfo::GClassVersion)
-				pVec.push_back(pInfo);
+			if (Lib.RemoteComponent)
+			{
+				auto pInfo = RemoteComponentManager::GetRemoteMethodInfo(Lib.Out->Info->LibName, pFunc, Lib.Out->Info->Version);
+				if (pInfo && pInfo->ClassVersion <= FuncInfo::GClassVersion)
+					pVec.push_back(pInfo);
+			}
+			else
+			{
+				auto pInfo = Lib.Out->GetFunc(pFunc, Lib.Out->Info->Version);
+				if (pInfo && pInfo->ClassVersion <= FuncInfo::GClassVersion)
+					pVec.push_back(pInfo);
+			}
 		}
 		return PArray<FuncInfo*>(pVec);
 	}
