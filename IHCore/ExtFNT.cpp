@@ -403,7 +403,7 @@ namespace DrawStyle
                 List.TargetBuf = p;
                 //Debug::Log("[IH] %X 1 TargetBuf = %X\n", GetCurrentThreadId(),  List.TargetBuf);
                 memcpy(List.GlyphBuffer, List.TargetBuf, BitFont::Instance->InternalPTR->SymbolDataSize);
-                if (Cur.HasStyle && ExtendWidth)
+                if (Cur.HasStyle && ExtendWidth && (List.GlyphBuffer[0] & 0xF) != 0xF )
                     List.GlyphBuffer[0]++;
                 if (Cur.Bold)
                 {
@@ -432,10 +432,11 @@ struct ResetWidth
 {
     wchar_t Begin;
     wchar_t End;
-    unsigned width;
+    uint8_t width;
 };
 
 std::vector<ResetWidth> ResetWidthList;
+std::vector<uint8_t> ActualWidthList(0x10000, 0);
 
 wchar_t LoadWch(JsonObject o)
 {
@@ -459,12 +460,12 @@ wchar_t LoadWch(JsonObject o)
 	return wch;
 }
 
-void InitResrtWidthList()
+void InitResetWidthList()
 {
     JsonObject GetIHCoreJson();
     if (auto cfg = GetIHCoreJson(); cfg)
     {
-		auto oReset = cfg.GetObjectItem("FontResetWidth");
+		auto oReset = cfg.GetObjectItem("AdjustFont");
         if (oReset.IsTypeArray())
         {
             for (auto&& p : oReset.GetArrayObject())
@@ -472,10 +473,10 @@ void InitResrtWidthList()
                 ResetWidth rw;
 				auto oWidth = p.GetObjectItem("Width");
                 if(oWidth && oWidth.IsTypeNumber())
-					//restrict to 0-15
-					rw.width = std::min(std::max(oWidth.GetInt(), 0), 15);
+					rw.width = (uint8_t)std::min(std::max(oWidth.GetInt(), 0), 255);
                 rw.Begin = LoadWch(p.GetObjectItem("Begin"));
 				rw.End = LoadWch(p.GetObjectItem("End"));
+				ResetWidthList.push_back(rw);
             }
         }
     }
@@ -495,6 +496,7 @@ DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
 DEFINE_HOOK(0x4338DF, InitExtFont, 6)
 {
     GET(BitFont*, pFont, ESI);
+    InitResetWidthList();
     for (int i = 0; i < 0x10000; i++)
     {
         auto pBitMap = pFont->GetCharacterBitmap(i);
@@ -502,12 +504,13 @@ DEFINE_HOOK(0x4338DF, InitExtFont, 6)
         {
             auto Width = pBitMap[0] & 0xF;
 			for (auto& rw : ResetWidthList)
-                if (i >= rw.Begin && i < rw.End)
+                if ((uint16_t)i >= (uint16_t)rw.Begin && (uint16_t)i < (uint16_t)rw.End)
                 {
                     Width = rw.width;
                     break;
                 }
-			pBitMap[0] = (BYTE)((pBitMap[0] & 0xF0) | (Width & 0x0F));
+			pBitMap[0] = (BYTE)((pBitMap[0] & 0xF0) | (std::min(Width, 15) & 0x0F));
+			ActualWidthList[i] = (uint8_t)Width;
 
             DrawStyle::GlyphByWidth[Width].push_back(pBitMap);
         }
@@ -537,7 +540,7 @@ DEFINE_HOOK(0x434120, BitFont_Blit_A, 5)
     {
         List.CurrentChar = Magic_StyleAction;
         DrawStyle::ChangeStyle();
-        return 0;// 0x4344FA;
+        return 0;
     }
     else
     {
@@ -589,9 +592,7 @@ DEFINE_HOOK(0x4344E4, BitFont_Blit_C, 7)
 DEFINE_HOOK(0x433CF0, BitFont_GetTextDimension_A, 6)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
-    //Debug::Log("0 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeStringAlt(Text);
-    //Debug::Log("0 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
@@ -607,22 +608,18 @@ DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
 DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
-    //Debug::Log("1 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
-    //Debug::Log("1 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 };
 
 DEFINE_HOOK(0x43467F, BitFont_Blit1Ret1, 5)
 {
-    //Debug::Log("1 CompleteA!\n");
     DrawStyle::ClearStyle();
     return 0;
 };
 
 DEFINE_HOOK(0x4346A6, BitFont_Blit1Ret2, 5)
 {
-    //Debug::Log("1 CompleteB!\n");
     DrawStyle::ClearStyle();
     return 0;
 };
@@ -630,22 +627,18 @@ DEFINE_HOOK(0x4346A6, BitFont_Blit1Ret2, 5)
 DEFINE_HOOK(0x434CD0, BitFont_Blit2, 5)
 {
     REF_STACK(const wchar_t*, Text, 0xC);
-    //Debug::Log("2 Reading \"%s\"\n", UnicodetoUTF8(Text).c_str());
     Text = DrawStyle::MakeString(Text);
-    //Debug::Log("2 Rendering \"%s\"\n", UnicodetoUTF8(Text).c_str());
     return 0;
 }
 
 DEFINE_HOOK(0x435157, BitFont_Blit2Ret1, 5)
 {
-    //Debug::Log("2 CompleteA!\n");
     DrawStyle::ClearStyle();
     return 0;
 };
 
 DEFINE_HOOK(0x4352FB, BitFont_Blit2Ret2, 5)
 {
-    //Debug::Log("2 CompleteB!\n");
     DrawStyle::ClearStyle();
     return 0;
 };
