@@ -20,6 +20,30 @@ std::unordered_set<std::string, UpperHash, UpperEqualPred> WhiteList;
 
 SyringeData::LibRemoteData* IHCoreData = nullptr;
 JsonFile IHCoreJson;
+JsonObject IHCoreJson_Data;
+
+/*
+#include <EC.h>
+JsonFile Config;
+void ReadConfigJson()
+{
+	if (HasSyringeIH())
+	{
+		char Name[MAX_PATH];
+		GetModuleFileNameA(hInstDLL, Name, MAX_PATH);
+		auto Lib = SyringeData::GetLibData(PathFindFileNameA(Name));
+		if (Lib)
+		{
+			Config.Parse(SyringeData::GetSettingText(*Lib));
+		}
+	}
+}
+JsonObject GetConfig()
+{
+	return Config.GetObj();
+}
+*/
+
 
 void ConfigJson_InitBeforeEverything()
 {
@@ -33,12 +57,18 @@ void ConfigJson_InitBeforeEverything()
 		{
 			IHCoreJson.Parse(SyringeData::GetSettingText(*IHCoreData));
 			//SyringeIH会完成check的
+			IHCoreJson_Data = IHCoreJson.GetObj();
 		}
 	}
 	else
 	{
 		strcat(Name, ".json");
 		auto Str = GetStringFromFile<ExtFileClass>(Name);
+		if (Str.empty())
+		{
+			return;
+		}
+
 		if (!Str.empty())
 		{
 			auto Info = IHCoreJson.ParseChecked(Str, "【出错位置】");
@@ -55,12 +85,23 @@ void ConfigJson_InitBeforeEverything()
 				}
 			}
 		}
+		IHCoreJson_Data = IHCoreJson.GetObj().GetObjectItem("Setting");
+		if (!IHCoreJson_Data.Available())
+		{
+			MessageBoxA(
+				nullptr, (std::string(PathFindFileNameA(Name)) + "是非法的JSON文件。\n错误已输出到根目录下的ih_error.log。").c_str(),
+				PRODUCT_FULLNAME_STR, MB_OK | MB_ICONINFORMATION);
+			ExtFileClass es;
+			es.Open("ih_error.log", "w");
+			es.WriteData(std::string(PathFindFileNameA(Name)) + "是非法的JSON文件。\n");
+			es.WriteData(std::string("Setting 字段不存在。 SyringeIH约定每个DLL的自定义设置在Setting字段当中"));
+		}
 	}
 }
 
 JsonObject GetIHCoreJson()
 {
-	return IHCoreJson.GetObj();
+	return IHCoreJson_Data;
 }
 
 void InitMix()
@@ -68,7 +109,7 @@ void InitMix()
 	Debug::Log("IHCore : Loading IHCore.dll.json...");
 	if (!SyringeData::HasSyringeIH() || IHCoreData)
 	{
-		if (IHCoreJson.Available())
+		if (IHCoreJson_Data.Available())
 			Debug::Log(" Successful.\n");
 		else
 			Debug::Log(" Failed.\n");
@@ -81,13 +122,13 @@ void InitMix()
 			Mixes.push_back(GameCreate<MixFileClass>(Param.FileName));
 		});
 	
-	if (!IHCoreJson.Available())return;
-	auto Obj = IHCoreJson.GetObj().GetObjectItem("CustomMix");
+	if (!IHCoreJson_Data.Available())return;
+	auto Obj = IHCoreJson_Data.GetObjectItem("CustomMix");
 	if (Obj.Available())
 		for (auto& s : Obj.GetArrayString())
 			Mixes.push_back(GameCreate<MixFileClass>(s.c_str()));
 
-	Obj = IHCoreJson.GetObj().GetObjectItem("WhiteList");
+	Obj = IHCoreJson_Data.GetObjectItem("WhiteList");
 	if (Obj.Available() && Obj.IsNotEmptyArray())
 	{
 		for (auto& s : Obj.GetArrayString())
@@ -95,13 +136,13 @@ void InitMix()
 	}
 	else
 	{
-		Obj = IHCoreJson.GetObj().GetObjectItem("BlackList");
+		Obj = IHCoreJson_Data.GetObjectItem("BlackList");
 		if (Obj.Available() && Obj.IsNotEmptyArray())
 			for (auto& s : Obj.GetArrayString())
 				BlackList.insert(s);
 	}
 
-	Obj = IHCoreJson.GetObj().GetObjectItem("Mixfiles");
+	Obj = IHCoreJson_Data.GetObjectItem("Mixfiles");
 	if (Obj.Available())
 		for (auto& s : Obj.GetPVObject())
 		{

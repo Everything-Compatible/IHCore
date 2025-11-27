@@ -428,6 +428,59 @@ namespace DrawStyle
 char Magic_Bitmap[80] = { (char)0 };
 char Magic_Bitmap_Alt[80] = { (char)0 };
 
+struct ResetWidth
+{
+    wchar_t Begin;
+    wchar_t End;
+    unsigned width;
+};
+
+std::vector<ResetWidth> ResetWidthList;
+
+wchar_t LoadWch(JsonObject o)
+{
+	if (!o)return 0;
+	//support : 0xXXXX & 字
+	wchar_t wch = 0;
+    auto Str = o.GetString();
+	if (!Str.empty() && Str[0])
+	{
+        if (Str.starts_with("0x"))
+		{
+			int val = 0;
+			sscanf_s(Str.c_str() + 2, "%X", &val);
+			wch = (wchar_t)(val & 0x0000FFFF);
+		}
+        else
+        {
+            wch = Str[0];
+        }
+	}
+	return wch;
+}
+
+void InitResrtWidthList()
+{
+    JsonObject GetIHCoreJson();
+    if (auto cfg = GetIHCoreJson(); cfg)
+    {
+		auto oReset = cfg.GetObjectItem("FontResetWidth");
+        if (oReset.IsTypeArray())
+        {
+            for (auto&& p : oReset.GetArrayObject())
+            {
+                ResetWidth rw;
+				auto oWidth = p.GetObjectItem("Width");
+                if(oWidth && oWidth.IsTypeNumber())
+					//restrict to 0-15
+					rw.width = std::min(std::max(oWidth.GetInt(), 0), 15);
+                rw.Begin = LoadWch(p.GetObjectItem("Begin"));
+				rw.End = LoadWch(p.GetObjectItem("End"));
+            }
+        }
+    }
+}
+
 DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
 {
     GET_STACK(wchar_t, Char, 0x4);
@@ -445,7 +498,19 @@ DEFINE_HOOK(0x4338DF, InitExtFont, 6)
     for (int i = 0; i < 0x10000; i++)
     {
         auto pBitMap = pFont->GetCharacterBitmap(i);
-        if (pBitMap)DrawStyle::GlyphByWidth[pBitMap[0] & 0xF].push_back(pBitMap);
+        if (pBitMap)
+        {
+            auto Width = pBitMap[0] & 0xF;
+			for (auto& rw : ResetWidthList)
+                if (i >= rw.Begin && i < rw.End)
+                {
+                    Width = rw.width;
+                    break;
+                }
+			pBitMap[0] = (BYTE)((pBitMap[0] & 0xF0) | (Width & 0x0F));
+
+            DrawStyle::GlyphByWidth[Width].push_back(pBitMap);
+        }
     }
     DrawStyle::GlyphLineDelta = (pFont->InternalPTR->SymbolDataSize - 1) / pFont->InternalPTR->FontHeight;
     DrawStyle::MagicGlyphBuf = pFont->GetCharacterBitmap(Magic_StyleAction);
