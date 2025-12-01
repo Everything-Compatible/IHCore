@@ -9,7 +9,6 @@
 #include "SomeData.h"
 #include "Debug.h"
 #include "Global.h"
-#include "ExtIni.h"
 #include "Patch.h"
 #include "ExtCD.h"
 
@@ -152,7 +151,9 @@ int safe_string_to_int(std::string_view str, int default_value) noexcept {
 	return value;
 }
 
-static void ReadYRMData_New(_In_ const char* FileName,
+char* WWSB_Trim_New(char* Str);
+
+static void ReadYRMData_Rewritten(_In_ const char* FileName,
 	_Out_ wchar_t* Desc,
 	_Out_ char* Digest,
 	_Out_ char* GameModes,
@@ -160,36 +161,124 @@ static void ReadYRMData_New(_In_ const char* FileName,
 	_Out_ int& MinPlayers,
 	_Out_ int& MaxPlayers)
 {
+	//rewrite version of ReadYRMData
+	//to boost performance 
 	IsOfficialMap = true;
 	MinPlayers = 2;
 	MaxPlayers = 4;
 	strcpy(GameModes, &DefaultStr);
 
-	ExtIni INI;
-	INI.Load<ExtCCFile>(FileName);
-	//Desc : wchar_t[44]
-	if (!INI.Available())return;
+	//streaming the whole file until [Basic] 
+	//discard [Digest] section since no digest is also acceptable
 
-	auto BasicIt = INI.GetSection("Basic");
-	if (INI.IsFound(BasicIt))
-	{
-		BasicIt->second.GetIfExists("GameMode", GameModes);
-		IsOfficialMap = IsTrueString(BasicIt->second.GetStrRef("Official"));
-		MinPlayers = safe_string_to_int(BasicIt->second.GetStrRef("MinPlayer"), 1);
-		MaxPlayers = safe_string_to_int(BasicIt->second.GetStrRef("MaxPlayer"), 4);
-		//Debug::Log("ReadYRMData : Stage SUB04\n");
-		std::wstring ws1 = IH_MBToWC_Ex(BasicIt->second.GetStrRef("Name", "No Name"));
-		wchar_t dst[100];
-		if (MinPlayers == MaxPlayers)swprintf_s(dst, 88, L"%ls (%d)", ws1.c_str(), MinPlayers);
-		else swprintf_s(dst, 88, L"%ls (%d-%d)", ws1.c_str(), MinPlayers, MaxPlayers);
-		StrCpyNW(Desc, dst, 44);
+	ExtCCFile File;
+	File.Open(FileName, ExtCCFile::GetReadSign());
+	if (!File.Available())return;
 
-	}
-	auto DigestIt = INI.GetSection("Digest");
-	if (INI.IsFound(DigestIt))
+	std::vector<char> CurrentLine;
+	CurrentLine.resize(512);
+	bool InBasicSection = false;
+	BYTE c;
+	auto pcc = File.GetRaw();
+	std::wstring ws1;
+
+	//start streaming
+	while (pcc->ReadBytes(&c, 1))
 	{
-		DigestIt->second.GetIfExists("1", Digest, "No Digest");
+		if (c == '\r' || c == '\n')
+		{
+			//analyze the current line
+			
+
+			//end of line
+			CurrentLine.push_back('\0');
+			//remove comment
+			for (auto& c : CurrentLine)
+				if (c == ';')c = '\0';
+			//trim spaces
+			auto LineStr = CurrentLine.data();
+			LineStr = WWSB_Trim_New(LineStr);
+			//check section
+			size_t Len = strlen(LineStr);
+			if (Len)
+			{
+				if (
+					LineStr[0] == '[' ||
+					LineStr[Len - 1] == ']'
+					)
+				{
+					if (strcmp(LineStr, "[Basic]") == 0)
+					{
+						InBasicSection = true;
+					}
+					else
+					{
+						if (InBasicSection)
+						{
+							//we are leaving Basic section
+							//generate Desc
+							wchar_t dst[100];
+							if (ws1.empty())ws1 = L"No Name";
+							if (MinPlayers == MaxPlayers)swprintf_s(dst, 88, L"%ls (%d)", ws1.c_str(), MinPlayers);
+							else swprintf_s(dst, 88, L"%ls (%d-%d)", ws1.c_str(), MinPlayers, MaxPlayers);
+							StrCpyNW(Desc, dst, 44);
+							//done
+							break;
+						}
+						InBasicSection = false;
+					}
+				}
+				else if (InBasicSection)
+				{
+					//key=value
+					auto EqualPos = strchr(LineStr, '=');
+					if (EqualPos)
+					{
+						*EqualPos = '\0';
+						auto Key = WWSB_Trim_New(LineStr);
+						auto Value = WWSB_Trim_New(EqualPos + 1);
+						
+						//Keys:
+						//Name, GameMode, Official, MinPlayer, MaxPlayer
+						if (strcmp(Key, "Name") == 0)
+						{
+							ws1 = IH_MBToWC_Ex(Value);
+						}
+						else if (strcmp(Key, "GameMode") == 0)
+						{
+							strcpy(GameModes, Value);
+						}
+						else if (strcmp(Key, "Official") == 0)
+						{
+							IsOfficialMap = IsTrueString(Value);
+						}
+						else if (strcmp(Key, "MinPlayer") == 0)
+						{
+							MinPlayers = safe_string_to_int(Value, 2);
+						}
+						else if (strcmp(Key, "MaxPlayer") == 0)
+						{
+							MaxPlayers = safe_string_to_int(Value, 4);
+						}
+					}
+				}
+			}
+
+
+
+			//then clear and continue
+			CurrentLine.clear();
+		}
+		else
+		{
+			CurrentLine.push_back(c);
+		}
 	}
+
+	
+
+	//digest
+	strcpy(Digest, "No Digest");
 }
 
 static void ReadYRMData_EXT(_In_ const char* FileName,
@@ -201,7 +290,9 @@ static void ReadYRMData_EXT(_In_ const char* FileName,
 	_Out_ int* MaxPlayers)
 {
 	//::MessageBoxA(NULL, FileName, "CTX", MB_OK);
-	ReadYRMData_New(FileName, Desc, Digest, GameModes, *IsOfficialMap, *MinPlayers, *MaxPlayers);
+	ReadYRMData_Rewritten(FileName, Desc, Digest, GameModes, *IsOfficialMap, *MinPlayers, *MaxPlayers);
+	Debug::Log("[IH] Read YRM Data : \n    File \"%s\"\n    Desc \"%s\"\n    Digest \"%s\"\n    GameModes \"%s\"\n    IsOfficialMap %d\n    MinPlayers %d\n    MaxPlayers %d\n",
+		FileName, UnicodetoUTF8(Desc).c_str(), Digest, GameModes, *IsOfficialMap, *MinPlayers, *MaxPlayers);
 }
 
 

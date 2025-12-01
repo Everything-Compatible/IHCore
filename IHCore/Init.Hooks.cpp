@@ -5,7 +5,6 @@
 #include <ToolFunc.h>
 #include "Debug.h"
 #include "Global.h"
-#include "ExtIni.h"
 #include "Patch.h"
 #include "LocalData.h"
 

@@ -269,8 +269,7 @@ size_t ExtCCFile::Read(void* Buf, size_t Size, size_t Count)
     for (size_t i = 0; i < Count; i++)
     {
         if (Eof())return i;
-        pCC->ReadBytes(pBuf + i * Size, Size);
-        Pos += Size;
+        Pos += pCC->ReadBytes(pBuf + i * Size, Size);
     }
     return Count;
 }

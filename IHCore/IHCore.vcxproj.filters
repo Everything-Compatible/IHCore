@@ -69,9 +69,6 @@
     <ClInclude Include="ExtFile.h">
       <Filter>File</Filter>
     </ClInclude>
-    <ClInclude Include="ExtCsf.h">
-      <Filter>File</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\ToolFunc.h">
       <Filter>Util</Filter>
     </ClInclude>
@@ -1062,9 +1059,6 @@
     <ClInclude Include="YRPP\FileFormats\VXL.h">
       <Filter>YRPP\FileFormats</Filter>
     </ClInclude>
-    <ClInclude Include="ExtIni.h">
-      <Filter>File</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\IHLoader\ExtJson.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
@@ -1076,9 +1070,6 @@
     </ClInclude>
     <ClInclude Include="SomeData.h">
       <Filter>External</Filter>
-    </ClInclude>
-    <ClInclude Include="ExtCD.h">
-      <Filter>File</Filter>
     </ClInclude>
     <ClInclude Include="InitialLoad.h">
       <Filter>Data</Filter>
@@ -1179,6 +1170,15 @@
     <ClInclude Include="RemoteCommType.h">
       <Filter>Interprocess</Filter>
     </ClInclude>
+    <ClInclude Include="ExtCD.h">
+      <Filter>Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtCsf.h">
+      <Filter>Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtIni.h">
+      <Filter>File</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1195,9 +1195,6 @@
     </ClCompile>
     <ClCompile Include="MiscFunc.cpp">
       <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtCsf.cpp">
-      <Filter>File</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\ToolFunc.cpp">
       <Filter>Util</Filter>
@@ -1229,9 +1226,6 @@
     <ClCompile Include="ExtFile.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="ExtIni.cpp">
-      <Filter>File</Filter>
-    </ClCompile>
     <ClCompile Include="LocalLibFunc.cpp">
       <Filter>Data</Filter>
     </ClCompile>
@@ -1246,12 +1240,6 @@
     </ClCompile>
     <ClCompile Include="InitSomewhere.cpp">
       <Filter>Init</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtMix.cpp">
-      <Filter>File</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtCD.cpp">
-      <Filter>File</Filter>
     </ClCompile>
     <ClCompile Include="InitialLoad.cpp">
       <Filter>Data</Filter>
@@ -1339,6 +1327,18 @@
     </ClCompile>
     <ClCompile Include="RemoteCommType.cpp">
       <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtCD.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtCsf.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtMix.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtIni.cpp">
+      <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

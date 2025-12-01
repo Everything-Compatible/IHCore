@@ -89,6 +89,7 @@ public:
 
 	bool Open(const char* path, AccessMode mode, void* Reserved = nullptr);
 	size_t Read(void* Buf, size_t Size, size_t Count);
+	int ReadBytes(void* Buf, size_t Size);
 	//size_t Write(const void* Buf, size_t Size, size_t Count)const;
 	char GetChr();
 	//bool PutChr(const char Byte)const;
