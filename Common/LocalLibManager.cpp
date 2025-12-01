@@ -469,8 +469,18 @@ namespace Local
 
 	void __cdecl ExitClearImpl()
 	{
+		//datach from debugger
+		HANDLE hProcess = GetCurrentProcess();
+		if (IsDebuggerPresent())
+			DebugActiveProcessStop(GetProcessId(hProcess));
+		
+		//Terminate all remote components
 		RemoteComponentManager::Uninitialize();
+		
+		//Clear framework data
 		ExitClear();
+
+		//Close debug console
 		ECDebug::CloseDebugConsole();
 	}
 
