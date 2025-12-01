@@ -35,6 +35,31 @@ std::u8string FormatMessageU8(DWORD ErrorValue)
 	return ~UnicodetoUTF8(Buffer);
 }
 
+void __cdecl AddMoney(JsonObject obj)
+{
+	auto Args = obj.ItemArrayString("Args");
+	if (Args.empty())return;
+	auto money = strtol(Args[0].c_str(), nullptr, 10);
+	HouseClass::CurrentPlayer->GiveMoney(money);
+	printf("Added Money : %ld\n", money);
+}
+
+//跳帧指令的现存问题：
+//只能影响超武和触发计数器
+/*
+void __cdecl TickFrame(JsonObject obj)
+{
+	//ticking some frames forward
+	auto Args = obj.ItemArrayString("Args");
+	if (Args.empty())return;
+	auto frames = strtol(Args[0].c_str(), nullptr, 10);
+	if (frames <= 0)return;
+	int& frame = Unsorted::CurrentFrame;
+	frame += frames;
+	printf("Ticked Frames : %ld\n", frames);
+}
+*/
+
 //整活指令之让你看广告
 void __cdecl WatchAD(JsonObject obj)
 {
@@ -49,6 +74,7 @@ std::unordered_map<std::string, FuncInfo>IHCore_Funcs
 {
 	{"IEDialog",FuncInfo(ShowIEDialog ,FuncType::Procedure)},
 	{"WatchAD",FuncInfo(WatchAD ,FuncType::Action, true, true)},
+	{"AddMoney",FuncInfo(AddMoney ,FuncType::Action, true, true)},
 	{"OpenWebsite",FuncInfo(OpenWebsite ,FuncType::Default)},//bool (__cdecl*)(const char*)
 	{"GetCSFString",FuncInfo(StringManagerExt::GetCSFString ,FuncType::Default)}
 };
