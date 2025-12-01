@@ -1078,25 +1078,9 @@ namespace Local
 
 	void ExitClear()
 	{
-		/*
-		auto List = GetFuncByName("IHCore::Exit");
-		Debug::Log("List N=%d Data=%X\n", List.N, List.Data);
-		if(List.Data)
-			for (size_t i = 0; i < List.N; i++)
-		{
-			if (List.Data[i]->Type == FuncType::Procedure)
-			{
-				Debug::Log("Calling");
-				((void(__cdecl*)(void))List.Data[i]->Func)();
-				Debug::Log("Condfngfhid");
-			}
-		}
-
 		RoutineMap.clear();
-
 		ObjList.clear();
 		ExecList.clear();
-		*/
 	}
 
 

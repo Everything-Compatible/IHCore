@@ -28,11 +28,6 @@ namespace Test
 	void GameStart()
 	{
 		Local::ResetAll();
-		
-		//ExtIni Rules;
-		//Rules.Load<ExtCCFile>("Rulesmd.ini");
-
-		//SessionClass::Instance->Config.MapDescription[0] = L'囸';
 	}
 
 	int CurrentFrame()
@@ -58,7 +53,7 @@ namespace Test
 		if (CurrentFrame() < LastFrame)
 		{
 			GameStart();
-		}0x4D0;
+		}
 		LastFrame = CurrentFrame();
 		DrawGlobalTimer();
 		Local::ExecutorRunLoop();

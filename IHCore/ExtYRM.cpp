@@ -291,8 +291,8 @@ static void ReadYRMData_EXT(_In_ const char* FileName,
 {
 	//::MessageBoxA(NULL, FileName, "CTX", MB_OK);
 	ReadYRMData_Rewritten(FileName, Desc, Digest, GameModes, *IsOfficialMap, *MinPlayers, *MaxPlayers);
-	Debug::Log("[IH] Read YRM Data : \n    File \"%s\"\n    Desc \"%s\"\n    Digest \"%s\"\n    GameModes \"%s\"\n    IsOfficialMap %d\n    MinPlayers %d\n    MaxPlayers %d\n",
-		FileName, UnicodetoUTF8(Desc).c_str(), Digest, GameModes, *IsOfficialMap, *MinPlayers, *MaxPlayers);
+	//Debug::Log("[IH] Read YRM Data : \n    File \"%s\"\n    Desc \"%s\"\n    Digest \"%s\"\n    GameModes \"%s\"\n    IsOfficialMap %d\n    MinPlayers %d\n    MaxPlayers %d\n",
+	//	FileName, UnicodetoUTF8(Desc).c_str(), Digest, GameModes, *IsOfficialMap, *MinPlayers, *MaxPlayers);
 }
 
 

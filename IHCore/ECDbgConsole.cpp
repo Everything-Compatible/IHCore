@@ -527,7 +527,7 @@ namespace ECCommand
 			if(ArrayArg)
 			{
 				std::vector<std::string> s;
-				for(int i=1;i<CommandArg.size();i++)
+				for(size_t i=1;i<CommandArg.size();i++)
 					s.push_back(~CommandArg[i]);
 				ArgJson.GetObj().AddArrayString("Args", s);
 			}
@@ -693,9 +693,10 @@ namespace ECDebug
 		{
 			if (FreeConsole())
 			{
-				fclose(stdout);
-				fclose(stderr);
-				fclose(stdin);
+				//comment out to avoid crash on some systems
+				//fclose(stdout);
+				//fclose(stderr);
+				//fclose(stdin);
 				ConsoleOpen = false;
 				return true;
 			}

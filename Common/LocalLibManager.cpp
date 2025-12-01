@@ -469,16 +469,32 @@ namespace Local
 
 	void __cdecl ExitClearImpl()
 	{
+		//使用Winapi的系统计时器测定析构EC的框架所用时间
+		/*
+		LARGE_INTEGER freq, start, end;
+		QueryPerformanceCounter(&start);
+		*/
+
 		RemoteComponentManager::Uninitialize();
 		ExitClear();
 		ECDebug::CloseDebugConsole();
+
+		/*
+		QueryPerformanceCounter(&end);
+		QueryPerformanceFrequency(&freq);
+		double elapsedTime = static_cast<double>(end.QuadPart - start.QuadPart) / freq.QuadPart;
+		char str[200];
+		sprintf_s(str, 200, "[EC] Start = %llu, End = %llu, End - Start = %llu, Freq = %llu\nTime taken: %.6f seconds",
+			start.QuadPart, end.QuadPart, end.QuadPart - start.QuadPart, freq.QuadPart, elapsedTime);
+		MessageBoxA(NULL, str, "[EC] Exit Timing", MB_OK);
+		*/
 	}
 
 
 
 	void LocalInit()
 	{
-		CRT::atexit(ExitClearImpl);
+		atexit(ExitClearImpl);
 		InitLibs();
 	}
 
