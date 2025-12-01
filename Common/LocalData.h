@@ -141,7 +141,7 @@ namespace Local
 
 
 	//没有找到//找到且唯一//找到但不唯一
-	std::variant<std::nullopt_t, FuncInfo*, std::unordered_map<std::string, FuncInfo*>>
+	std::variant<std::monostate, FuncInfo*, std::unordered_map<std::string, FuncInfo*>>
 		PickFunctionForCommand(const char* pLib, const char* pFunc, int Version);
 
 

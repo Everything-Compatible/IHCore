@@ -358,7 +358,7 @@ namespace ECCommand
 		else
 		{
 			auto FuncOption = Local::PickFunctionForCommand(conv CommandLib.c_str(), conv CommandFn.c_str(), CommandVersion);
-			if (std::holds_alternative<std::nullopt_t>(FuncOption))
+			if (std::holds_alternative<std::monostate>(FuncOption))
 			{
 				return [] { return u8"\033[31m指令未找到！\033[0m"; };
 			}

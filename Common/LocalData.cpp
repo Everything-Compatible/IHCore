@@ -289,7 +289,7 @@ namespace Local
 	}
 
 	//没有找到//找到且唯一//找到但不唯一
-	std::variant<std::nullopt_t, FuncInfo*, std::unordered_map<std::string, FuncInfo*>>
+	std::variant<std::monostate, FuncInfo*, std::unordered_map<std::string, FuncInfo*>>
 		PickFunctionForCommand(const char* pLib, const char* pFunc, int Version)
 	{
 		if (!strlen(pLib))
@@ -310,11 +310,11 @@ namespace Local
 				if (pf) return pf;
 				//此处分离出nullptr
 				//在类型上区分
-				else return std::nullopt;
+				else return std::monostate{};
 			}
 			else if(Result.size() == 0)
 			{
-				return std::nullopt;
+				return std::monostate{};
 			}
 			else
 			{
@@ -325,7 +325,7 @@ namespace Local
 		{
 			auto pf = GetFuncFromLib(pLib, pFunc, Version);
 			if (pf && pf->IsConsiderAsCommand()) return pf;
-			else return std::nullopt;
+			else return std::monostate{};
 		}
 	}
 
