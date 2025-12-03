@@ -433,6 +433,11 @@ struct ResetWidth
     wchar_t Begin;
     wchar_t End;
     uint8_t width;
+    enum _Align{
+		AlignLeft,
+		AlignCenter,
+		AlignRight
+	}Align;
 };
 
 std::vector<ResetWidth> ResetWidthList;
@@ -476,10 +481,56 @@ void InitResetWidthList()
 					rw.width = (uint8_t)std::min(std::max(oWidth.GetInt(), 0), 255);
                 rw.Begin = LoadWch(p.GetObjectItem("Begin"));
 				rw.End = LoadWch(p.GetObjectItem("End"));
+                auto oAlign = p.GetObjectItem("Align");
+                if (oAlign && oAlign.IsTypeString())
+                {
+                    auto Str = oAlign.GetString();
+					if (!_stricmp(Str.c_str(), "left"))rw.Align = ResetWidth::AlignLeft;
+					else if (!_stricmp(Str.c_str(), "center"))rw.Align = ResetWidth::AlignCenter;
+					else if (!_stricmp(Str.c_str(), "right"))rw.Align = ResetWidth::AlignRight;
+					else rw.Align = ResetWidth::AlignLeft;
+                }
+                else rw.Align = ResetWidth::AlignLeft;
 				ResetWidthList.push_back(rw);
             }
         }
     }
+}
+
+void PrintBitMap(size_t sz, const unsigned char* Data)
+{
+    char ss[120];
+    Debug::Log("Width=%d\n", (int)Data[0]);
+    for (size_t i = 0; i < sz; i++)
+    {
+        _itoa(Data[i], ss, 2);
+        Debug::Log("%08s", ss);
+        if (i == 0)Debug::Log("\n");
+        if (i % 3 == 0)Debug::Log("\n");
+    }
+    Debug::Log("\n");
+}
+
+void ShiftCharBitmap(BitFont* pFont, BYTE* pBitmap, int Shift)
+{
+	if (Shift == 0)return;
+    Debug::Log("Shift = %d\n", Shift);
+    auto Size = pFont->InternalPTR->SymbolDataSize;
+    auto Height = pFont->InternalPTR->FontHeight;
+    auto Delta = (Size - 1) / Height;
+    for (int i = 0; i < pFont->InternalPTR->FontHeight; i++)
+    {
+        BYTE b0 = pBitmap[1 + i * Delta];
+        BYTE b1 = pBitmap[2 + i * Delta];
+        int u = ((b1 << 8) | b0);
+        u = u | u << 16;
+        if (Shift > 0) u = (u >> Shift);
+        else u = (u << (-Shift)) >> 16;
+        pBitmap[1 + i * Delta] = (BYTE)(u & 0xFF);
+        pBitmap[2 + i * Delta] = (BYTE)((u >> 8) & 0xFF);
+		
+    }
+    PrintBitMap(Size, pBitmap);
 }
 
 DEFINE_HOOK(0x4346C0, BitFont_GetCharBitmap, 5)
@@ -506,10 +557,22 @@ DEFINE_HOOK(0x4338DF, InitExtFont, 6)
 			for (auto& rw : ResetWidthList)
                 if ((uint16_t)i >= (uint16_t)rw.Begin && (uint16_t)i < (uint16_t)rw.End)
                 {
+                    switch (rw.Align)
+                    {
+					case ResetWidth::AlignLeft:
+						break;
+					case ResetWidth::AlignCenter:
+						ShiftCharBitmap(pFont, pBitMap, (int)(rw.width - Width) / 2);
+						break;
+					case ResetWidth::AlignRight:
+                        ShiftCharBitmap(pFont, pBitMap, (int)(rw.width - Width));
+                        break;
+                    }
                     Width = rw.width;
                     break;
                 }
 			pBitMap[0] = (BYTE)((pBitMap[0] & 0xF0) | (std::min(Width, 15) & 0x0F));
+
 			ActualWidthList[i] = (uint8_t)Width;
 
             DrawStyle::GlyphByWidth[Width].push_back(pBitMap);
