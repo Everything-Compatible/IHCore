@@ -310,7 +310,6 @@ struct DrawStyleList
     }
     const wchar_t* MakeString(const wchar_t* ws)
     {
-        //if (MessageListClass::Instance->GetEditBuffer() == ws)return L"我测你的马";
         CurrentDrawStyle ds{};
         NewStr.clear();
         Cur = 0;
@@ -329,10 +328,10 @@ struct DrawStyleList
     }
     const wchar_t* MakeStringAlt(const wchar_t* ws)
     {
-        //if (MessageListClass::Instance->GetEditBuffer() == ws)return L"我测你的马";
         CurrentDrawStyle ds{};
         NewStr.clear();
-        for (auto p = ws; *p;)
+        auto VarReplaced = GetReplacedDrawStr(ws);
+        for (auto p = VarReplaced.c_str(); *p;)
         {
             NewStr.push_back(GetNextChar(p, ds));
             if (NewStr.back() == Magic_StyleAction)
@@ -343,7 +342,6 @@ struct DrawStyleList
             //if (NewStr.back() == '\r' || NewStr.back() == '\n')
             //    NewStr.push_back(Magic_StyleAction);
         }
-        // NewStr.push_back(Magic_StyleAction);
         return NewStr.c_str();
     }
 };
