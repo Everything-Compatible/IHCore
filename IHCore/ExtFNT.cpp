@@ -4,11 +4,13 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
 #include <memory>
 #include <optional>
 #include "ToolFunc.h"
 #include "Debug.h"
 #include "../Common/IHLoader/IH.h"
+#include <EC.Misc.h>
 
 
 const wchar_t Magic_StyleAction = 0xFFFF;// L'唐';
@@ -294,6 +296,7 @@ struct DrawStyleList
 {
     std::vector<CurrentDrawStyle> List;
     std::wstring NewStr;
+    std::wstring NewStrAlt;
     int Cur{ 0 };
     size_t CurCharIdx{ 0 };
     wchar_t CurrentChar{ 0 };
@@ -329,20 +332,20 @@ struct DrawStyleList
     const wchar_t* MakeStringAlt(const wchar_t* ws)
     {
         CurrentDrawStyle ds{};
-        NewStr.clear();
+        NewStrAlt.clear();
         auto VarReplaced = GetReplacedDrawStr(ws);
         for (auto p = VarReplaced.c_str(); *p;)
         {
-            NewStr.push_back(GetNextChar(p, ds));
-            if (NewStr.back() == Magic_StyleAction)
+            NewStrAlt.push_back(GetNextChar(p, ds));
+            if (NewStrAlt.back() == Magic_StyleAction)
             {
-                NewStr.pop_back();
+                NewStrAlt.pop_back();
                 //NewStr += ds.GetWT();
             }
             //if (NewStr.back() == '\r' || NewStr.back() == '\n')
             //    NewStr.push_back(Magic_StyleAction);
         }
-        return NewStr.c_str();
+        return NewStrAlt.c_str();
     }
 };
 
@@ -354,6 +357,108 @@ namespace DrawStyle
     std::vector<BYTE*>GlyphByWidth[16];
     std::map<DWORD, std::unique_ptr<DrawStyleList>> TMap;
     std::mutex TMtx;
+
+//缺少测试
+#ifdef USE_PREPROCESSED_STRINGS
+
+    std::unordered_map<DWORD, std::unique_ptr<DrawStyleList>> Preprocessed;
+    std::shared_mutex PMtx;
+    static const size_t PreprocessedHeaderSize = 3;
+    static const wchar_t PreprocessedHeaderMagic = (wchar_t)0xFEFF;
+
+    //preprocessed format : 
+    //FEFF IdLow IdHigh
+    bool IsPreprocessedWString(const wchar_t* str)
+    {
+		if (!str)return false;
+		if (wcsnlen_s(str, PreprocessedHeaderSize) < PreprocessedHeaderSize) return false;
+        if (str[0] != PreprocessedHeaderMagic) return false;
+		DWORD idlow = (DWORD)str[1], idhigh = (DWORD)str[2];
+		DWORD ID = idlow | (idhigh << 16);
+		std::shared_lock<std::shared_mutex> lr(PMtx);
+		return Preprocessed.contains(ID);
+    }
+
+    const wchar_t* PreprocessBlitString(const wchar_t* str)
+    {
+        std::unique_lock<std::shared_mutex> lw(PMtx);
+        auto ID = (DWORD)ECUniqueID();
+        auto& prep = Preprocessed[ID];
+        prep.reset(new DrawStyleList());
+		prep->MakeString(str);
+        prep->MakeStringAlt(str);
+
+        prep->NewStr.insert(0, 3, L'\0');
+        prep->NewStr[0] = PreprocessedHeaderMagic;
+        prep->NewStr[1] = (wchar_t)(ID & 0x0000FFFF);
+        prep->NewStr[2] = (wchar_t)((ID >> 16) & 0x0000FFFF);
+
+		prep->NewStrAlt.insert(0, 3, L'\0');
+		prep->NewStrAlt[0] = PreprocessedHeaderMagic;
+		prep->NewStrAlt[1] = (wchar_t)(ID & 0x0000FFFF);
+		prep->NewStrAlt[2] = (wchar_t)((ID >> 16) & 0x0000FFFF);
+
+        return prep->NewStrAlt.c_str();
+    }
+
+    void ReleasePreprocessedString(const wchar_t* str)
+    {
+        if (!IsPreprocessedWString(str))return;
+        DWORD idlow = (DWORD)str[1], idhigh = (DWORD)str[2];
+        DWORD ID = idlow | (idhigh << 16);
+		std::unique_lock<std::shared_mutex> lw(PMtx);
+		Preprocessed.erase(ID);
+    }
+
+    DrawStyleList* GetStyleFromPreprocessedString(const wchar_t* str)
+    {
+        if (!IsPreprocessedWString(str))return nullptr;
+        DWORD idlow = (DWORD)str[1], idhigh = (DWORD)str[2];
+        DWORD ID = idlow | (idhigh << 16);
+		std::shared_lock<std::shared_mutex> lr(PMtx);
+		auto it = Preprocessed.find(ID);
+		if (it != Preprocessed.end())return it->second.get();
+		else return nullptr;
+    }
+
+    const wchar_t* MakeString(const wchar_t* ws)
+    {
+        auto pStyle = GetStyleFromPreprocessedString(ws);
+        if (pStyle)
+        {
+            GetList() = *pStyle;
+            return GetList().NewStr.c_str() + PreprocessedHeaderSize;
+        }
+        else
+        {
+            return GetList().MakeString(ws);
+        }
+    }
+    const wchar_t* MakeStringAlt(const wchar_t* ws)
+    {
+        auto pStyle = GetStyleFromPreprocessedString(ws);
+        if (pStyle)
+        {
+            GetList() = *pStyle;
+            return GetList().NewStrAlt.c_str() + PreprocessedHeaderSize;
+        }
+        else
+        {
+            return GetList().MakeStringAlt(ws);
+        }
+    }
+#else
+    const wchar_t* MakeString(const wchar_t* ws)
+    {
+        return GetList().MakeString(ws);
+    }
+    const wchar_t* MakeStringAlt(const wchar_t* ws)
+    {
+        return GetList().MakeStringAlt(ws);
+    }
+
+#endif
+
     DrawStyleList& GetList()
     {
         TMtx.lock();
@@ -377,14 +482,7 @@ namespace DrawStyle
         p.reset(nullptr);
         TMtx.unlock();
     }
-    const wchar_t* MakeString(const wchar_t* ws)
-    {
-        return GetList().MakeString(ws);
-    }
-    const wchar_t* MakeStringAlt(const wchar_t* ws)
-    {
-        return GetList().MakeStringAlt(ws);
-    }
+
     int RedrawGlyph(wchar_t wc, bool ExtendWidth)
     {
         auto& List = GetList();
@@ -665,7 +763,7 @@ DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
 }
 
 
-
+//BitFont::BlitInBounds
 DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
@@ -685,6 +783,7 @@ DEFINE_HOOK(0x4346A6, BitFont_Blit1Ret2, 5)
     return 0;
 };
 
+//BitFont::DrawText_MultipleLines
 DEFINE_HOOK(0x434CD0, BitFont_Blit2, 5)
 {
     REF_STACK(const wchar_t*, Text, 0xC);
