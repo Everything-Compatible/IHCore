@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <GadgetClass.h>
 
@@ -27,7 +27,7 @@ public:
 	wchar_t* Text;
 	int ColorSchemeIndex;
 	DWORD PixWidth;
-	DWORD anim_dword3C;
+	DWORD anim_dword3C;//动态显示时标记显示到了哪个位置
 	bool SkipDraw;
 	bool Animate;
 	DWORD AnimPos;
