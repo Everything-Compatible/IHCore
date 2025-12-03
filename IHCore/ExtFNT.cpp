@@ -12,7 +12,6 @@
 #include "../Common/IHLoader/IH.h"
 #include <EC.Misc.h>
 
-
 const wchar_t Magic_StyleAction = 0xFFFF;// L'唐';
 
 const char8_t* GetTextDrawVariable(const std::u8string_view Key)
@@ -448,6 +447,7 @@ namespace DrawStyle
         }
     }
 #else
+    DrawStyleList& GetList();
     const wchar_t* MakeString(const wchar_t* ws)
     {
         return GetList().MakeString(ws);
@@ -506,8 +506,16 @@ namespace DrawStyle
                     for (int i = 0; i < BitFont::Instance->InternalPTR->FontHeight; i++)
                     {
                         int& at = *(int*)(&List.GlyphBuffer[1 + i * DrawStyle::GlyphLineDelta]);
+                        //extract
                         auto u1 = at & 0x00FFFFFF;
-                        at = (~((u1 << 1) & (u1 >> 1))) & (u1 << 1) | u1 | (at & 0xFF000000);
+						//reverse bytes : low 3 bytes of u1 : B0 B1 B2 -> B2 B1 B0
+						u1 = ((u1 & 0x0000FF) << 16) | (u1 & 0x00FF00) | ((u1 & 0xFF0000) >> 16);
+						//bold effect
+                        auto u2 = (~((u1 << 1) & (u1 >> 1))) & (u1 << 1) | u1;
+						//reverse back
+						u2 = ((u2 & 0x0000FF) << 16) | (u2 & 0x00FF00) | ((u2 & 0xFF0000) >> 16);
+                        //write back
+						at = u2 | (at & 0xFF000000);
                     }
                 }
                 if (Cur.StrikeThrough)
@@ -675,16 +683,8 @@ DEFINE_HOOK(0x4338DF, InitExtFont, 6)
         }
     }
     DrawStyle::GlyphLineDelta = (pFont->InternalPTR->SymbolDataSize - 1) / pFont->InternalPTR->FontHeight;
-    DrawStyle::MagicGlyphBuf = pFont->GetCharacterBitmap(Magic_StyleAction);
-    if (DrawStyle::MagicGlyphBuf)
-    {
-        DrawStyle::MagicGlyphWidth = DrawStyle::MagicGlyphBuf[0];
-    }
-    else
-    {
-        DrawStyle::MagicGlyphBuf = (BYTE*)pFont->AtlasBuffer;
-        DrawStyle::MagicGlyphWidth = pFont->GetCharacterBitmap(L'X')[0];
-    }
+    DrawStyle::MagicGlyphBuf = new BYTE[pFont->InternalPTR->SymbolDataSize];
+    memset(DrawStyle::MagicGlyphBuf, 0, pFont->InternalPTR->SymbolDataSize);
     return 0;
 }
 
@@ -767,7 +767,9 @@ DEFINE_HOOK(0x433DCE, BitFont_GetTextDimension_B, 7)
 DEFINE_HOOK(0x434500, BitFont_Blit1, 7)
 {
     REF_STACK(const wchar_t*, Text, 0x4);
+    //Debug::Log("BitFont::BlitInBounds : Before %08X", Text);
     Text = DrawStyle::MakeString(Text);
+    //Debug::Log("After %08X\n", Text);
     return 0;
 };
 
