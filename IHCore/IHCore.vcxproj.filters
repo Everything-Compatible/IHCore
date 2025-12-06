@@ -1179,6 +1179,12 @@
     <ClInclude Include="ExtIni.h">
       <Filter>File</Filter>
     </ClInclude>
+    <ClInclude Include="ExtFNT.h">
+      <Filter>Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Exception.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1204,9 +1210,6 @@
     </ClCompile>
     <ClCompile Include="..\Common\LocalLibManager.cpp">
       <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Load.cpp">
-      <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
       <Filter>External</Filter>
@@ -1339,6 +1342,9 @@
     </ClCompile>
     <ClCompile Include="ExtIni.cpp">
       <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtMessageList.cpp">
+      <Filter>Extended</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

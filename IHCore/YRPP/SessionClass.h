@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <ArrayClasses.h>
 #include <GameModeOptionsClass.h>
@@ -157,7 +157,7 @@ public:
 	int GameVersion;
 	DynamicVectorClass<MultiMission*> MultiMission;
 	char ScenarioFilename[0x202]; // 0x6A8
-	PROTECTED_PROPERTY(BYTE, unknown_8AA[0x1AAA]);
+	BYTE unknown_8AA[0x1AAA];
 	CCFileClass UnknownFile;
 	PROTECTED_PROPERTY(BYTE, unknown_2354[0x44A]);
 	DynamicVectorClass<NodeNameType*> unknown_vector_280C;

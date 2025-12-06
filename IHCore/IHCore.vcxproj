@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="..\Common\IHCore\Version.h" />
     <ClInclude Include="..\Common\IHLoader\cJSON.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Exception.h" />
     <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
     <ClInclude Include="..\Common\IHLoader\EC.h" />
     <ClInclude Include="..\Common\IHLoader\EC.LoadSave.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="ExtCD.h" />
     <ClInclude Include="ExtCsf.h" />
     <ClInclude Include="ExtFile.h" />
+    <ClInclude Include="ExtFNT.h" />
     <ClInclude Include="ExtIni.h" />
     <ClInclude Include="ExtLog.h" />
     <ClInclude Include="framework.h" />
@@ -568,6 +570,7 @@
     <ClCompile Include="ExtFNT.cpp" />
     <ClCompile Include="ExtIni.cpp" />
     <ClCompile Include="ExtLog.cpp" />
+    <ClCompile Include="ExtMessageList.cpp" />
     <ClCompile Include="ExtMix.cpp" />
     <ClCompile Include="ExtScenario.cpp" />
     <ClCompile Include="Global.cpp" />
@@ -576,7 +579,6 @@
     <ClCompile Include="Init.Hooks.cpp" />
     <ClCompile Include="InitialLoad.cpp" />
     <ClCompile Include="InitSomewhere.cpp" />
-    <ClCompile Include="Load.cpp" />
     <ClCompile Include="LocalLibFunc.cpp" />
     <ClCompile Include="MiscFunc.cpp" />
     <ClCompile Include="Patch.cpp" />

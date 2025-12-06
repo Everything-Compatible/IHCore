@@ -59,6 +59,11 @@ namespace Test
 		Local::ExecutorRunLoop();
 		Local::LocalFrameUpdate();
 
+		if (CurrentFrame() == 10)
+		{
+			MessageListClass::Instance->PrintMessage(StringTable::LoadString("MessageList_UnitTest_String"), 0x100);
+		}
+
 		RemoteCommFrameUpdate();
 	}
 }

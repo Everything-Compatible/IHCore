@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <YRPP.h>
 
@@ -13,6 +13,12 @@ public:
 	virtual ~BitFont() RX;
 
 	bool GetTextDimension(const wchar_t* pText, int* pWidth, int* pHeight, int nMaxWidth) { JMP_THIS(0x433CF0); }
+	int GetTextDimension_B(const wchar_t* pText, int nWidth)
+	{
+		BitFont::GetTextDimension(pText, &nWidth, 0, nWidth);
+		return nWidth;
+	}
+	int AutoWrapText(const wchar_t* Str, int MaxPixels, int MaxChars, int WordWrap) { JMP_THIS(0x433F50); }
 	int Blit(wchar_t wch, int X, int Y, int nColor) { JMP_THIS(0x434120); }
 
 	bool Lock(Surface* pSurface) { JMP_THIS(0x4348F0); }
@@ -69,8 +75,8 @@ public:
 	int field_20;
 	WORD Color;
 	short DefaultColor2;
-	int Unknown_28;
-	int State_2C;
+	int TabWidthPixels;
+	int Spacing;
 	LTRBStruct Bounds;
 	bool Bool_40;
 	bool field_41;

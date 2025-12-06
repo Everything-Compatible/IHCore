@@ -6,6 +6,7 @@ void ExtIni_InitBeforeEverything();
 void ConfigJson_InitBeforeEverything();
 void HotKey_InitBeforeEverything();
 void DebugConsole_InitBeforeEverything();
+void ExtMsgList_InitBeforeEverything();
 
 void InitBeforeEverything()
 {
@@ -16,6 +17,7 @@ void InitBeforeEverything()
 	ExtCD_InitBeforeEverything();
 	HotKey_InitBeforeEverything();
 	DebugConsole_InitBeforeEverything();
+	ExtMsgList_InitBeforeEverything();
 	StringManagerExt::Apply();
 
 	for (auto hd : ECListener::GetAll("EC::InitBeforeEverything"))

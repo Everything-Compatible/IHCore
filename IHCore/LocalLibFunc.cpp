@@ -70,13 +70,25 @@ void __cdecl WatchAD(JsonObject obj)
 	ShellExecuteW(NULL, L"open", UTF8toUnicode(Args[0]).c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
+void __cdecl AutoWrapTextEx(
+	class BitFont* _In_ Font,
+	const wchar_t* _In_ Str,
+	int _In_ MaxPixels,
+	int _In_ MaxChars,
+	bool _In_ WordWrap,
+	int& _Out_ Len,
+	const wchar_t*& _Out_ StrBefore,
+	const wchar_t*& _Out_ StrAfter
+);
+
 std::unordered_map<std::string, FuncInfo>IHCore_Funcs
 {
 	{"IEDialog",FuncInfo(ShowIEDialog ,FuncType::Procedure)},
 	{"WatchAD",FuncInfo(WatchAD ,FuncType::Action, true, true)},
 	{"AddMoney",FuncInfo(AddMoney ,FuncType::Action, true, true)},
 	{"OpenWebsite",FuncInfo(OpenWebsite ,FuncType::Default)},//bool (__cdecl*)(const char*)
-	{"GetCSFString",FuncInfo(StringManagerExt::GetCSFString ,FuncType::Default)}
+	{"GetCSFString",FuncInfo(StringManagerExt::GetCSFString ,FuncType::Default)},
+	{"AutoWrapTextEx",FuncInfo(AutoWrapTextEx, FuncType::Default) }
 };
 
 FuncInfo* IHCore_GetFunc(const char* Name, int Version)

@@ -24,7 +24,7 @@ public:
 	void* UserData1;
 	void* UserData2;
 	DWORD Style;
-	wchar_t* Text;
+	const wchar_t* Text;
 	int ColorSchemeIndex;
 	DWORD PixWidth;
 	DWORD anim_dword3C;//动态显示时标记显示到了哪个位置
