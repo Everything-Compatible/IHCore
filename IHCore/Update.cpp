@@ -59,10 +59,14 @@ namespace Test
 		Local::ExecutorRunLoop();
 		Local::LocalFrameUpdate();
 
+#ifdef CalcEx_UnitTest
 		if (CurrentFrame() == 10)
 		{
 			MessageListClass::Instance->PrintMessage(StringTable::LoadString("MessageList_UnitTest_String"), 0x100);
 		}
+#endif // CalcEx_UnitTest
+
+
 
 		RemoteCommFrameUpdate();
 	}

@@ -1045,6 +1045,12 @@ DEFINE_HOOK(0x623C9D, BitFont_Blit3Ret1, 0xA)
     return 0;
 }
 
+DEFINE_HOOK(0x623CB7, BitFont_Blit3Ret2, 5)
+{
+    DrawStyle::ClearStyle();
+    return 0;
+}
+
 //记录原始函数以备参考
 #if 0
 struct BitFontEx
