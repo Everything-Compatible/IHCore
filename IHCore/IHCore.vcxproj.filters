@@ -1346,6 +1346,9 @@
     <ClCompile Include="ExtMessageList.cpp">
       <Filter>Extended</Filter>
     </ClCompile>
+    <ClCompile Include="ExtLoadAI.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SkirmishDialog.rc">

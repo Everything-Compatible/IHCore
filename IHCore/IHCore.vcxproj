@@ -569,6 +569,7 @@
     <ClCompile Include="ExtFile.cpp" />
     <ClCompile Include="ExtFNT.cpp" />
     <ClCompile Include="ExtIni.cpp" />
+    <ClCompile Include="ExtLoadAI.cpp" />
     <ClCompile Include="ExtLog.cpp" />
     <ClCompile Include="ExtMessageList.cpp" />
     <ClCompile Include="ExtMix.cpp" />
