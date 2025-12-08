@@ -1,4 +1,4 @@
-# Prerequisites
+﻿# Prerequisites
 *.d
 
 # Compiled Object files
@@ -38,6 +38,8 @@
 /IHLibList/Release
 /RAImGui/Release
 /RAImGui/x64/Debug
+/IHIProj/Release
+/IHIProj/x64/Debug
 /Release
 /SRC241007A
 /SRC241007A.zip

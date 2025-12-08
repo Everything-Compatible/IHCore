@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHCore", "IHCore\IHCore.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHLibList", "IHLibList\IHLibList.vcxproj", "{30BD4B39-DFD2-453F-A27C-E3E603B84486}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHIProj", "IHIProj\IHIProj.vcxproj", "{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{30BD4B39-DFD2-453F-A27C-E3E603B84486}.Release|x64.Build.0 = Release|x64
 		{30BD4B39-DFD2-453F-A27C-E3E603B84486}.Release|x86.ActiveCfg = Release|Win32
 		{30BD4B39-DFD2-453F-A27C-E3E603B84486}.Release|x86.Build.0 = Release|Win32
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Debug|x64.ActiveCfg = Debug|x64
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Debug|x64.Build.0 = Debug|x64
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Debug|x86.ActiveCfg = Debug|Win32
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Debug|x86.Build.0 = Debug|Win32
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Release|x64.ActiveCfg = Release|x64
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Release|x64.Build.0 = Release|x64
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Release|x86.ActiveCfg = Release|Win32
+		{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

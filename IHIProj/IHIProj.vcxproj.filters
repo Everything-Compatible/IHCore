@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="YRPP">
+      <UniqueIdentifier>{1feb1dee-2d59-4104-85d0-c21ace85692f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EC SDK">
+      <UniqueIdentifier>{edf7b9f3-d12f-462c-97ac-6cf6d22f4e94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LibIProj">
+      <UniqueIdentifier>{47e1a1ef-fea5-40a6-81e1-8b7374b86ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Router">
+      <UniqueIdentifier>{242ae831-86c3-476b-8af7-6fce66929faf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\IHIProj\Version.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Exception.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.GameClass.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Listener.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.LoadSave.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.LoadSaveImpl.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Misc.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.ObjBase.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Stream.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\EC.Swizzle.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\ExtJson.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Config.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Ext.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.File.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Initial.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.InitialService.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.Loader.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\PArray.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\SyringeEx.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Buff.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Define.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Interface.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\WIC.Template.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\LibIProj\ByteStream.h">
+      <Filter>LibIProj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\LibIProj\LibIProj.h">
+      <Filter>LibIProj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\LibIProj\WeaverObj.h">
+      <Filter>LibIProj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHIProj\IProjFile.h">
+      <Filter>Router</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.GameClass.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.LoadSave.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.Misc.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\EC.ObjBase.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\ExtJson.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.Ext.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.File.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.Initial.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\IH.Loader.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.Buff.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c">
+      <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\LibIProj\ByteStream.cpp">
+      <Filter>LibIProj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\LibIProj\LibIProj.cpp">
+      <Filter>LibIProj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\IHIProj\IProjFile.cpp">
+      <Filter>Router</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

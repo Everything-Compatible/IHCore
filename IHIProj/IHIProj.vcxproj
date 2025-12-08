@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{30bd4b39-dfd2-453f-a27c-e3e603b84486}</ProjectGuid>
-    <RootNamespace>IHLibList</RootNamespace>
+    <ProjectGuid>{1cdbd76f-990e-4a41-93ac-1ad9aae12ce2}</ProjectGuid>
+    <RootNamespace>IHIProj</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -70,11 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(SolutionDir)Common\IHLoader;$(SolutionDir)Common\IHIProj;$(SolutionDir)Common\LibIProj;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;IHLIBLIST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;IHIPROJ_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -91,10 +94,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>EC_NoObjBase;WIN32;NDEBUG;IHLIBLIST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;WIN32;NDEBUG;IHIPROJ_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -108,7 +112,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;IHLIBLIST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;IHIPROJ_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -125,7 +129,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;IHLIBLIST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;IHIPROJ_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -139,17 +143,58 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="..\Common\IHIProj\IProjFile.h" />
+    <ClInclude Include="..\Common\IHIProj\Version.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Exception.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Listener.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.LoadSave.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.LoadSaveImpl.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Misc.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.ObjBase.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Stream.h" />
+    <ClInclude Include="..\Common\IHLoader\EC.Swizzle.h" />
+    <ClInclude Include="..\Common\IHLoader\ExtJson.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Config.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Ext.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.File.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Initial.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.InitialService.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.Loader.h" />
+    <ClInclude Include="..\Common\IHLoader\PArray.h" />
+    <ClInclude Include="..\Common\IHLoader\SyringeEx.h" />
+    <ClInclude Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.h" />
+    <ClInclude Include="..\Common\IHLoader\WIC.Buff.h" />
+    <ClInclude Include="..\Common\IHLoader\WIC.Define.h" />
+    <ClInclude Include="..\Common\IHLoader\WIC.h" />
+    <ClInclude Include="..\Common\IHLoader\WIC.Interface.h" />
+    <ClInclude Include="..\Common\IHLoader\WIC.Template.h" />
+    <ClInclude Include="..\Common\LibIProj\ByteStream.h" />
+    <ClInclude Include="..\Common\LibIProj\LibIProj.h" />
+    <ClInclude Include="..\Common\LibIProj\WeaverObj.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\IHIProj\IProjFile.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.GameClass.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.LoadSave.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.Misc.cpp" />
+    <ClCompile Include="..\Common\IHLoader\EC.ObjBase.cpp" />
+    <ClCompile Include="..\Common\IHLoader\ExtJson.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.Ext.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.File.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.Initial.cpp" />
+    <ClCompile Include="..\Common\IHLoader\IH.Loader.cpp" />
+    <ClCompile Include="..\Common\IHLoader\SyringeEx.cpp" />
+    <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c" />
+    <ClCompile Include="..\Common\IHLoader\WIC.Buff.cpp" />
+    <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp" />
+    <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp" />
+    <ClCompile Include="..\Common\LibIProj\ByteStream.cpp" />
+    <ClCompile Include="..\Common\LibIProj\LibIProj.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
