@@ -8,6 +8,11 @@ namespace Local
     void InitEx();
 }
 
+namespace Init
+{
+    bool Initialize();
+}
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved

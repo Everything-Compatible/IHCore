@@ -1351,7 +1351,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SkirmishDialog.rc">
+    <ResourceCompile Include="Version.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

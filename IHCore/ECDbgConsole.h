@@ -3,6 +3,8 @@
 #include "InfoStack.h"
 #include "ExtJson.h"
 #include <optional>
+#include <future>
+#include <IH.Loader.h>
 
 struct GeneratorParam;
 using DbgCommand = std::function<std::u8string(void)>;
@@ -71,4 +73,18 @@ namespace ECDebug
 	bool OpenDebugConsole();
 
 	bool CloseDebugConsole();
+
+	struct CommandRet
+	{
+		int ErrorCode;
+		bool HasRetValue;
+		std::u8string Ret;
+		std::u8string ErrorStr;
+	};
+
+	void PostCommand(const std::u8string& command, bool ChangeEnv);
+
+	std::future<CommandRet> RunCommand(const std::u8string& command, bool ChangeEnv);
+
+	void RunCommandWithProc(const std::u8string& command, bool ChangeEnv, CommandReturnCallback Callback, void* CustomData);
 }

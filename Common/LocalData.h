@@ -225,9 +225,9 @@ namespace Local
 	//Context
 	JsonObject __cdecl Export_DirectBindContextTo(JsonObject Context, const ContextIndex& Idx);
 	JsonObject __cdecl Export_DirectBindTextTo(const char* Text, const ContextIndex& Idx);
-		//JsonObject Export_BindContextTo(JsonObject Context, const ContextIndex& Idx);
-		//PLACEHOLDER 6
-		//PLACEHOLDER 7
+	void __cdecl Export_PostCommand(UTF8_CString command, bool ChangeEnv);
+	void __cdecl Export_RunCommand(UTF8_CString command, bool ChangeEnv, CommandReturnCallback Callback, void* CustomData);
+	//JsonObject Export_BindContextTo(JsonObject Context, const ContextIndex& Idx);
 	JsonObject __cdecl Export_GetContextByIdx(const ContextIndex& Idx);
 	void __cdecl Export_DeleteContextByIdx(const ContextIndex& Idx);
 	RoutineHandle __cdecl Export_GetRoutine(const char* Name);

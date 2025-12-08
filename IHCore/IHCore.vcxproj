@@ -599,7 +599,7 @@
     <ClCompile Include="YRPP\StaticInits.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SkirmishDialog.rc" />
+    <ResourceCompile Include="Version.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="YRPP\YRpp.props" />

@@ -585,14 +585,77 @@ namespace ECCommand
 
 namespace ECDebug
 {
+	struct AsyncCommand
+	{
+		DbgCommand command;
+		bool ChangeEnv;
+		std::promise<CommandRet> promise;
+		CommandReturnCallback Callback;
+		void* CallbackCustomData;
+
+		AsyncCommand() = delete;
+		AsyncCommand(DbgCommand&& cmd, bool chg):
+			command(std::move(cmd)), ChangeEnv(chg), Callback(nullptr), CallbackCustomData(nullptr)
+		{ }
+		AsyncCommand(DbgCommand&& cmd, bool chg, CommandReturnCallback cb) :
+			command(std::move(cmd)), ChangeEnv(chg), Callback(cb), CallbackCustomData(nullptr)
+		{ }
+		AsyncCommand(DbgCommand&& cmd, bool chg, CommandReturnCallback cb, void* cbcd) :
+			command(std::move(cmd)), ChangeEnv(chg), Callback(cb), CallbackCustomData(cbcd)
+		{ }
+
+		void Execute()
+		{
+			CommandRet ret;
+			if (ChangeEnv)
+			{
+				//此时指令的执行会影响全局环境变量
+				ECDebug::CommandOutput.Push(command());
+				ECCommand::GetLastResult(ret.Ret, ret.ErrorStr, ret.ErrorCode);
+				ret.HasRetValue = ECCommand::ReturnedValue;
+			}
+			else
+			{
+				//此时指令的执行不会影响全局环境变量
+				ECCommandRemoteBuf::Enter();
+				ECDebug::CommandOutput.Push(command());
+				ret.ErrorCode = ECCommandRemoteBuf::ErrorCode;
+				ret.ErrorStr = ECCommandRemoteBuf::ErrorStr;
+				ret.Ret = ECCommandRemoteBuf::Ret;
+				ret.HasRetValue = ECCommandRemoteBuf::ReturnedValue;
+				ECCommandRemoteBuf::Exit();
+			}
+
+			if (Callback)
+			{
+				CommandReturnValue retval;
+				retval.ErrorCode = ret.ErrorCode;
+				retval.HasRetValue = ret.HasRetValue;
+				retval.Ret = ret.Ret.c_str();
+				retval.ErrorStr = ret.ErrorStr.c_str();
+				Callback(retval, CallbackCustomData);
+			}
+			else
+			{
+				promise.set_value(std::move(ret));
+			}
+		}
+	};
+
 	InfoStack<DbgCommand> CommandStack;
 	InfoStack<std::u8string> CommandOutput;
+	InfoStack<AsyncCommand> AsyncCommandStack;
+
 
 	void FlushCommands()
 	{
 		for (auto&& Command : ECDebug::CommandStack.Release())
 		{
 			ECDebug::CommandOutput.Push(Command());
+		}
+		for (auto&& AsyncCommand : ECDebug::AsyncCommandStack.Release())
+		{
+			AsyncCommand.Execute();
 		}
 	}
 
@@ -713,6 +776,25 @@ namespace ECDebug
 	std::string prompt = "EC >";
 	std::string input;
 
+	void PostCommand(const std::u8string& command, bool ChangeEnv)
+	{
+		AsyncCommand cmd{ ECCommand::ProcessCommand(command), ChangeEnv };
+		AsyncCommandStack.Push(std::move(cmd));
+	}
+
+	std::future<CommandRet> RunCommand(const std::u8string& command, bool ChangeEnv)
+	{
+		AsyncCommand cmd{ ECCommand::ProcessCommand(command), ChangeEnv };
+		auto fut = cmd.promise.get_future();
+		AsyncCommandStack.Push(std::move(cmd));
+		return fut;
+	}
+
+	void RunCommandWithProc(const std::u8string& command, bool ChangeEnv, CommandReturnCallback Callback, void* CustomData)
+	{
+		AsyncCommand cmd{ ECCommand::ProcessCommand(command), ChangeEnv, Callback, CustomData };
+		AsyncCommandStack.Push(std::move(cmd));
+	}
 	
 
 	void ConsoleLoop()
@@ -769,6 +851,10 @@ namespace ECDebug
 			for (auto&& Cmd : CommandStack.Release())
 			{
 				std::cout << ~Cmd() << std::endl;
+			}
+			for (auto&& AsyncCommand : ECDebug::AsyncCommandStack.Release())
+			{
+				AsyncCommand.Execute();
 			}
 		}
 	}

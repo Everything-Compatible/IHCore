@@ -11,7 +11,7 @@
 #include "InfoStack.h"
 
 //Set to 1 when testing Interprocess Communication
-#define IPC_DebugMode 1
+//#define IPC_DebugMode 1
 #if IPC_DebugMode
 #define IPC_Log Debug::Log
 #else

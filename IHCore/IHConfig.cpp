@@ -1,3 +1,6 @@
+﻿//暂时不会使用。
+
+/*
 #include "IHConfig.h"
 #include "ExtFile.h"
 #include "Debug.h"
@@ -17,3 +20,4 @@ bool IHConfig_Initialize()
 	}
 	return true;
 }
+*/

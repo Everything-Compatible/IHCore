@@ -1272,10 +1272,19 @@ namespace Local
 	{
 		return DirectBindTextTo(Text, Idx);
 	}
-	//JsonObject Export_BindContextTo(JsonObject Context, const ContextIndex& Idx);
 	
-	//PLACEHOLDER 6
-	//PLACEHOLDER 7
+	void __cdecl Export_PostCommand(UTF8_CString command, bool ChangeEnv)
+	{
+		ECDebug::PostCommand(command, ChangeEnv);
+	}
+
+	void __cdecl Export_RunCommand(UTF8_CString command, bool ChangeEnv, CommandReturnCallback Callback, void* CustomData)
+	{
+		ECDebug::RunCommandWithProc(command, ChangeEnv, Callback, CustomData);
+	}
+
+	//also PLACEHOLDER 7
+	//JsonObject Export_BindContextTo(JsonObject Context, const ContextIndex& Idx);
 
 	JsonObject __cdecl Export_GetContextByIdx(const ContextIndex& Idx)
 	{
@@ -1518,8 +1527,8 @@ namespace Local
 		Export_GeneralCall,
 		Export_DirectBindContextTo,
 		Export_DirectBindTextTo,
-		nullptr,
-		nullptr,
+		Export_PostCommand,
+		Export_RunCommand,
 
 		nullptr,
 		Export_GetContextByIdx,
