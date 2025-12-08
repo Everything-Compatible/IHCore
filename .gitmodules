@@ -1,3 +1,6 @@
 [submodule "Common/IHLoader"]
 	path = Common/IHLoader
 	url = https://github.com/Everything-Compatible/EC-SDK.git
+[submodule "Common/LibIProj"]
+	path = Common/LibIProj
+	url = https://github.com/ra2diy/LibIProj.git
