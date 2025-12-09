@@ -1,4 +1,4 @@
-#include <Syringe.h>
+﻿#include <Syringe.h>
 #include <Helpers/Macro.h>
 #include <CCINIClass.h>
 #include <ScenarioClass.h>
@@ -25,7 +25,7 @@ namespace RedirectData
 	CCINIClass* OldRules{ nullptr };
 	CCINIClass* NewArt{ nullptr };
 	bool HasOldArt{ false };
-	CCINIClass OldArt;
+	CCINIClass OldArt{ noinit_t{} };
 }
 
 DEFINE_HOOK(0x683CD1, RedirectINI, 7)
