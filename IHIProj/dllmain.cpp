@@ -10,6 +10,7 @@ extern "C" __declspec(dllexport) void SyringeForceLoad()
     ; // This function is intentionally left empty to force the DLL to load.
 }
 
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved

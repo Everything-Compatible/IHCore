@@ -117,7 +117,7 @@
     <ClInclude Include="..\Common\LibIProj\WeaverObj.h">
       <Filter>LibIProj</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\IHIProj\IProjFile.h">
+    <ClInclude Include="IProjFile.h">
       <Filter>Router</Filter>
     </ClInclude>
   </ItemGroup>
@@ -176,7 +176,7 @@
     <ClCompile Include="..\Common\LibIProj\LibIProj.cpp">
       <Filter>LibIProj</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\IHIProj\IProjFile.cpp">
+    <ClCompile Include="IProjFile.cpp">
       <Filter>Router</Filter>
     </ClCompile>
   </ItemGroup>

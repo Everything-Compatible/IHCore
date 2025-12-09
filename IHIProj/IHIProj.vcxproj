@@ -71,7 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(SolutionDir)Common\IHLoader;$(SolutionDir)Common\IHIProj;$(SolutionDir)Common\LibIProj;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(SolutionDir)Common\IHIProj;$(SolutionDir)Common\LibIProj;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Common\IHLoader;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -143,7 +144,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\IHIProj\IProjFile.h" />
     <ClInclude Include="..\Common\IHIProj\Version.h" />
     <ClInclude Include="..\Common\IHLoader\EC.Exception.h" />
     <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
@@ -174,9 +174,9 @@
     <ClInclude Include="..\Common\LibIProj\ByteStream.h" />
     <ClInclude Include="..\Common\LibIProj\LibIProj.h" />
     <ClInclude Include="..\Common\LibIProj\WeaverObj.h" />
+    <ClInclude Include="IProjFile.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\IHIProj\IProjFile.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.GameClass.cpp" />
     <ClCompile Include="..\Common\IHLoader\EC.LoadSave.cpp" />
@@ -195,6 +195,7 @@
     <ClCompile Include="..\Common\LibIProj\ByteStream.cpp" />
     <ClCompile Include="..\Common\LibIProj\LibIProj.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="IProjFile.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
