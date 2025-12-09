@@ -1196,9 +1196,6 @@
     <ClCompile Include="Command.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="Syringe.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
     <ClCompile Include="MiscFunc.cpp">
       <Filter>Util</Filter>
     </ClCompile>

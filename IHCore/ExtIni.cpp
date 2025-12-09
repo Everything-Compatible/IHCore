@@ -10,7 +10,7 @@
 #include "ExtCsf.h"
 #include "ToolFunc.h"
 
-bool ResolveWICConflict = true;
+bool ResolveWICConflict = false;
 
 hash_t StrHash(const char* str)
 {

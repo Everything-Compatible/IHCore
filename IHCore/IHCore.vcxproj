@@ -593,7 +593,6 @@
     <ClCompile Include="RemoteComMngr.cpp" />
     <ClCompile Include="RemoteCommType.cpp" />
     <ClCompile Include="StringManagerExt.cpp" />
-    <ClCompile Include="Syringe.cpp" />
     <ClCompile Include="ExtYRM.cpp" />
     <ClCompile Include="Update.cpp" />
     <ClCompile Include="YRPP\StaticInits.cpp" />
