@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <YRPPCore.h>
 #include <GenericList.h>
@@ -359,6 +359,9 @@ public:
 		*reinterpret_cast<DWORD*>(this) = 0x7E1AF4;
 	}
 
+	CCINIClass(noinit_t) : INIClass(false)
+	{ }
+
 	virtual ~CCINIClass() RX;
 
 	static CCINIClass* LoadINIFile(const char* pFileName)
@@ -381,7 +384,7 @@ public:
 	}
 
 	//Parses an INI file from a CCFile
-	CCINIClass* ReadCCFile(FileClass* pCCFile, bool bDigest = false, bool bLoadComments = false)//ÓĞÃ»ÓĞÒ»ÖÖ¿ÉÄÜ£¬¾ÍÊÇËüÊÇ¹¹Ôìº¯Êı
+	CCINIClass* ReadCCFile(FileClass* pCCFile, bool bDigest = false, bool bLoadComments = false)//æœ‰æ²¡æœ‰ä¸€ç§å¯èƒ½ï¼Œå°±æ˜¯å®ƒæ˜¯æ„é€ å‡½æ•°
 		{ JMP_THIS(0x4741F0); }
 
 	void WriteCCFile(FileClass *pCCFile, bool bDigest = false)
