@@ -53,6 +53,15 @@ const char* CDExt::TryRedirect(const char* Name)
 	return New;
 }
 
+IHFileClass* GetIHExt(RawFileClass* pFile)
+{
+	if (pFile->IHExtPtr)
+		return (IHFileClass*)( ( ((DWORD)pFile->IHExtPtr) + 0xF) & 0xFFFFFFF0 );
+	else
+		return nullptr;
+}
+
+
 void SetName_Impl(CDFileClass* This, const std::string& Str,const char* pFileName)
 {
 	//Debug::Log("IHCore : Query File Stream %s for File %s\n", Str.c_str(), pFileName);
@@ -60,11 +69,16 @@ void SetName_Impl(CDFileClass* This, const std::string& Str,const char* pFileNam
 	if (jt != Local::IHFileStreamer.end())
 	{
 		//Debug::Log("PTR At %08X \n", This);
-		This->IHExtPtr = CRT::_new(jt->second.Size);
-		memset(This->IHExtPtr, 0, jt->second.Size);
-		VTABLE_SET((This->IHExtPtr), jt->second.vptr);
-		((IHFileClass*)This->IHExtPtr)->Initialize();
-		((FileClass*)This->IHExtPtr)->SetFileName(pFileName);
+		auto sz = jt->second.Size;
+		auto aligned = (sz + 0xF) & 0xFFFFFFF0;
+		This->IHExtPtr = CRT::_new(aligned);
+		memset(This->IHExtPtr, 0, aligned);
+
+		auto Ext = GetIHExt(This);
+
+		VTABLE_SET(Ext, jt->second.vptr);
+		Ext->Initialize();
+		Ext->SetFileName(pFileName);
 	}
 }
 
@@ -72,7 +86,8 @@ void ClearPrevName_Impl(CDFileClass* This)
 {
 	if (This->IHExtPtr)
 	{
-		((FileClass*)This->IHExtPtr)->~FileClass();
+		auto Ext = GetIHExt(This);
+		Ext->~IHFileClass();
 		CRT::_delete(This->IHExtPtr);
 		This->IHExtPtr = nullptr;
 	}
@@ -168,7 +183,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 		for (auto& p : Local::IHFileFilter)
 			if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
 				SetName_Impl(This, p.first, pFileName);
-		if (This->IHExtPtr)return ((FileClass*)This->IHExtPtr)->GetFileName();
+		if (This->IHExtPtr)return GetIHExt(This)->GetFileName();
 	}
 	
 
@@ -221,7 +236,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 const char* FileClassExt::RawFileClass_GetFileName()
 {
 	auto This = reinterpret_cast<RawFileClass*>(this);
-	if (This->IHExtPtr && !UseOriginalFileClass())return ((FileClass*)This->IHExtPtr)->GetFileName();
+	if (This->IHExtPtr && !UseOriginalFileClass())return GetIHExt(This)->GetFileName();
 	return This->FileName;
 }
 
@@ -256,7 +271,7 @@ DEFINE_HOOK(0x473C50, CCFileClass_Exists, 9)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->Exists((bool)WriteShared));
+		R->EAX(GetIHExt(This)->Exists((bool)WriteShared));
 		return 0x473CC0;
 	}
 	return 0;
@@ -267,7 +282,7 @@ DEFINE_HOOK(0x473CD0, CCFileClass_HasHandle, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->HasHandle());
+		R->EAX(GetIHExt(This)->HasHandle());
 		return 0x473CD9;
 	}
 	return 0;
@@ -279,7 +294,7 @@ DEFINE_HOOK(0x473D10, CCFileClass_Open, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->Open(Access));
+		R->EAX(GetIHExt(This)->Open(Access));
 		return 0x473DF3;
 	}
 	return 0;
@@ -292,7 +307,7 @@ DEFINE_HOOK(0x473B10, CCFileClass_ReadBytes, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->ReadBytes(Buffer,Size));
+		R->EAX(GetIHExt(This)->ReadBytes(Buffer,Size));
 		return 0x473B9B;
 	}
 	return 0;
@@ -305,7 +320,7 @@ DEFINE_HOOK(0x473BA0, CCFileClass_Seek, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->Seek(Offset, Mode));
+		R->EAX(GetIHExt(This)->Seek(Offset, Mode));
 		return 0x473BF8;
 	}
 	return 0;
@@ -316,7 +331,7 @@ DEFINE_HOOK(0x473C00, CCFileClass_GetFileSize, 7)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->GetFileSize());
+		R->EAX(GetIHExt(This)->GetFileSize());
 		return 0x473C10;
 	}
 	return 0;
@@ -329,7 +344,7 @@ DEFINE_HOOK(0x473AE0, CCFileClass_WriteBytes, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->WriteBytes(Buffer, Size));
+		R->EAX(GetIHExt(This)->WriteBytes(Buffer, Size));
 		return 0x473B0D;
 	}
 	return 0;
@@ -344,7 +359,7 @@ DEFINE_HOOK(0x65D150, RawFileClass_CreateFile, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->CreateFile());
+		R->EAX(GetIHExt(This)->CreateFile());
 		return 0x65D187;
 	}
 	return 0;
@@ -355,7 +370,7 @@ DEFINE_HOOK(0x65D190, RawFileClass_DeleteFile, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(((FileClass*)This->IHExtPtr)->DeleteFile());
+		R->EAX(GetIHExt(This)->DeleteFile());
 		return 0x65D1EE;
 	}
 	return 0;
@@ -366,7 +381,7 @@ DEFINE_HOOK(0x473CE0, CCFileClass_Close, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		((FileClass*)This->IHExtPtr)->Close();
+		GetIHExt(This)->Close();
 		return 0x473D02;
 	}
 	return 0;
@@ -377,7 +392,7 @@ DEFINE_HOOK(0x4019A0, CCFileClass_Destructor_III, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		((FileClass*)This->IHExtPtr)->~FileClass();
+		GetIHExt(This)->~IHFileClass();
 		CRT::_delete(This->IHExtPtr);
 		This->IHExtPtr = nullptr;
 	}
@@ -389,7 +404,7 @@ DEFINE_HOOK(0x535A60, CCFileClass_Destructor_II, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		((FileClass*)This->IHExtPtr)->~FileClass();
+		GetIHExt(This)->~IHFileClass();
 		CRT::_delete(This->IHExtPtr);
 		This->IHExtPtr = nullptr;
 	}
@@ -401,7 +416,7 @@ DEFINE_HOOK(0x535A70, CCFileClass_Destructor, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		((FileClass*)This->IHExtPtr)->~FileClass();
+		GetIHExt(This)->~IHFileClass();
 		CRT::_delete(This->IHExtPtr);
 		This->IHExtPtr = nullptr;
 	}
