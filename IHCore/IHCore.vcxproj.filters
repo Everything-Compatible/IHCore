@@ -1176,14 +1176,14 @@
     <ClInclude Include="ExtCsf.h">
       <Filter>Extended</Filter>
     </ClInclude>
-    <ClInclude Include="ExtIni.h">
-      <Filter>File</Filter>
-    </ClInclude>
     <ClInclude Include="ExtFNT.h">
       <Filter>Extended</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\EC.Exception.h">
       <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtIni.h">
+      <Filter>Extended</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1337,13 +1337,13 @@
     <ClCompile Include="ExtMix.cpp">
       <Filter>Extended</Filter>
     </ClCompile>
-    <ClCompile Include="ExtIni.cpp">
-      <Filter>File</Filter>
-    </ClCompile>
     <ClCompile Include="ExtMessageList.cpp">
       <Filter>Extended</Filter>
     </ClCompile>
     <ClCompile Include="ExtLoadAI.cpp">
+      <Filter>Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtIni.cpp">
       <Filter>Extended</Filter>
     </ClCompile>
   </ItemGroup>

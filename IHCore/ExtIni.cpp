@@ -10,7 +10,7 @@
 #include "ExtCsf.h"
 #include "ToolFunc.h"
 
-bool ResolveWICConflict = false;
+bool ResolveWICConflict = true;
 
 hash_t StrHash(const char* str)
 {
@@ -434,7 +434,18 @@ struct CCFakeINI
 
 
 #include "Patch.h"
+#include "LocalData.h"
+#include <WIC.Define.h>
 JsonObject GetIHCoreJson();
+
+void ApplyExtINI()
+{
+	Patch::Apply_CALL(0x526062, StrDupValue);
+	Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
+	Patch::Apply_CALL(0x525D33, union_cast<void*>(&CCFakeINI::WriteString));
+	Patch::Apply_CALL(0x525C6E, CacheStraw_GetLineEx);
+	//Patch::Apply_CALL(0x525AFA, CacheStraw_GetLineEx);
+}
 
 void ExtIni_InitBeforeEverything()
 {
@@ -457,12 +468,25 @@ void ExtIni_InitBeforeEverything()
 
 	if (!ResolveWICConflict)
 	{
-		Patch::Apply_CALL(0x526062, StrDupValue);
-		Patch::Apply_CALL(0x525E70, CacheStraw_GetLineEx);
-		Patch::Apply_CALL(0x525D33, union_cast<void*>(&CCFakeINI::WriteString));
-		Patch::Apply_CALL(0x525C6E, CacheStraw_GetLineEx);
-		//Patch::Apply_CALL(0x525AFA, CacheStraw_GetLineEx);
+		ApplyExtINI();
 	}
 }
 
+void ReApplyAfterECInit()
+{
+	if (ResolveWICConflict)
+	{
+		if (!Local::LibMap.contains(WIC_LibName))
+		{
+			ResolveWICConflict = false;
+		}
+		else if (Local::LibMap[WIC_LibName]->Out->Info->Version <= 9)
+		{
+			ResolveWICConflict = false;
+		}
+
+		if(!ResolveWICConflict)
+			ApplyExtINI();
+	}
+}
 

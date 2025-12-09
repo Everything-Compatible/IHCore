@@ -14,6 +14,7 @@
 
 void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);
+void ReApplyAfterECInit();
 
 IHException::IHException(const char* info) : Info(info) {};
 IHException::IHException(std::string&& info) : Info(std::move(info)) {};
@@ -337,6 +338,9 @@ namespace Local
 				BasicLibs[i].ReservedB = (void*)Libs[i].Out->Info->LibName;
 			else BasicLibs[i].ReservedB = nullptr;
 		}
+
+		//if no high ver wic, reapply patch
+		ReApplyAfterECInit();
 
 		/*
 		Add IHCore itself
