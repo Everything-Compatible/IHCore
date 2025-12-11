@@ -17,7 +17,7 @@ std::vector<MixFileClass*> Mixes;
 std::unordered_set<std::string, UpperHash, UpperEqualPred> BlackList;
 std::unordered_set<std::string, UpperHash, UpperEqualPred> WhiteList;
 
-
+extern bool EnterDebugWhenCrash;
 SyringeData::LibRemoteData* IHCoreData = nullptr;
 JsonFile IHCoreJson;
 JsonObject IHCoreJson_Data;
@@ -96,6 +96,13 @@ void ConfigJson_InitBeforeEverything()
 			es.WriteData(std::string(PathFindFileNameA(Name)) + "是非法的JSON文件。\n");
 			es.WriteData(std::string("Setting 字段不存在。 SyringeIH约定每个DLL的自定义设置在Setting字段当中"));
 		}
+	}
+
+
+	auto oEnterDebug = IHCoreJson_Data.GetObjectItem("EnterDebugWhenCrash");
+	if (oEnterDebug.Available() && oEnterDebug.IsTypeBool())
+	{
+		EnterDebugWhenCrash = oEnterDebug.GetBool();
 	}
 }
 

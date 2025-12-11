@@ -11,6 +11,7 @@
 #include "..\IHCore\ECInterprocess.h"
 #include <CRT.h>
 
+bool EnterDebugWhenCrash = false;
 
 void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);

@@ -12,6 +12,7 @@
 
 extern JsonFile IHCoreJson;
 
+extern bool EnterDebugWhenCrash;
 std::unique_ptr<std::thread> ECDbgConsoleManagerThread;
 std::unique_ptr<std::thread> SyringeDaemonMonitorThread;
 std::atomic_bool ManagerTerminate{ false };
@@ -23,7 +24,7 @@ void ECDbgConsoleManagerThreadFunc();
 
 bool NeedsDaemonMonitor()
 {
-	return SyringeData::IsADaemonNow() && !SyringeDaemonMonitorThread;
+	return EnterDebugWhenCrash && SyringeData::IsADaemonNow() && !SyringeDaemonMonitorThread;
 }
 
 namespace ECExec
@@ -800,11 +801,23 @@ namespace ECDebug
 	void ConsoleLoop()
 	{
 		input.clear();
-		while (input.empty())
+	
+		auto f = std::async(std::launch::async, [] {
+			while (input.empty())
+			{
+				std::cout << prompt;
+				std::getline(std::cin, input);
+			}
+		});
+
+		//wait f infinitely or give up if NeedsDaemonMonitor
+		if (!SyringeData::IsADaemonNow())
 		{
-			std::cout << prompt;
-			std::getline(std::cin, input);
+			while (!NeedsDaemonMonitor() && f.wait_for(std::chrono::milliseconds(50)) != std::future_status::ready);
 		}
+		else f.get();
+		
+
 		CommandStack.Push(std::move(ECCommand::ProcessCommand(~input)));
 		int iWait = 0;
 		int iOutput = 0;
@@ -835,7 +848,10 @@ namespace ECDebug
 				putchar('.');
 			}
 			puts("\033[0m");
+
+			f.get();
 		}
+
 		if (!CommandOutput.Empty())
 		{
 			for (auto&& Output : CommandOutput.Release())
@@ -846,7 +862,8 @@ namespace ECDebug
 				}
 			}
 		}
-		if (ECExec::IsConsoleLocked())
+
+		if (ECExec::IsConsoleLocked() || SyringeData::IsADaemonNow())
 		{
 			for (auto&& Cmd : CommandStack.Release())
 			{
@@ -862,7 +879,8 @@ namespace ECDebug
 
 void ECDbgConsoleManagerThreadFunc()
 {
-	SyringeData::SetDaemonThread(GetCurrentThreadId());
+	if(EnterDebugWhenCrash)
+		SyringeData::SetDaemonThread(GetCurrentThreadId());
 	while (!ManagerTerminate)
 	{
 		ECDebug::ConsoleLoop();
