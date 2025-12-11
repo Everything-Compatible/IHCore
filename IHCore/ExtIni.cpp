@@ -480,9 +480,17 @@ void ReApplyAfterECInit()
 		{
 			ResolveWICConflict = false;
 		}
-		else if (Local::LibMap[WIC_LibName]->Out->Info->Version <= 9)
+		else
 		{
-			ResolveWICConflict = false;
+			auto& lib = Local::LibMap[WIC_LibName];
+			if (lib->Out->Info->Version <= 9)
+			{
+				ResolveWICConflict = false;
+			}
+			else if (lib->Out->GetFunc && lib->Out->GetFunc("GetLTSVer", DoNotCheckVersion))
+			{
+				ResolveWICConflict = false;
+			}
 		}
 
 		if(!ResolveWICConflict)
