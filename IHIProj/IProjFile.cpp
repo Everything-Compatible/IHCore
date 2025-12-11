@@ -27,7 +27,7 @@ const char* INIWeaverProjFileClass::GetFileName() const
 
 const char* INIWeaverProjFileClass::SetFileName(const char* pFileName)
 {
-	Internal_DebugLog("INIWeaverProjFileClass::SetFileName called with %s\n", pFileName);
+	//Internal_DebugLog("INIWeaverProjFileClass::SetFileName called with %s\n", pFileName);
 	UseOriginalFileClass_Scoped _;
 	if (!UnderlyingFile)
 	{
@@ -60,7 +60,7 @@ bool INIWeaverProjFileClass::HasHandle()
 
 bool INIWeaverProjFileClass::Open(FileAccessMode access)
 {
-	Internal_DebugLog("INIWeaverProjFileClass::Open called with access %d\n", access);
+	//Internal_DebugLog("INIWeaverProjFileClass::Open called with access %d\n", access);
 	if (!UnderlyingFile) return false;
 	Clear();
 	if (!UnderlyingFile->Open(access)) return false;
@@ -68,21 +68,21 @@ bool INIWeaverProjFileClass::Open(FileAccessMode access)
 	auto Buffer = UnderlyingFile->ReadWholeFile();
 	bool Ret = Stream.Load(Buffer, Size, false);
 	auto& sproj = Stream.GetSProj();
-	Internal_DebugLog("Project Info : Create Version %s\n",
-		GetVersionStr(sproj.CreateVersionMajor * 10000 + sproj.CreateVersionMinor * 100 + sproj.CreateVersionRelease).c_str());
+	//Internal_DebugLog("Project Info : Create Version %s\n",
+	//	GetVersionStr(sproj.CreateVersionMajor * 10000 + sproj.CreateVersionMinor * 100 + sproj.CreateVersionRelease).c_str());
 	GameDelete(Buffer);
 
 	Gen = Stream.StreamLines();
 	Iter = std::make_unique<decltype(Gen->begin())>(Gen->begin());
 	CurLine = **Iter;
 	BytesReadInLine = 0;
-	Internal_DebugLog("INIWeaverProjFileClass::Open %s\n", Ret ? "succeeded" : "failed");
+	//Internal_DebugLog("INIWeaverProjFileClass::Open %s\n", Ret ? "succeeded" : "failed");
 	return Ret;
 }
 
 int INIWeaverProjFileClass::ReadBytes(void* pBuffer, int nNumBytes) //Returns number of bytes read.
 {
-	Internal_DebugLog("INIWeaverProjFileClass::ReadBytes called with nNumBytes %d\n", nNumBytes);
+	//Internal_DebugLog("INIWeaverProjFileClass::ReadBytes called with nNumBytes %d\n", nNumBytes);
 	if (!Iter) return 0;
 	if (*Iter == Gen->end())
 		return 0;
@@ -90,7 +90,7 @@ int INIWeaverProjFileClass::ReadBytes(void* pBuffer, int nNumBytes) //Returns nu
 	while (BytesRead < nNumBytes && *Iter != Gen->end())
 	{
 		const auto& Line = CurLine;
-		Internal_DebugLog("Reading line: %s\n", Line.c_str());
+		//Internal_DebugLog("Reading line: %s\n", Line.c_str());
 		int BytesLeftInLine = static_cast<int>(Line.size()) - BytesReadInLine;
 		int BytesToRead = std::min(nNumBytes - BytesRead, BytesLeftInLine);
 		memcpy(static_cast<char*>(pBuffer) + BytesRead, Line.data() + BytesReadInLine, BytesToRead);
