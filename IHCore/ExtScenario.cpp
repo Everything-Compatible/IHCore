@@ -52,10 +52,15 @@ DEFINE_HOOK(0x683CD1, RedirectINI, 7)
 		{
 			Debug::Log("IHCore : New Rules : %s\n", StrBuf);
 			auto pExtCC = GameCreate<CCFileClass>(StrBuf);
-			RedirectData::NewRules = GameCreate<CCINIClass>();
-			RedirectData::NewRules->ReadCCFile(pExtCC);
-			RedirectData::OldRules = CCINIClass::INI_Rules();
-			CCINIClass::INI_Rules() = RedirectData::NewRules;
+
+			if (pExtCC->Exists())
+			{
+				RedirectData::NewRules = GameCreate<CCINIClass>();
+				RedirectData::NewRules->ReadCCFile(pExtCC);
+				RedirectData::OldRules = CCINIClass::INI_Rules();
+				CCINIClass::INI_Rules() = RedirectData::NewRules;
+			}
+			
 			GameDelete(pExtCC);
 		}
 		memset(StrBuf, 0, sizeof(StrBuf));
@@ -64,11 +69,16 @@ DEFINE_HOOK(0x683CD1, RedirectINI, 7)
 		{
 			Debug::Log("IHCore : New Art : %s\n", StrBuf);
 			auto pExtCC = GameCreate<CCFileClass>(StrBuf);
-			RedirectData::NewArt = GameCreate<CCINIClass>();
-			RedirectData::NewArt->ReadCCFile(pExtCC);
-			memcpy(&RedirectData::OldArt, &CCINIClass::INI_Art(), sizeof(CCINIClass));
-			memcpy(&CCINIClass::INI_Art(), RedirectData::NewArt, sizeof(CCINIClass));
-			RedirectData::HasOldArt = true;
+			
+			if (pExtCC->Exists())
+			{
+				RedirectData::NewArt = GameCreate<CCINIClass>();
+				RedirectData::NewArt->ReadCCFile(pExtCC);
+				memcpy(&RedirectData::OldArt, &CCINIClass::INI_Art(), sizeof(CCINIClass));
+				memcpy(&CCINIClass::INI_Art(), RedirectData::NewArt, sizeof(CCINIClass));
+				RedirectData::HasOldArt = true;
+			}
+
 			GameDelete(pExtCC);
 		}
 	}
