@@ -1346,6 +1346,9 @@
     <ClCompile Include="ExtIni.cpp">
       <Filter>Extended</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleProc.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Version.rc">

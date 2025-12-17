@@ -435,7 +435,6 @@ struct CCFakeINI
 
 #include "Patch.h"
 #include "LocalData.h"
-#include <WIC.Define.h>
 JsonObject GetIHCoreJson();
 
 void ApplyExtINI()
@@ -472,26 +471,13 @@ void ExtIni_InitBeforeEverything()
 	}
 }
 
+bool HasHighWIC();
+
 void ReApplyAfterECInit()
 {
 	if (ResolveWICConflict)
 	{
-		if (!Local::LibMap.contains(WIC_LibName))
-		{
-			ResolveWICConflict = false;
-		}
-		else
-		{
-			auto& lib = Local::LibMap[WIC_LibName];
-			if (lib->Out->Info->Version <= 9)
-			{
-				ResolveWICConflict = false;
-			}
-			else if (lib->Out->GetFunc && lib->Out->GetFunc("GetLTSVer", DoNotCheckVersion))
-			{
-				ResolveWICConflict = false;
-			}
-		}
+		if (!HasHighWIC()) ResolveWICConflict = false;
 
 		if(!ResolveWICConflict)
 			ApplyExtINI();

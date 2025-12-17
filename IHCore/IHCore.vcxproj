@@ -582,6 +582,7 @@
     <ClCompile Include="InitSomewhere.cpp" />
     <ClCompile Include="LocalLibFunc.cpp" />
     <ClCompile Include="MiscFunc.cpp" />
+    <ClCompile Include="ModuleProc.cpp" />
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
