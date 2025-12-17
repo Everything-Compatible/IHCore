@@ -317,11 +317,22 @@ namespace Local
 			if (!Libs[i].Out->GetFunc)Libs[i].Available = false;
 			if (!Libs[i].Out->Info)Libs[i].Available = false;
 			
-			LibMap[Libs[i].Out->Info->LibName] = &Libs[i];
 			if (Libs[i].Available)
 			{
 				Debug::Log("[EC] Loading Library \"%s\" Successfully\n", Libs[i].Out->Info->LibName);
 				if (ECDebug::IsConsoleOpen())std::printf("[EC] Loading Library \"%s\" Successfully\n", Libs[i].Out->Info->LibName);
+
+				if (LibMap.contains(Libs[i].Out->Info->LibName))
+				{
+					std::string Buf;
+					Buf.resize(strlen(Libs[i].Out->Info->LibName) + 100);
+					//格式串长度不要超过100，否则把此处的100调整到更大的数
+					sprintf_s(Buf.data(), Buf.size(), (const char*)u8"[EC] Find Multiple Modules with the same LibName \"%s\"\n", Libs[i].Out->Info->LibName);
+					Debug::Log("%s", Buf.c_str());
+					sprintf_s(Buf.data(), Buf.size(), (const char*)u8"发现多个名为\"%s\"的EC组件！\n", Libs[i].Out->Info->LibName);
+					MessageBoxW(NULL, UTF8toUnicode(Buf).c_str(), L"万物互通", MB_OK);
+				}
+				LibMap[Libs[i].Out->Info->LibName] = &Libs[i];
 			}
 			else
 			{
