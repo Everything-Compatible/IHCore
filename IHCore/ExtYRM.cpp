@@ -59,7 +59,7 @@ std::wstring IH_MBToWC_Ex(const char* Src)
 		//sprintf_s(sc, "SimpleMBToWC_Ex : # %X %X %X %X", (unsigned)(unsigned char)Src[1], (unsigned)(unsigned char)Src[2], (unsigned)(unsigned char)Src[3], (unsigned)(unsigned char)Src[4]);
 		//::MessageBoxA(NULL, sc, "IH0Ex", MB_OK);
 	}
-	if (!strncmp(Src, "：", 2))
+	if (!strncmp(Src, "\xa3\xba", 2))
 	{
 		IsNew = true;
 		IsUTF8 = false;
@@ -84,29 +84,29 @@ char SimpleMBToWC_Ex(wchar_t* Target, const char* Src, int nChars)
 	//::MessageBoxA(NULL, Src, "x01", MB_OK); 
 	if (strlen(Src) <= 2)return SimpleMBToWC_Old(Target, Src, nChars);
 
-	bool IsNew = false, IsUTF8 = false;
+	bool IsNew = false, IsGBK = true;
 	if (Src[0] == '#')
 	{
 		//char sc[1000];
 		//Debug::Log("SimpleMBToWC_Ex : # %02X %02X %02X %02X", (int)sc[1], (int)sc[2], (int)sc[3], (int)sc[4]);
 
 	}
-	if (!strncmp(Src, "：", 2))
+	if (!strncmp(Src, "\xa3\xba", 2))
 	{
 		IsNew = true;
-		IsUTF8 = false;
+		IsGBK = true;
 	}
 	else if (strlen(Src) > 2 && !strncmp(Src, (const char*)u8"：", 3))
 	{
 		IsNew = true;
-		IsUTF8 = true;
+		IsGBK = false;
 	}
 
 	if(!IsNew)return SimpleMBToWC_New(Target, Src, nChars);
 	//::MessageBoxA(NULL, BoolCStr(IsUTF8), "01", MB_OK);
 	char TmpChr; // al
 	std::wstring ws;
-	if (IsUTF8)ws = UTF8toUnicode(Src + 3);
+	if (!IsGBK)ws = UTF8toUnicode(Src + 3);
 	else ws = ANSItoUnicode(Src + 2);
 	auto Tg = Target;
 	//::MessageBoxW(NULL, ws.c_str(), L"03", MB_OK);

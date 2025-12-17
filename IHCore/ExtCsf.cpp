@@ -269,7 +269,7 @@ const wchar_t* AnalyzeMyString(const char* Name)
 		return IHCSFLoader::AnalyzeHexString(Name + 4);
 	}
 
-	if (!strncmp(Name, "(：", 3))
+	if (!strncmp(Name, "(\xa3\xba", 3))
 	{
 		return IHCSFLoader::AnalyzeGBKString(Name + 3);
 	}
@@ -286,7 +286,7 @@ bool IsMyString(const char* Name)
 	if (!strncmp(Name, "NOSTR:", 6))return true;
 	if (!strncmp(Name, "EXTS:", 5))return true;
 	if (!strncmp(Name, "HEX:", 4))return true;
-	if (!strncmp(Name, "(：", 3))return true;
+	if (!strncmp(Name, "(\xa3\xba", 3))return true;
 	if (!strncmp(Name, (const char*)u8"(：", 4))return true;
 	return false;
 }

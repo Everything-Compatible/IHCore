@@ -215,7 +215,7 @@ namespace StringManagerExt
 			else
 			{
 				auto Obj = Ext.GetObj();
-				auto Sec = Obj.GetObjectItem("CSF：");
+				auto Sec = Obj.GetObjectItem("CSF\xa3\xba");
 				if (Sec.Available())
 				{
 					for (auto& p : Sec.GetMapString())
@@ -244,7 +244,7 @@ namespace StringManagerExt
 			Ext.Load_ForCCINI<ExtCCFile>(Name);
 			if (Ext.Available())
 			{
-				auto Sec = Ext.GetSection("CSF：");
+				auto Sec = Ext.GetSection("CSF\xa3\xba");
 				if (Ext.IsFound(Sec))
 				{
 					for (auto& p : Sec->second.SecStr)
