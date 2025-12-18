@@ -703,7 +703,11 @@ namespace ECDebug
 	{
 		if (HasConsole())
 		{
-			if (AllocConsole())
+			bool HasConsoleInUse = false;
+			if (GetConsoleWindow() != NULL)HasConsoleInUse = true;
+			else HasConsoleInUse = AllocConsole();
+
+			if (HasConsoleInUse)
 			{
 				FILE* fp;
 				freopen_s(&fp, "CONOUT$", "w", stdout);
