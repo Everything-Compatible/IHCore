@@ -41,7 +41,7 @@ struct MessageListClassImpl
 		const int WidthDelta = 24;//Original is 8 , but it seems not enough in some situation
 
 		if (This->Width - width1 - WidthDelta <= 0)
-			return nullptr;
+            return nullptr;
         int MaxLen;
         const wchar_t *StrBefore, *StrAfter;
 
@@ -63,7 +63,7 @@ struct MessageListClassImpl
 #endif
 
         if(!MaxLen)
-			return nullptr;
+            return nullptr;
 
 		size_t v14 = MaxLen;
 		size_t _MaxLen = MaxLen;
@@ -92,11 +92,11 @@ struct MessageListClassImpl
                 auto v18 = This->MessageList;
 				This->MessageList = (TextLabelClass*)v18->Remove();
                 auto v19 = This->BufferAvail;
-                auto v20 = This->MessageBuffers[0];
+                auto v20 = MessageBufferEx;
                 auto v21 = 14;
                 do
                 {
-                    if (v18->Text == v20)
+                    if (v18->Text == v20->c_str())
                         *v19 = 1;
                     ++v19;
                     ++v20;
@@ -118,7 +118,7 @@ struct MessageListClassImpl
         );
 
         if(!NewTextLabel)
-			return nullptr;
+            return nullptr;
 
         if (SessionClass::Instance().GameMode == GameMode::Internet)
         {
@@ -169,7 +169,7 @@ struct MessageListClassImpl
 			if (++v26 >= 14)
 			{
 				GameDelete(NewTextLabel);
-				return nullptr;
+                return nullptr;
 			}
 		}
 		This->BufferAvail[v26] = 0;
