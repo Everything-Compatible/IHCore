@@ -108,6 +108,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	{
 		std::random_device rdv;
 		Randomizer.seed(rdv());
+		memset(Data.Reserved, 0, sizeof(Data.Reserved));
 	}
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
