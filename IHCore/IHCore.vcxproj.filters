@@ -60,12 +60,6 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Command.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="MiscFunc.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="ExtFile.h">
       <Filter>File</Filter>
     </ClInclude>
@@ -1188,9 +1182,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Command.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="MiscFunc.cpp">
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\ToolFunc.cpp">

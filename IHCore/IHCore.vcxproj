@@ -185,7 +185,6 @@
     <ClInclude Include="..\Common\IHLoader\WIC.Template.h" />
     <ClInclude Include="..\Common\LocalData.h" />
     <ClInclude Include="..\Common\ToolFunc.h" />
-    <ClInclude Include="Command.h" />
     <ClInclude Include="ConfData.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="ECDbgConsole.h" />
@@ -202,7 +201,6 @@
     <ClInclude Include="InfoStack.h" />
     <ClInclude Include="InitialLoad.h" />
     <ClInclude Include="Macro.h" />
-    <ClInclude Include="MiscFunc.h" />
     <ClInclude Include="Patch.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemoteCommBase.h" />
@@ -577,7 +575,6 @@
     <ClCompile Include="InitialLoad.cpp" />
     <ClCompile Include="InitSomewhere.cpp" />
     <ClCompile Include="LocalLibFunc.cpp" />
-    <ClCompile Include="MiscFunc.cpp" />
     <ClCompile Include="ModuleProc.cpp" />
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="pch.cpp">
