@@ -1074,12 +1074,6 @@
     <ClInclude Include="InitialLoad.h">
       <Filter>Data</Filter>
     </ClInclude>
-    <ClInclude Include="IHConfig.h">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\IHLoader\cJSON.h">
-      <Filter>File</Filter>
-    </ClInclude>
     <ClInclude Include="sha1.h">
       <Filter>External</Filter>
     </ClInclude>
@@ -1208,9 +1202,6 @@
     <ClCompile Include="..\Common\LocalLibManager.cpp">
       <Filter>Data</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.cpp">
-      <Filter>External</Filter>
-    </ClCompile>
     <ClCompile Include="ExtLog.cpp">
       <Filter>File</Filter>
     </ClCompile>
@@ -1242,9 +1233,6 @@
       <Filter>Init</Filter>
     </ClCompile>
     <ClCompile Include="InitialLoad.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="IHConfig.cpp">
       <Filter>Data</Filter>
     </ClCompile>
     <ClCompile Include="Exception.cpp">

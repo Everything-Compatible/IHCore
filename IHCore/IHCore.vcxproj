@@ -160,7 +160,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IHCore\Version.h" />
-    <ClInclude Include="..\Common\IHLoader\cJSON.h" />
     <ClInclude Include="..\Common\IHLoader\EC.Exception.h" />
     <ClInclude Include="..\Common\IHLoader\EC.GameClass.h" />
     <ClInclude Include="..\Common\IHLoader\EC.h" />
@@ -200,7 +199,6 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="HotKeyClass.h" />
-    <ClInclude Include="IHConfig.h" />
     <ClInclude Include="InfoStack.h" />
     <ClInclude Include="InitialLoad.h" />
     <ClInclude Include="Macro.h" />
@@ -557,7 +555,6 @@
     <ClCompile Include="..\Common\LocalLibManager.cpp" />
     <ClCompile Include="..\Common\ToolFunc.cpp" />
     <ClCompile Include="Command.cpp" />
-    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ECDbgConsole.cpp" />
     <ClCompile Include="Exception.cpp" />
@@ -576,7 +573,6 @@
     <ClCompile Include="ExtScenario.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="ExtHotKey.cpp" />
-    <ClCompile Include="IHConfig.cpp" />
     <ClCompile Include="Init.Hooks.cpp" />
     <ClCompile Include="InitialLoad.cpp" />
     <ClCompile Include="InitSomewhere.cpp" />
