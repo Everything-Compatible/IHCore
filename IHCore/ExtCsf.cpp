@@ -110,7 +110,7 @@ const wchar_t* IHCSFLoader::AnalyzeDynamicString(const char* pEntry)//without "E
 	return IHCSFLoader::GetDynamicString(gb1, gb2);
 }
 
-std::array<std::wstring, IHCSFLoader::MaxEntries> HexStrings;
+std::vector<std::wstring> HexStrings;
 int NHexStr = 0;
 
 void WriteHexString(std::wstring& Target, const char* pEntry)
@@ -147,6 +147,7 @@ void WriteHexString(std::wstring& Target, const char* pEntry)
 
 const wchar_t* IHCSFLoader::AnalyzeHexString(const char* pEntry)//without "HEX:"
 {
+	if (HexStrings.size() == 0)HexStrings.resize(IHCSFLoader::MaxEntries);
 	if (NHexStr >= IHCSFLoader::MaxEntries)return nullptr;
 	WriteHexString(HexStrings[NHexStr], pEntry);
 	return HexStrings[NHexStr++].c_str();
