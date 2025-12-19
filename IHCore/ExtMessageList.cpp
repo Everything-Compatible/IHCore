@@ -2,6 +2,7 @@
 #include "Patch.h"
 #include "ToolFunc.h"
 #include "Debug.h"
+#include <unordered_map>
 
 
 //acutally timeGetTime() >> 4;
@@ -12,7 +13,7 @@ DWORD sub_6C8C40()
 
 struct MessageListClassImpl
 {
-    inline static std::wstring MessageBufferEx[14] {};
+    inline static std::unordered_map<const wchar_t*, std::wstring> MessageBufferEx;
 
     TextLabelClass* AddMessage(const wchar_t* Name, int ID, const wchar_t* Message, int ColorSchemeIdx, TextPrintType Style, int Timeout, bool SinglePlayer)
     {
@@ -92,11 +93,11 @@ struct MessageListClassImpl
                 auto v18 = This->MessageList;
 				This->MessageList = (TextLabelClass*)v18->Remove();
                 auto v19 = This->BufferAvail;
-                auto v20 = MessageBufferEx;
+                auto v20 = This->MessageBuffers;
                 auto v21 = 14;
                 do
                 {
-                    if (v18->Text == v20->c_str())
+                    if (v18->Text == *v20)
                         *v19 = 1;
                     ++v19;
                     ++v20;
@@ -177,8 +178,8 @@ struct MessageListClassImpl
 		memset(v28, 0, 160u);
 		This->MessageBuffers[v26][80] = 0;
 		wcsncpy(v28, String.c_str(), 80);
-        MessageBufferEx[v26] = String;
-		NewTextLabel->Text = MessageBufferEx[v26].c_str();
+        MessageBufferEx[This->MessageBuffers[v26]] = String;
+        NewTextLabel->Text = This->MessageBuffers[v26];
 #ifdef CalcEx_UnitTest
         Debug::Log("!!!!ADDED %s\n", UnicodetoUTF8(ParseStringForTest(NewTextLabel->Text)).c_str());
 		Debug::Log("[IH] Chosen BufferIdx = %d\n", v26);
@@ -291,3 +292,32 @@ void ExtMsgList_InitBeforeEverything()
 {
     Patch::Apply_LJMP(0x5D3BA0, union_cast<void*>(&MessageListClassImpl::AddMessage));
 };
+
+
+DEFINE_HOOK(0x72A58E, TextLabelClass_Draw_Fix1, 6)
+{
+    //Fix EDX value to real str
+    GET(TextLabelClass*, This, ESI);
+    GET(const wchar_t*, Text, EDX);
+
+    if (MessageListClassImpl::MessageBufferEx.contains(Text))
+    {
+        R->EDX(MessageListClassImpl::MessageBufferEx[Text].c_str());
+    }
+
+    return 0;
+}
+
+DEFINE_HOOK(0x72A620, TextLabelClass_Draw_Fix2, 5)
+{
+    //Fix ECX value to real str
+    GET(TextLabelClass*, This, ESI);
+    GET(const wchar_t*, Text, ECX);
+
+    if (MessageListClassImpl::MessageBufferEx.contains(Text))
+    {
+        R->ECX(MessageListClassImpl::MessageBufferEx[Text].c_str());
+    }
+
+    return 0;
+}
