@@ -98,12 +98,15 @@ void ConfigJson_InitBeforeEverything()
 		}
 	}
 
-
-	auto oEnterDebug = IHCoreJson_Data.GetObjectItem("EnterDebugWhenCrash");
-	if (oEnterDebug.Available() && oEnterDebug.IsTypeBool())
+	if (IHCoreJson_Data.Available())
 	{
-		EnterDebugWhenCrash = oEnterDebug.GetBool();
+		auto oEnterDebug = IHCoreJson_Data.GetObjectItem("EnterDebugWhenCrash");
+		if (oEnterDebug.Available() && oEnterDebug.IsTypeBool())
+		{
+			EnterDebugWhenCrash = oEnterDebug.GetBool();
+		}
 	}
+	else EnterDebugWhenCrash = false;
 }
 
 JsonObject GetIHCoreJson()
