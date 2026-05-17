@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+/.vs
 /.vs/IHCore
 /Common/SIInterface
 /IHCore/Release/IHCore.tlog
