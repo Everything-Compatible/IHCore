@@ -10,7 +10,8 @@
 #include <LocalData.h>
 #include <optional>
 
-extern JsonFile IHCoreJson;
+
+JsonObject GetIHCoreJson();
 
 extern bool EnterDebugWhenCrash;
 std::unique_ptr<std::thread> ECDbgConsoleManagerThread;
@@ -685,13 +686,13 @@ namespace ECDebug
 		else
 		{
 			Init = true;
-			if (!IHCoreJson.Available())
+			if (!GetIHCoreJson().Available())
 			{
 				return _HasConsole;
 			}
 			else
 			{
-				auto Obj = IHCoreJson.GetObj().GetObjectItem("OpenECDebugConsole");
+				auto Obj = GetIHCoreJson().GetObjectItem("OpenECDebugConsole");
 				if (Obj.Available() && Obj.IsTypeBool())
 					_HasConsole = Obj.GetBool();
 				return _HasConsole;
