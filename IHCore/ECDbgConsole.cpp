@@ -472,6 +472,17 @@ namespace ECCommand
 							return [] { return u8"\033[31m参数值不是整数！\033[0m"; };
 						}
 					}
+					else if ( (val.starts_with(u8"0x") || val.starts_with(u8"0X") ) && val.substr(2).find_first_not_of(u8"0123456789ABCDEFabcdef") == std::string::npos)
+					{
+						try
+						{
+							ExtArgs_int[Key] = std::stoi(~val, nullptr, 16);
+						}
+						catch (...)
+						{
+							return [] { return u8"\033[31m参数值不是整数！\033[0m"; };
+						}
+					}
 					else if (val.find_first_not_of(u8"0123456789.-+eE") == std::string::npos)
 					{
 						try
