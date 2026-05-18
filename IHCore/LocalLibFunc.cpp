@@ -262,7 +262,7 @@ GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Argum
 
 	auto Message = ArgJson.GetObj().GetText();
 
-	printf(conv u8"\033[1;31mSending Message \033[1;34m\"%s\" \033[1;31mto Syringe...\033[0m\n", Message.c_str());
+	//printf(conv u8"\033[1;31mSending Message \033[1;34m\"%s\" \033[1;31mto Syringe...\033[0m\n", Message.c_str());
 
 	auto Result = SyringeData::SendRequestMessage(Message);
 

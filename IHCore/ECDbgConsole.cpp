@@ -540,7 +540,7 @@ namespace ECCommand
 				OutputReturnedValue = true;
 				ReturnedValue = false;
 				
-				if (CommandInfo->Type == FuncType::Remote)
+				if (CommandInfo && CommandInfo->Type == FuncType::Remote)
 				{
 					ReturnInfoPtr pInfo;
 					//Debug::Log("[EC] Console : CommandInfo->Func = 0x%08X ; Arg = 0x%08X ; &pInfo = 0x%08X\n", CommandInfo->Func, Arg.GetRaw(), std::addressof(pInfo));
@@ -802,6 +802,19 @@ namespace ECDebug
 		AsyncCommandStack.Push(std::move(cmd));
 	}
 	
+	void FlushOutput()
+	{
+		if (!CommandOutput.Empty())
+		{
+			for (auto&& Output : CommandOutput.Release())
+			{
+				if (!Output.empty())
+				{
+					std::cout << ~Output << std::endl;
+				}
+			}
+		}
+	}
 
 	void ConsoleLoop()
 	{
@@ -826,7 +839,7 @@ namespace ECDebug
 		CommandStack.Push(std::move(ECCommand::ProcessCommand(~input)));
 		int iWait = 0;
 		int iOutput = 0;
-		while (CommandOutput.Empty() && !ECExec::IsConsoleLocked() && !NeedsDaemonMonitor())
+		while (CommandOutput.Empty() && !ECExec::IsConsoleLocked() && !NeedsDaemonMonitor() && !SyringeData::IsADaemonNow())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			if (iWait > 20 && iWait & 1)
@@ -857,15 +870,11 @@ namespace ECDebug
 			f.get();
 		}
 
-		if (!CommandOutput.Empty())
+		FlushOutput();
+
+		if (SyringeData::IsADaemonNow())
 		{
-			for (auto&& Output : CommandOutput.Release())
-			{
-				if (!Output.empty())
-				{
-					std::cout << ~Output << std::endl;
-				}
-			}
+			Debug::Log("WOCAO WOSHI Daemon LE \n");
 		}
 
 		if (ECExec::IsConsoleLocked() || SyringeData::IsADaemonNow())
@@ -879,6 +888,8 @@ namespace ECDebug
 				AsyncCommand.Execute();
 			}
 		}
+
+		FlushOutput();
 	}
 }
 
