@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <IH.h>
 
 extern InitialLoad::Service<InitialLoadParam_CustomPath>
@@ -22,4 +22,5 @@ extern InitialLoad::Service<InitialLoadParam_RegisterVTable>
 
 extern InitialLoad::Service<InitialLoadParam_RegisterFunction>
 	Service_RegisterIHFileFilter,// bool(__cdecl*)(const char*)
-	Service_RegisterListenerAccess;// FuncHandle (__cdecl*)(const char*) FOR INTERNAL USE
+	Service_RegisterListenerAccess,// FuncHandle (__cdecl*)(const char*) FOR INTERNAL USE
+	Service_RegisterAddressCommentProvider;// const char* (__cdecl *)(const AddressCommentInfo&)

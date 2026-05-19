@@ -363,6 +363,20 @@ bool IsExecutable(HANDLE hProc, LPCVOID Ptr)
 	else return false;
 }
 
+bool IsReadable(HANDLE hProc, LPCVOID Ptr)
+{
+	MEMORY_BASIC_INFORMATION BInfo;
+	if (VirtualQueryEx(hProc, Ptr, &BInfo, sizeof(BInfo)))
+	{
+		if (
+			BInfo.Protect == 0x20 || BInfo.Protect == 0x40 || BInfo.Protect == 0x80 ||
+			BInfo.Protect == 0x2 || BInfo.Protect == 0x4 || BInfo.Protect == 0x8
+			)return true;
+		else return false;
+	}
+	else return false;
+}
+
 std::string GetAccessStr(HANDLE hProc, LPCVOID Ptr)
 {
 	MEMORY_BASIC_INFORMATION BInfo;

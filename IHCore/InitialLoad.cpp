@@ -1,4 +1,4 @@
-#include <windows.h>
+ï»¿#include <windows.h>
 #include "InitialLoad.h"
 #include "..\Common\IHLoader\EC.GameClass.h"
 
@@ -6,24 +6,25 @@ ECRTTI_ExportRTTI(ECGameClass)
 ECRTTI_ExportRTTI(ECGameTypeClass, ECGameClass)
 
 InitialLoad::Service<InitialLoadParam_CustomPath>
-	Service_CustomPathListHead("IHFile::CustomPathListHead"),//²»·Ö´óĞ¡Ğ´
-	Service_CustomPathListTail("IHFile::CustomPathListTail"),//²»·Ö´óĞ¡Ğ´
-	Service_CustomPathListFirst("IHFile::CustomPathListFirst");//²»·Ö´óĞ¡Ğ´
+	Service_CustomPathListHead("IHFile::CustomPathListHead"),//ä¸åˆ†å¤§å°å†™
+	Service_CustomPathListTail("IHFile::CustomPathListTail"),//ä¸åˆ†å¤§å°å†™
+	Service_CustomPathListFirst("IHFile::CustomPathListFirst");//ä¸åˆ†å¤§å°å†™
 
 InitialLoad::Service<InitialLoadParam_CustomFile>
-	Service_StringTable("IHFile::AddStringTable"),//²»·Ö´óĞ¡Ğ´
-	Service_MixFile("IHFile::AddMixFile");//²»·Ö´óĞ¡Ğ´
+	Service_StringTable("IHFile::AddStringTable"),//ä¸åˆ†å¤§å°å†™
+	Service_MixFile("IHFile::AddMixFile");//ä¸åˆ†å¤§å°å†™
 
 InitialLoad::Service<InitialLoadParam_StringTablePair>
-	Service_StringTableAddPair("StringTable::AddPair");//Key²»·Ö´óĞ¡Ğ´
+	Service_StringTableAddPair("StringTable::AddPair");//Keyä¸åˆ†å¤§å°å†™
 
 InitialLoad::Service<InitialLoadParam_RedirectFile>
-	Service_BindToStream("IHFile::BindToStream"),//ÎÄ¼ş²»·Ö´óĞ¡Ğ´ Á÷Ãû×Ö·Ö´óĞ¡Ğ´ OriginalNameÌîÎÄ¼ş TargetNameÌîÁ÷
-	Service_RedirectFile("IHFile::RedirectFileName");//²»·Ö´óĞ¡Ğ´
+	Service_BindToStream("IHFile::BindToStream"),//æ–‡ä»¶ä¸åˆ†å¤§å°å†™ æµåå­—åˆ†å¤§å°å†™ OriginalNameå¡«æ–‡ä»¶ TargetNameå¡«æµ
+	Service_RedirectFile("IHFile::RedirectFileName");//ä¸åˆ†å¤§å°å†™
 
 InitialLoad::Service<InitialLoadParam_RegisterVTable>
-	Service_RegisterIHFile("IHFile::RegisterIHFile");//Á÷Ãû×Ö·Ö´óĞ¡Ğ´
+	Service_RegisterIHFile("IHFile::RegisterIHFile");//æµåå­—åˆ†å¤§å°å†™
 
 InitialLoad::Service<InitialLoadParam_RegisterFunction>
-	Service_RegisterIHFileFilter("IHFile::RegisterIHFileFilter"),//Ãû×Ö·Ö´óĞ¡Ğ´
-	Service_RegisterListenerAccess("EC::Internal::ListenerAccess");//Ãû×Ö·Ö´óĞ¡Ğ´
+	Service_RegisterIHFileFilter("IHFile::RegisterIHFileFilter"),//åå­—åˆ†å¤§å°å†™
+	Service_RegisterListenerAccess("EC::Internal::ListenerAccess"),//åå­—åˆ†å¤§å°å†™
+	Service_RegisterAddressCommentProvider("EC::RegisterAddressCommentProvider");//åå­—åˆ†å¤§å°å†™
