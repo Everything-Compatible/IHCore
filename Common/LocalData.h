@@ -36,6 +36,7 @@ std::vector<std::string> GetInternalSupportedFunctions();
 std::u8string FormatMessageU8(DWORD ErrorValue);
 GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Arguments);
 GenCallRetType ProcessSyringeRequestAlt(const std::string& Method, GeneratorParam Arg);
+std::variant<JsonFile, std::string, std::monostate> ProcessSyringeRequestToJSON(const std::string& Method, JsonFile&& Arguments);
 
 namespace Local
 {

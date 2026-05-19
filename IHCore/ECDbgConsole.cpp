@@ -22,6 +22,7 @@ std::atomic_bool SyringeDaemonMonitor_Connecting{ false };
 
 void SyringeDaemonMonitorThreadFunc();
 void ECDbgConsoleManagerThreadFunc();
+void DaemonStartWork();
 
 bool NeedsDaemonMonitor()
 {
@@ -866,27 +867,11 @@ namespace ECDebug
 		//Locked == process itself
 		if (NeedsDaemonMonitor())
 		{
-			SyringeDaemonMonitor_Connecting = true;
-			SyringeDaemonMonitorThread = std::make_unique<std::thread>(SyringeDaemonMonitorThreadFunc);
-			SyringeDaemonMonitorThread->detach();
-			CommandStack.Clear();
-			printf(conv u8"\033[33m进入调试模式……");
-			while(SyringeDaemonMonitor_Connecting)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
-				putchar('.');
-			}
-			puts("\033[0m");
-
+			DaemonStartWork();
 			f.get();
 		}
 
 		FlushOutput();
-
-		if (SyringeData::IsADaemonNow())
-		{
-			Debug::Log("WOCAO WOSHI Daemon LE \n");
-		}
 
 		if (ECExec::IsConsoleLocked() || SyringeData::IsADaemonNow())
 		{
@@ -912,32 +897,6 @@ void ECDbgConsoleManagerThreadFunc()
 	{
 		ECDebug::ConsoleLoop();
 	}
-}
-
-void SyringeDaemonMonitorThreadFunc()
-{
-	SyringeData::DaemonConnect();
-	if (SyringeData::IsDaemonConnected())
-	{
-		printf(conv u8"\033[33m已连接 \033[1;34m%s \033[33m。\033[0m\n", SyringeData::GetExeData().SyringeVersionStr);
-	}
-	else
-	{
-		puts(conv u8"\033[1;31m无法连接到Syringe。\033[0m");
-		puts(conv u8"\033[33m已退出调试模式。\033[0m");
-		return;
-	}
-	SyringeDaemonMonitor_Connecting = false;
-
-	Game::IsActive = false;
-
-	while (1)
-	{
-		if (!SyringeData::IsDaemonConnected())return;
-		if (SyringeData::ShouldCloseDaemonPipe())break;
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
-	}
-	SyringeData::DaemonDisconnect();
 }
 
 UTF8_CString __cdecl TextDrawRouter_EnvVariable(const char* Key)

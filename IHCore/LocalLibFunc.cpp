@@ -241,7 +241,7 @@ FuncInfo* Internal_GetFunc(const char* Name, int Version)
 }
 
 
-GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Arguments)
+std::variant<JsonFile, std::string, std::monostate> ProcessSyringeRequestToJSON(const std::string& Method, JsonFile&& Arguments)
 {
 	/*
 	Request:
@@ -267,19 +267,35 @@ GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Argum
 	auto Result = SyringeData::SendRequestMessage(Message);
 
 	if (Result.empty())
-	{
-		ECCommand::ReturnStdError(ERROR_INVALID_FUNCTION);
-		return GenCallRetType::Void;
-	}
+		return std::monostate{};
 
 	JsonFile ResultJson;
 	auto ErrorStr = ResultJson.ParseTmpChecked(std::move(Result), conv u8"\033[33m【错误位置】\033[31m");
 
 	if (!ErrorStr.empty())
+		return std::move(ErrorStr);
+
+	else 
+		return std::move(ResultJson);
+}
+
+GenCallRetType ProcessSyringeRequest(const std::string& Method, JsonFile&& Arguments)
+{
+	auto ResultVariant = ProcessSyringeRequestToJSON(Method, std::move(Arguments));
+
+	if (std::holds_alternative<std::monostate>(ResultVariant))
 	{
+		ECCommand::ReturnStdError(ERROR_INVALID_FUNCTION);
+		return GenCallRetType::Void;
+	}
+	else if (std::holds_alternative<std::string>(ResultVariant))
+	{
+		auto& ErrorStr = std::get<std::string>(ResultVariant);
 		ECCommand::ReturnError(~ErrorStr, ERROR_INVALID_DATA);
 		return GenCallRetType::Void;
 	}
+
+	auto& ResultJson = std::get<JsonFile>(ResultVariant);
 
 	auto ResponseObj = ResultJson.GetObj().GetObjectItem("Response");
 	auto ErrorObj = ResultJson.GetObj().GetObjectItem("Error");

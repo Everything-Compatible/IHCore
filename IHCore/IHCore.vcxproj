@@ -553,6 +553,7 @@
     <ClCompile Include="..\Common\LocalLibManager.cpp" />
     <ClCompile Include="..\Common\ToolFunc.cpp" />
     <ClCompile Include="Command.cpp" />
+    <ClCompile Include="DaemonProc.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ECDbgConsole.cpp" />
     <ClCompile Include="Exception.cpp" />

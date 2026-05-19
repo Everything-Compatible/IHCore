@@ -1328,6 +1328,9 @@
     <ClCompile Include="ModuleProc.cpp">
       <Filter>File</Filter>
     </ClCompile>
+    <ClCompile Include="DaemonProc.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Version.rc">
