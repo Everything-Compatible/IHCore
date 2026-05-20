@@ -44,15 +44,11 @@ JsonObject GetConfig()
 }
 */
 
-
 void ConfigJson_InitBeforeEverything()
 {
-	
-	char Name[MAX_PATH];
-	GetModuleFileNameA(hInstDLL, Name, MAX_PATH);
 	if (SyringeData::HasSyringeIH())
 	{
-		IHCoreData = SyringeData::GetLibData(PathFindFileNameA(Name));
+		IHCoreData = SyringeData::GetThisLibData();
 		if (IHCoreData)
 		{
 			IHCoreJson.Parse(SyringeData::GetSettingText(*IHCoreData));
@@ -62,6 +58,8 @@ void ConfigJson_InitBeforeEverything()
 	}
 	else
 	{
+		char Name[MAX_PATH];
+		GetModuleFileNameA(hInstDLL, Name, MAX_PATH);
 		strcat(Name, ".json");
 		auto Str = GetStringFromFile<ExtFileClass>(Name);
 		if (Str.empty())
