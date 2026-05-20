@@ -47,15 +47,18 @@ std::string MakeAddressComment(const AddressCommentInfo& AddrInfo)
 	{
 		auto Str = Provider.Handle(AddrInfo);
 
-		std::string s;
-		s += Provider.Name;
-		s += " : ";
-		s += Str;
+		if (strlen(Str))
+		{
+			std::string s;
+			s += Provider.Name;
+			s += " : ";
+			s += Str;
+
+			Result += s;
+			Result.push_back('\n');
+		}
 
 		free((void*)Str);
-
-		Result += s;
-		Result.push_back('\n');
 	}
 	if(!Result.empty())
 		Result.pop_back();
