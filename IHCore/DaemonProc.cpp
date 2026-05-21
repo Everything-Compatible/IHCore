@@ -169,3 +169,22 @@ void DaemonStartWork()
 	DaemonProcessAddress();
 }
 
+void DaemonMinimalWork()
+{
+	SyringeData::DaemonConnect();
+	if (SyringeData::IsDaemonConnected())
+	{
+		Debug::Log("[EC] Syringe Daemon Connected.\n");
+	}
+	else
+	{
+		Debug::Log("[EC] Failed to Connect Syringe Daemon.\n");
+		return;
+	}
+
+	Game::IsActive = false;
+
+	DaemonProcessAddress();
+
+	SyringeData::DaemonDisconnect();
+}

@@ -22,11 +22,18 @@ std::atomic_bool SyringeDaemonMonitor_Connecting{ false };
 
 void SyringeDaemonMonitorThreadFunc();
 void ECDbgConsoleManagerThreadFunc();
+void ECDbgMinimalDaemonThreadFunc();
 void DaemonStartWork();
+void DaemonMinimalWork();
 
 bool NeedsDaemonMonitor()
 {
 	return EnterDebugWhenCrash && SyringeData::IsADaemonNow() && !SyringeDaemonMonitorThread;
+}
+
+namespace SyringeData
+{
+	extern DaemonData* pDaemonData;
 }
 
 namespace ECExec
@@ -683,6 +690,11 @@ namespace ECDebug
 			ECDbgConsoleManagerThread = std::make_unique<std::thread>(ECDbgConsoleManagerThreadFunc);
 			ECDbgConsoleManagerThread->detach();
 		}
+		else if (EnterDebugWhenCrash && !HasConsole())
+		{
+			ECDbgConsoleManagerThread = std::make_unique<std::thread>(ECDbgMinimalDaemonThreadFunc);
+			ECDbgConsoleManagerThread->detach();
+		}
 	}
 
 	bool IsConsoleOpen()
@@ -828,6 +840,16 @@ namespace ECDebug
 		}
 	}
 
+	bool MinimalDaemonLoop()
+	{
+		if (NeedsDaemonMonitor())
+		{
+			DaemonMinimalWork();
+			return true;
+		}
+		else return false;
+	}
+
 	void ConsoleLoop()
 	{
 		input.clear();
@@ -887,6 +909,18 @@ namespace ECDebug
 
 		FlushOutput();
 	}
+}
+
+void ECDbgMinimalDaemonThreadFunc()
+{
+	Debug::Log("[EC] Starting Minimal Daemon Thread...\n");
+	SyringeData::SetDaemonThread(GetCurrentThreadId());
+	if (SyringeData::IsDaemonSupported() && SyringeData::pDaemonData)
+		SyringeData::pDaemonData->OpenAsDaemon = FALSE;
+	while (!ECDebug::MinimalDaemonLoop())
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	Debug::Log("[EC] Minimal Daemon Thread Terminated.\n");
 }
 
 void ECDbgConsoleManagerThreadFunc()
