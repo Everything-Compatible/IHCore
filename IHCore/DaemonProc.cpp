@@ -9,6 +9,7 @@ extern std::atomic_bool SyringeDaemonMonitor_Connecting;
 extern std::unique_ptr<std::thread> SyringeDaemonMonitorThread;
 bool IsReadable(HANDLE hProc, LPCVOID Ptr);
 bool IsExecutable(HANDLE hProc, LPCVOID Ptr);
+bool IsWritable(HANDLE hProc, LPCVOID Ptr);
 
 struct AddressCommentSource
 {
@@ -82,6 +83,7 @@ void ProcessAndReportAddressList()
 	for (auto& AddrInfo : AddressList)
 	{
 		StringList.push_back(MakeAddressComment(AddrInfo));
+		//Debug::Log("[EC] Address : 0x%08X, Comment %s\n", AddrInfo.Addr, StringList.back().c_str());
 	}
 
 
@@ -117,8 +119,13 @@ void DaemonProcessAddress()
 					Item.Addr = Addr;
 					Item.CanRead = IsReadable(hProc, (LPCVOID)Addr);
 					Item.CanExecute = IsExecutable(hProc, (LPCVOID)Addr);
+					Item.CanWrite = IsWritable(hProc, (LPCVOID)Addr);
+					Item.FirstAddrOfReport = false;
+					memset(Item.dwReserved, 0, sizeof(Item.dwReserved));
 					AddressList.push_back(Item);
 				}
+				if(!AddressList.empty())
+					AddressList[0].FirstAddrOfReport = true;
 			}
 		}
 	}
