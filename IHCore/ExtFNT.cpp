@@ -788,7 +788,7 @@ void InitResetWidthList()
     if (auto cfg = GetIHCoreJson(); cfg)
     {
 		auto oReset = cfg.GetObjectItem("AdjustFont");
-        if (oReset.IsTypeArray())
+        if (oReset && oReset.IsTypeArray())
         {
             for (auto&& p : oReset.GetArrayObject())
             {
