@@ -10,6 +10,7 @@
 #include "..\IHCore\ECDbgConsole.h"
 #include "..\IHCore\ECInterprocess.h"
 #include <CRT.h>
+#include "IHCore/Version.h"
 
 bool EnterDebugWhenCrash = false;
 
@@ -513,6 +514,7 @@ namespace Local
 
 	void LocalInit()
 	{
+		Debug::Log("IHCore : Version %s , Built at %s", "" FINAL_VERSION_STR, __TIME__ " " __DATE__);
 		atexit(ExitClearImpl);
 		InitLibs();
 	}
