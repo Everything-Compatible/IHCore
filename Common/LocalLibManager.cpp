@@ -514,7 +514,7 @@ namespace Local
 
 	void LocalInit()
 	{
-		Debug::Log("IHCore : Version %s , Built at %s", "" FINAL_VERSION_STR, __TIME__ " " __DATE__);
+		Debug::Log("IHCore : Version %s , Built at %s\n", "" FINAL_VERSION_STR, __TIME__ " " __DATE__);
 		atexit(ExitClearImpl);
 		InitLibs();
 	}
