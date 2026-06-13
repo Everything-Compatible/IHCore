@@ -19,6 +19,39 @@ namespace Local
 	void ResetAll();
 }
 
+UTF8_CString __cdecl TextDrawRouter_Test(const char* Key)
+{
+	//Lifecycle only , refresh per call
+	static std::string CacheKey;
+
+	std::string_view k(Key);
+	if (k.starts_with("Count."))
+	{
+		auto id = k.substr(6);
+		//count from TechnoClass::Array ignore case
+		int Count = 0;
+		for (int i = 0; i < TechnoClass::Array->Count; i++)
+		{
+			if (auto p = (*TechnoClass::Array)[i]; p)
+			{
+				if (auto Type = p->GetTechnoType(); Type)
+				{
+					char* tid = Type->ID;
+					if (!_stricmp(tid, id.data()))
+					{
+						Count++;
+					}
+				}
+			}
+		}
+		CacheKey = std::to_string(Count);
+		return conv CacheKey.c_str();
+	}
+	else
+		return nullptr;
+}
+
+
 namespace Test
 {
 	//reference<wchar_t, 0xA8B34F> RA;
@@ -85,13 +118,6 @@ DEFINE_HOOK(0x6F9E50, IHTechnoClassUpdate, 5)
 	GET(TechnoClass* const, pThis, ECX);
 	return 0;
 }
-
-/*
-DEFINE_HOOK(0x52B390, IHHasSec, 5)
-{
-	return 0;
-}
-*/
 
 
 
