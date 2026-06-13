@@ -43,7 +43,7 @@ const char8_t* GetTextDrawVariable(const std::u8string_view Key)
 //take_len > 0 : [0 ..take_len)
 //take_len < 0 : [-take_len ..length)
 //take : if k[-3] = Magic_ValueClip, take [k[-2] .. k[-1]) as range
-std::wstring GetTextDrawVariable(const wchar_t* Key)
+std::wstring GetTextDrawVariableWithMissing(const wchar_t* Key)
 {
 	static std::mutex mtx;
 	std::lock_guard<std::mutex> lock(mtx);
@@ -353,7 +353,7 @@ std::wstring GetReplacedDrawStr(const wchar_t* s)
 			if (q)
 			{
 				auto varname = std::wstring(p + 2, q - (p + 2));
-				auto varvalue = GetTextDrawVariable(varname.c_str());
+				auto varvalue = GetTextDrawVariableWithMissing(varname.c_str());
 				res += varvalue;
 				p = q + 1;
 			}
@@ -405,7 +405,7 @@ std::tuple<std::wstring, std::vector<LookupVarIndex>, std::vector<LookupVarInfo>
             if (q)
             {
                 auto varname = std::wstring(p + 2, q - (p + 2));
-                auto varvalue = GetTextDrawVariable(varname.c_str());
+                auto varvalue = GetTextDrawVariableWithMissing(varname.c_str());
                 if (varname.length() > 3 && varname[varname.length() - 3] == Magic_ValueClip)
                 {
                     auto Begin = (short)varname[varname.length() - 2];
