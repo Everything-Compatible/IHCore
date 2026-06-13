@@ -6,6 +6,7 @@
 #include <Version.h>
 #include <YRPP.h>
 #include "StringManagerExt.h"
+#include "ECInterprocess.h"
 #include "ECDbgConsole.h"
 #include <iostream>
 #include <shellapi.h>
@@ -86,6 +87,7 @@ std::unordered_map<std::string, FuncInfo>IHCore_Funcs
 	{"IEDialog",FuncInfo(ShowIEDialog ,FuncType::Procedure)},
 	{"WatchAD",FuncInfo(WatchAD ,FuncType::Action, true, true)},
 	{"AddMoney",FuncInfo(AddMoney ,FuncType::Action, true, true)},
+
 	{"OpenWebsite",FuncInfo(OpenWebsite ,FuncType::Default)},//bool (__cdecl*)(const char*)
 	{"GetCSFString",FuncInfo(StringManagerExt::GetCSFString ,FuncType::Default)},
 	{"AutoWrapTextEx",FuncInfo(AutoWrapTextEx, FuncType::Default) }
@@ -138,24 +140,67 @@ namespace Internal
 		}
 	}
 
-	void __cdecl GetCSFString(JsonObject Context)
+	void __cdecl GetDrawTextValueII(JsonObject Context)
 	{
-		auto s = Context.GetObjectItem("Name");
-		if (s.Available() && s.IsTypeString())
+		auto Args = Context.ItemArrayString("Args");
+		if (Args.empty())
 		{
-			const wchar_t* Str = StringManagerExt::GetCSFString(s.GetCString());
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return;
+		}
+
+		if (Args.size() == 1)
+		{
+			const char8_t* Str = GetTextDrawVariable(~Args[0]);
 			if (Str)
 			{
-				ECCommand::ReturnString(~UnicodetoUTF8(Str));
+				ECCommand::ReturnString(Str);
 			}
 			else
 			{
 				ECCommand::ReturnStdError(ERROR_INVALID_INDEX);
 			}
+			return;
+		}
+
+		bool AllAvailable = true;
+		for(auto& Arg : Args)
+		{
+			const char8_t* Str = GetTextDrawVariable(~Arg);
+			printf("%s = %s\n", Arg.c_str(), Str ? conv Str : "(Not Found)");
+			AllAvailable = AllAvailable && Str;
+		}
+
+		if (AllAvailable)
+		{
+			ECCommand::DoNotEcho();
+			ECCommand::ReturnString(u8"");
 		}
 		else
 		{
+			ECCommand::DoNotEcho();
+			ECCommand::ReturnStdError(ERROR_INVALID_INDEX);
+		}
+	}
+
+	void __cdecl GetCSFString(JsonObject Context)
+	{
+		auto Args = Context.ItemArrayString("Args");
+		if (Args.size() != 1)
+		{
 			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return;
+		}
+
+		auto& Arg = Args[0];
+		const wchar_t* Str = StringManagerExt::GetCSFString(Arg.c_str());
+		if (Str)
+		{
+			ECCommand::ReturnString(~UnicodetoUTF8(Str));
+		}
+		else
+		{
+			ECCommand::ReturnStdError(ERROR_INVALID_INDEX);
 		}
 	}
 
@@ -166,6 +211,24 @@ namespace Internal
 		std::cout << TextEx;
 		ECCommand::DoNotEcho();
 		ECCommand::ReturnString(~Text);
+	}
+
+	void __cdecl RepeatArg(JsonObject Context)
+	{
+		auto Args = Context.ItemArrayString("Args");
+		std::string Result;
+		for (auto& Arg : Args)
+		{
+			Result += Arg;
+			Result += " ";
+		}
+		if (!Result.empty())
+		{
+			Result.pop_back();
+		}
+		std::cout << "\033[1;33m" << Result << "\033[0m";
+		ECCommand::DoNotEcho();
+		ECCommand::ReturnString(~Result);
 	}
 
 	void __cdecl Print(JsonObject Context)
@@ -207,15 +270,58 @@ namespace Internal
 		int* p = nullptr;
 		*p = 0; //This will cause an access violation
 	}
+
+	void __cdecl Clear()
+	{
+		//cls
+		printf("\033[2J\033[H");
+	}
+
+	//void __cdecl Ping(JsonObject Context)
+	//{
+	//	//ping a remote component to check if it's alive
+	//	//-Name  
+	//	//[-TimeOut] default to 5000ms
+
+	//	auto oName = Context.GetObjectItem("Name");
+	//	if (!oName)
+	//	{
+	//		ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+	//		return;
+	//	}
+	//	if (!oName.IsTypeString())
+	//	{
+	//		ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+	//		return;
+	//	}
+	//	auto Name = oName.GetString();
+	//	auto oTimeOut = Context.GetObjectItem("TimeOut");
+	//	int TimeOut = 5000;
+
+
+	//	RemoteCallSendInfo SendInfo
+	//	{
+	//		.Source = u8"",
+	//		.Component = Ctx->Target,
+	//		.Method = Ctx->Method,
+	//		.Version = Ctx->Version,
+	//		.Context = Obj
+	//	};
+
+	//	RemoteComponentManager::CallComponentMethod(
+	//}
 }
 
 std::unordered_map<std::string, FuncInfo>Internal_Funcs
 {
 	{"SetValue",FuncInfo(Internal::SetValue ,FuncType::Action)},
 	{"ListGlobalVars",FuncInfo(Internal::ListGlobalVars ,FuncType::Procedure)},
-	{"GetCSFString",FuncInfo(Internal::GetCSFString ,FuncType::Action)},
+	{"GetCSFString",FuncInfo(Internal::GetCSFString ,FuncType::Action, true, true)},
 	{"GetDrawTextValue",FuncInfo(Internal::GetDrawTextValue ,FuncType::Action)},
+	{"TextVar",FuncInfo(Internal::GetDrawTextValueII ,FuncType::Action, true, true)},
+	{"Clear", FuncInfo(Internal::Clear ,FuncType::Action)},
 	{"PrintArg",FuncInfo(Internal::PrintArg ,FuncType::Action)},
+	{"RepeatArg",FuncInfo(Internal::RepeatArg ,FuncType::Action, true, true)},
 	{"Exit",FuncInfo(Internal::Exit ,FuncType::Action)},
 	{"Print",FuncInfo(Internal::Print ,FuncType::Action)},
 	{"Resume",FuncInfo(Internal::Resume ,FuncType::Procedure)},

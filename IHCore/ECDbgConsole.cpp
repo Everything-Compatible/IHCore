@@ -143,6 +143,13 @@ namespace ECCommand
 	std::unordered_map<std::u8string, std::u8string> GlobalVariables;
 	int ErrorCode;
 
+	void InitGlobalVariables()
+	{
+		GlobalVariables.clear();
+		GlobalVariables[u8"RET"] = u8"";
+		GlobalVariables[u8"ERROR_STRING"] = u8"";
+	}
+
 	UTF8_CString __cdecl TextDrawRouter_GlobalVariables(const char* Key)
 	{
 		auto it = GlobalVariables.find(conv Key);
@@ -294,6 +301,21 @@ namespace ECCommand
 				Command.replace(pos, p.first.size() + 2, ~EscapeString(~p.second));
 			}
 		}
+		while (1)
+		{
+			auto pos = Command.find(u8"<TextVar.");
+			if (pos != std::string::npos)
+			{
+				auto pos2 = Command.find(u8">", pos);
+				if (pos2 == std::string::npos)break;
+				auto VarName = Command.substr(pos + 9, pos2 - pos - 9);
+				const char8_t* GetTextDrawVariable(const std::u8string_view Key);
+				auto VarValue = GetTextDrawVariable(VarName);
+				Command.replace(pos, pos2 - pos + 1, ~EscapeString(VarValue ? conv VarValue : ""));
+			}
+			else break;
+		}
+		
 		//puts(conv Command.c_str());
 
 		//CommandName Json(Args)
@@ -726,6 +748,7 @@ namespace ECDebug
 
 	bool OpenDebugConsole()
 	{
+		ECCommand::InitGlobalVariables();
 		if (HasConsole())
 		{
 			bool HasConsoleInUse = false;
