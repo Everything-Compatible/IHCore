@@ -274,7 +274,24 @@ namespace Internal
 	void __cdecl Clear()
 	{
 		//cls
-		printf("\033[2J\033[H");
+		//printf("\033[2J\033[H");
+
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (hConsole == INVALID_HANDLE_VALUE) return;
+
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) return;
+
+		DWORD dwSize = csbi.dwSize.X * csbi.dwSize.Y;
+		COORD coordScreen = { 0, 0 };
+		DWORD dwWritten;
+
+		// 用空格覆盖整个缓冲区
+		FillConsoleOutputCharacter(hConsole, L' ', dwSize, coordScreen, &dwWritten);
+		// 恢复默认文本属性
+		FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwSize, coordScreen, &dwWritten);
+		// 将光标移到左上角
+		SetConsoleCursorPosition(hConsole, coordScreen);
 	}
 
 	//void __cdecl Ping(JsonObject Context)
