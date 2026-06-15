@@ -339,7 +339,7 @@ public:
 	bool Register(const InitInput& Input);//generate InitResult
 	void OrderedInit();
 	bool IsConnected() const;
-	bool Ping();
+	std::pair<bool, double> Ping(int CustomTimeOut = -1);
 	const std::u8string& GetName() const;
 	InitResult& GetInitResult();
 };
@@ -356,8 +356,6 @@ namespace RemoteComponentManager
 	std::vector<InitResult*> GetRemoteComponentLibType();
 
 	void OrderedInit(const std::u8string& ComponentName);
-
-	bool PingComponent(const std::u8string& ComponentName);
 
 	FuncInfo* GetRemoteMethodInfo(const char* ComponentName, const char* MethodName, int Version);
 

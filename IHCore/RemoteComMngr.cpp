@@ -443,14 +443,6 @@ namespace RemoteComponentManager
 			comp->OrderedInit();
 	}
 
-	bool PingComponent(const std::u8string& ComponentName)
-	{
-		auto comp = GetComponentByName(ComponentName);
-		if (comp)
-			return comp->Ping();
-		else return false;
-	}
-
 
 	/*
 	-----------------------------------------------
@@ -911,9 +903,9 @@ void RemoteComponent::PostMethod(const RemoteCallSendInfo& Info)
 	PostCall(Info);
 }
 
-bool RemoteComponent::Ping()
+std::pair<bool, double> RemoteComponent::Ping(int CustomTimeOut)
 {
-	if (!IsConnected())return false;
+	if (!IsConnected())return { false, 0.0 };
 
 	JsonFile F;
 	auto Info = RemoteCallSendInfo{
@@ -930,7 +922,14 @@ bool RemoteComponent::Ping()
 	auto RecvInfo = RemoteComponentManager::PendingRecvCalls[CallID].get_future();
 	RemoteComponentManager::PendingRecvCallsMutex.unlock();
 
-	auto Result = RecvInfo.wait_for(std::chrono::milliseconds(TimeOut));
+	auto FinalTimeOut = (CustomTimeOut > 0) ? CustomTimeOut : TimeOut;
 
-	return (Result == std::future_status::ready);
+	auto StartTime = std::chrono::high_resolution_clock::now();
+	auto Result = RecvInfo.wait_for(std::chrono::milliseconds(FinalTimeOut));
+	auto EndTime = std::chrono::high_resolution_clock::now();
+
+	auto Micros = std::chrono::duration_cast<std::chrono::microseconds>(EndTime - StartTime).count();
+	auto Millis = Micros / 1000.0;
+
+	return { (Result == std::future_status::ready), Millis };
 }

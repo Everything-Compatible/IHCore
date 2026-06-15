@@ -313,7 +313,7 @@ namespace Internal
 		}
 		auto Name = oName.GetString();
 		auto oTimeOut = Context.GetObjectItem("TimeOut");
-		int TimeOut = 5000;
+		int TimeOut = -1;
 		if (oTimeOut)
 		{
 			if (!oTimeOut.IsTypeNumber())
@@ -331,7 +331,19 @@ namespace Internal
 			return false;
 		}
 
-		auto Result = pCom->Ping();
+		auto [Result, Delay] = pCom->Ping(TimeOut);
+
+		if (Result)
+		{
+			std::cout << "Pinged Component " << Name << " successfully, Delay: " << Delay << "ms";
+		}
+		else
+		{
+			std::cout << "Pinged Component " << Name << " failed, Time Out";
+		}
+
+		ECCommand::DoNotEcho();
+
 		return Result;
 	}
 }
@@ -350,7 +362,7 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"Print",FuncInfo(Internal::Print ,FuncType::Action)},
 	{"Resume",FuncInfo(Internal::Resume ,FuncType::Procedure)},
 	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)},
-	{"Ping",FuncInfo(Internal::Ping ,FuncType::Action)} 
+	{"Ping",FuncInfo(Internal::Ping ,FuncType::Condition)},
 };
 
 std::vector<std::string> GetInternalSupportedFunctions()

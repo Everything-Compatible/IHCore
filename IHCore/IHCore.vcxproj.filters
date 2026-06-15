@@ -37,9 +37,6 @@
     <Filter Include="EC SDK">
       <UniqueIdentifier>{40910ebb-52e9-4948-b1da-f1f9df9b9173}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Debug">
-      <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External">
       <UniqueIdentifier>{2615cac3-38f9-4ee7-b6b2-c9fc78fb9e4a}</UniqueIdentifier>
     </Filter>
@@ -51,6 +48,9 @@
     </Filter>
     <Filter Include="Interprocess">
       <UniqueIdentifier>{eb1d2467-1306-4145-b99d-45213ab53dad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Console">
+      <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1123,10 +1123,10 @@
       <Filter>EC SDK</Filter>
     </ClInclude>
     <ClInclude Include="ECDbgConsole.h">
-      <Filter>Debug</Filter>
+      <Filter>Console</Filter>
     </ClInclude>
     <ClInclude Include="InfoStack.h">
-      <Filter>Debug</Filter>
+      <Filter>Console</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\EC.h">
       <Filter>EC SDK</Filter>
@@ -1172,6 +1172,9 @@
     </ClInclude>
     <ClInclude Include="ExtIni.h">
       <Filter>Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="SyringeCaller.h">
+      <Filter>Interprocess</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1260,7 +1263,7 @@
       <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="ECDbgConsole.cpp">
-      <Filter>Debug</Filter>
+      <Filter>Console</Filter>
     </ClCompile>
     <ClCompile Include="ExtScenario.cpp">
       <Filter>Extended</Filter>
@@ -1329,7 +1332,10 @@
       <Filter>File</Filter>
     </ClCompile>
     <ClCompile Include="DaemonProc.cpp">
-      <Filter>Debug</Filter>
+      <Filter>Console</Filter>
+    </ClCompile>
+    <ClCompile Include="SyringeCaller.cpp">
+      <Filter>Interprocess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
