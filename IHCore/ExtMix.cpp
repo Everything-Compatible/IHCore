@@ -18,6 +18,7 @@ std::unordered_set<std::string, UpperHash, UpperEqualPred> BlackList;
 std::unordered_set<std::string, UpperHash, UpperEqualPred> WhiteList;
 
 extern bool EnterDebugWhenCrash;
+extern bool EnableExceptionHandler;
 SyringeData::LibRemoteData* IHCoreData = nullptr;
 JsonFile IHCoreJson;
 JsonObject IHCoreJson_Data;
@@ -102,6 +103,11 @@ void ConfigJson_InitBeforeEverything()
 		if (oEnterDebug.Available() && oEnterDebug.IsTypeBool())
 		{
 			EnterDebugWhenCrash = oEnterDebug.GetBool();
+		}
+		auto oEnableExceptionHandler = IHCoreJson_Data.GetObjectItem("EnableExceptionHandler");
+		if (oEnableExceptionHandler.Available() && oEnableExceptionHandler.IsTypeBool())
+		{
+			EnableExceptionHandler = oEnableExceptionHandler.GetBool();
 		}
 	}
 	else EnterDebugWhenCrash = false;

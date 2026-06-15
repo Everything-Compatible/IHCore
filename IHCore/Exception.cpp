@@ -250,11 +250,11 @@ std::wstring IHPrepareSnapshotDirectory() {
 #pragma warning(pop)
 #endif
 
-bool WWSBShouldCatch = false;
+bool EnableExceptionHandler = false;
 wchar_t IHExceptionHandlerBuf[2000];
 DEFINE_HOOK(0x6BB996, IHExceptionHandler, 5)
 {
-	if (WWSBShouldCatch)return 0x4C8FE0;
+	if (!EnableExceptionHandler)return 0x4C8FE0;
 	else
 	{
 		GET_STACK(PEXCEPTION_POINTERS, pExcept, 0x4);
