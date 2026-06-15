@@ -8,6 +8,8 @@ namespace ReadRemoteComponents_ErrorContext
 	std::u8string CurrentFileName{};
 }
 
+int RemoteComponentDefaultTimeOut = 3000;
+
 /*
 
 Examples as JSON:
@@ -84,6 +86,16 @@ void RemoteComponentNameType::Load(JsonObject obj)
 	else
 	{
 		KeepAliveOnProcessExit = false;//default value
+	}
+
+	if(obj.HasItem("TimeOut"))
+	{
+		int timeOut = obj.ItemInt("TimeOut");
+		if (timeOut > 0)TimeOut = timeOut;
+	}
+	else
+	{
+		TimeOut = RemoteComponentDefaultTimeOut;//default value
 	}
 }
 

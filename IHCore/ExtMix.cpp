@@ -19,6 +19,7 @@ std::unordered_set<std::string, UpperHash, UpperEqualPred> WhiteList;
 
 extern bool EnterDebugWhenCrash;
 extern bool EnableExceptionHandler;
+extern int RemoteComponentDefaultTimeOut;
 SyringeData::LibRemoteData* IHCoreData = nullptr;
 JsonFile IHCoreJson;
 JsonObject IHCoreJson_Data;
@@ -108,6 +109,11 @@ void ConfigJson_InitBeforeEverything()
 		if (oEnableExceptionHandler.Available() && oEnableExceptionHandler.IsTypeBool())
 		{
 			EnableExceptionHandler = oEnableExceptionHandler.GetBool();
+		}
+		auto oDefaultTimeOut = IHCoreJson_Data.GetObjectItem("DefaultTimeOut");
+		if (oDefaultTimeOut.Available() && oDefaultTimeOut.IsTypeNumber())
+		{
+			RemoteComponentDefaultTimeOut = oDefaultTimeOut.GetInt();
 		}
 	}
 	else EnterDebugWhenCrash = false;

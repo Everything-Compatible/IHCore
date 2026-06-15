@@ -510,7 +510,7 @@ namespace ServiceProcessComm
 
 //----------------------------------------------
 
-bool RemoteComm_NamedPipe::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit)
+bool RemoteComm_NamedPipe::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit, int _TimeOut)
 {
 	Connected = false;
 	KeepAliveOnProcessExit = _KeepAliveOnProcessExit;
@@ -785,7 +785,7 @@ bool RemoteComm_TCP::ConnectToServer(const std::string& host, int port)
 	return false;
 }
 
-bool RemoteComm_TCP::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit)
+bool RemoteComm_TCP::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit, int _TimeOut)
 {
 	Connected = false;
 	KeepAliveOnProcessExit = _KeepAliveOnProcessExit;
