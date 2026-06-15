@@ -95,6 +95,7 @@ struct RemoteComponentNameType
 	std::u8string RegName;
 	std::u8string RunCommand;
 	std::u8string Location;
+	bool KeepAliveOnProcessExit;
 
 	void Load(JsonObject obj);
 };
@@ -301,6 +302,7 @@ protected:
 	std::u8string RegName;
 	std::u8string RunCommand;
 	std::u8string Location;
+	bool KeepAliveOnProcessExit;
 	InitRemoteComponentInfo BasicInfo;
 	std::vector<InitDependency> Register_Dependencies;//auto generated
 	LibVersionInfo Register_VerInfo;//auto generated
@@ -311,7 +313,8 @@ public:
 	RemoteComponent(RemoteComponentNameType&& Info)
 		:RegName(std::move(Info.RegName)),
 		RunCommand(std::move(Info.RunCommand)),
-		Location(std::move(Info.Location))
+		Location(std::move(Info.Location)),
+		KeepAliveOnProcessExit(Info.KeepAliveOnProcessExit)
 	{
 	}
 

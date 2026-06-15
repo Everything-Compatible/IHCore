@@ -510,9 +510,10 @@ namespace ServiceProcessComm
 
 //----------------------------------------------
 
-bool RemoteComm_NamedPipe::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location)
+bool RemoteComm_NamedPipe::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit)
 {
 	Connected = false;
+	KeepAliveOnProcessExit = _KeepAliveOnProcessExit;
 
 	if (!Proc.StartServiceProcess(CmdLine, ECDebug::HasConsole(), Location))
 		return false;
@@ -572,7 +573,7 @@ void RemoteComm_NamedPipe::BaseDisconnect()
 
 std::u8string RemoteComm_NamedPipe::ReadString()
 {
-	if (!Proc.IsServiceProcessRunning()) return u8"";
+	if (!KeepAliveOnProcessExit && !Proc.IsServiceProcessRunning()) return u8"";
 
 	if (!Connected || pipe_handle_ == INVALID_HANDLE_VALUE) return u8"";
 
@@ -599,7 +600,7 @@ std::u8string RemoteComm_NamedPipe::ReadString()
 
 void RemoteComm_NamedPipe::WriteString(std::u8string_view Str)
 {
-	if (!Proc.IsServiceProcessRunning()) return;
+	if (!KeepAliveOnProcessExit && !Proc.IsServiceProcessRunning()) return;
 
 	if (!Connected || pipe_handle_ == INVALID_HANDLE_VALUE) return;
 
@@ -784,9 +785,10 @@ bool RemoteComm_TCP::ConnectToServer(const std::string& host, int port)
 	return false;
 }
 
-bool RemoteComm_TCP::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location)
+bool RemoteComm_TCP::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit)
 {
 	Connected = false;
+	KeepAliveOnProcessExit = _KeepAliveOnProcessExit;
 
 	if (!Proc.StartServiceProcess(CmdLine, ECDebug::HasConsole(), Location))
 		return false;
@@ -823,7 +825,7 @@ void RemoteComm_TCP::BaseDisconnect()
 
 std::u8string RemoteComm_TCP::ReadString()
 {
-	if (!Proc.IsServiceProcessRunning()) return u8"";
+	if (!KeepAliveOnProcessExit && !Proc.IsServiceProcessRunning()) return u8"";
 
 	if (!Connected || socket_ == INVALID_SOCKET) return u8"";
 
@@ -858,7 +860,7 @@ std::u8string RemoteComm_TCP::ReadString()
 
 void RemoteComm_TCP::WriteString(std::u8string_view Str)
 {
-	if (!Proc.IsServiceProcessRunning()) return;
+	if (!KeepAliveOnProcessExit && !Proc.IsServiceProcessRunning()) return;
 
 	if (!Connected || socket_ == INVALID_SOCKET) return;
 

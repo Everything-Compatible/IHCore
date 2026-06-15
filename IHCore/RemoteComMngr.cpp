@@ -238,9 +238,11 @@ namespace RemoteComponentManager
 		for (auto& c : Comps)
 		{
 			IPC_Log("[EC] RCM : Component Data - \n");
+			IPC_Log("[EC]     CommType = %d\n", c.CommType);
 			IPC_Log("[EC]     RegName = %s\n", c.RegName.c_str());
 			IPC_Log("[EC]     RunCommand = %s\n", c.RunCommand.c_str());
 			IPC_Log("[EC]     Location = %s\n", c.Location.c_str());
+			IPC_Log("[EC]     KeepAliveOnProcessExit = %d\n", (int)c.KeepAliveOnProcessExit);
 
 			RegisterComponent(std::move(c), Input);
 		}

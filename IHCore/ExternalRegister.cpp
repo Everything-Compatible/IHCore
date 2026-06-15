@@ -76,6 +76,15 @@ void RemoteComponentNameType::Load(JsonObject obj)
 	RegName = ~obj.ItemString("Name");
 	RunCommand = ~obj.ItemString("Run");
 	Location = ~obj.ItemString("Location");
+
+	if(obj.HasItem("KeepAliveOnProcessExit"))
+	{
+		KeepAliveOnProcessExit = obj.ItemBool("KeepAliveOnProcessExit");
+	}
+	else
+	{
+		KeepAliveOnProcessExit = false;//default value
+	}
 }
 
 /*

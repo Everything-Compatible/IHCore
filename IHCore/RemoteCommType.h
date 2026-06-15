@@ -11,9 +11,10 @@ struct RemoteComm_NamedPipe : public RemoteComponentBase<RemoteComm_NamedPipe>
 	std::vector<char8_t> read_buffer_;
 	static constexpr size_t BUFFER_SIZE = 4096;
 	bool Connected;
+	bool KeepAliveOnProcessExit;
 
 	bool BaseConnected() const { return Connected; }
-	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location);
+	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit);
 	void BaseDisconnect();
 
 	std::u8string ReadString();
@@ -28,12 +29,13 @@ struct RemoteComm_TCP : public RemoteComponentBase<RemoteComm_TCP>
 	std::vector<char8_t> read_buffer_;
 	static constexpr size_t BUFFER_SIZE = 4096;
 	bool Connected;
+	bool KeepAliveOnProcessExit;
 
 	bool ParseAddress(std::u8string_view Location, std::string& host, int& port);
 	bool ConnectToServer(const std::string& host, int port);
 
 	bool BaseConnected() const { return Connected; }
-	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location);
+	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit);
 	void BaseDisconnect();
 
 	std::u8string ReadString();
