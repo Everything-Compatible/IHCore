@@ -357,6 +357,8 @@ namespace RemoteComponentManager
 
 	void OrderedInit(const std::u8string& ComponentName);
 
+	bool PingComponent(const std::u8string& ComponentName);
+
 	FuncInfo* GetRemoteMethodInfo(const char* ComponentName, const char* MethodName, int Version);
 
 	void PostAsyncLocalTask(RemoteCallRecvInfo&& Info);

@@ -14,7 +14,7 @@ struct RemoteComm_NamedPipe : public RemoteComponentBase<RemoteComm_NamedPipe>
 	bool KeepAliveOnProcessExit;
 
 	bool BaseConnected() const { return Connected; }
-	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit, int _TimeOut);
+	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit);
 	void BaseDisconnect();
 
 	std::u8string ReadString();
@@ -35,7 +35,7 @@ struct RemoteComm_TCP : public RemoteComponentBase<RemoteComm_TCP>
 	bool ConnectToServer(const std::string& host, int port);
 
 	bool BaseConnected() const { return Connected; }
-	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit, int _TimeOut);
+	bool BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit);
 	void BaseDisconnect();
 
 	std::u8string ReadString();

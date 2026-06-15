@@ -294,39 +294,46 @@ namespace Internal
 		SetConsoleCursorPosition(hConsole, coordScreen);
 	}
 
-	//void __cdecl Ping(JsonObject Context)
-	//{
-	//	//ping a remote component to check if it's alive
-	//	//-Name  
-	//	//[-TimeOut] default to 5000ms
+	bool __cdecl Ping(JsonObject Context)
+	{
+		//ping a remote component to check if it's alive
+		//-Name  
+		//[-TimeOut] default to 5000ms
 
-	//	auto oName = Context.GetObjectItem("Name");
-	//	if (!oName)
-	//	{
-	//		ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
-	//		return;
-	//	}
-	//	if (!oName.IsTypeString())
-	//	{
-	//		ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
-	//		return;
-	//	}
-	//	auto Name = oName.GetString();
-	//	auto oTimeOut = Context.GetObjectItem("TimeOut");
-	//	int TimeOut = 5000;
+		auto oName = Context.GetObjectItem("Name");
+		if (!oName)
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return false;
+		}
+		if (!oName.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return false;
+		}
+		auto Name = oName.GetString();
+		auto oTimeOut = Context.GetObjectItem("TimeOut");
+		int TimeOut = 5000;
+		if (oTimeOut)
+		{
+			if (!oTimeOut.IsTypeNumber())
+			{
+				ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+				return false;
+			}
+			TimeOut = oTimeOut.GetInt();
+		}
 
+		auto pCom = RemoteComponentManager::GetComponentByName(~Name);
+		if (!pCom)
+		{
+			ECCommand::ReturnStdError(ERROR_INVALID_NAME);
+			return false;
+		}
 
-	//	RemoteCallSendInfo SendInfo
-	//	{
-	//		.Source = u8"",
-	//		.Component = Ctx->Target,
-	//		.Method = Ctx->Method,
-	//		.Version = Ctx->Version,
-	//		.Context = Obj
-	//	};
-
-	//	RemoteComponentManager::CallComponentMethod(
-	//}
+		auto Result = pCom->Ping();
+		return Result;
+	}
 }
 
 std::unordered_map<std::string, FuncInfo>Internal_Funcs
@@ -342,7 +349,8 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"Exit",FuncInfo(Internal::Exit ,FuncType::Action)},
 	{"Print",FuncInfo(Internal::Print ,FuncType::Action)},
 	{"Resume",FuncInfo(Internal::Resume ,FuncType::Procedure)},
-	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)}
+	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)},
+	{"Ping",FuncInfo(Internal::Ping ,FuncType::Action)} 
 };
 
 std::vector<std::string> GetInternalSupportedFunctions()

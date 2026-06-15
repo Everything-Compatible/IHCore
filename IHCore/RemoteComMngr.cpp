@@ -443,6 +443,14 @@ namespace RemoteComponentManager
 			comp->OrderedInit();
 	}
 
+	bool PingComponent(const std::u8string& ComponentName)
+	{
+		auto comp = GetComponentByName(ComponentName);
+		if (comp)
+			return comp->Ping();
+		else return false;
+	}
+
 
 	/*
 	-----------------------------------------------
@@ -922,7 +930,7 @@ bool RemoteComponent::Ping()
 	auto RecvInfo = RemoteComponentManager::PendingRecvCalls[CallID].get_future();
 	RemoteComponentManager::PendingRecvCallsMutex.unlock();
 
-	auto Result = RecvInfo.wait_for(std::chrono::milliseconds(RemoteComponentMaxPingMilliseconds));
+	auto Result = RecvInfo.wait_for(std::chrono::milliseconds(TimeOut));
 
 	return (Result == std::future_status::ready);
 }
