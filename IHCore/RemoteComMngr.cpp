@@ -327,9 +327,11 @@ namespace RemoteComponentManager
 				IPC_Log("[EC] RCM : REGISTER Component %s\n", rcp->GetName().c_str());
 				if (!rcp->Register(Input))
 				{
-					IPC_Log("[EC] RCM : Component %s Registration Failed! Disconnecting...\n", rcp->GetName().c_str());
+					Debug::Log("[EC] RCM : Component %s Registration Failed! Disconnecting...\n", rcp->GetName().c_str());
+					printf("[EC] RCM : Component %s Registration Failed! Disconnecting...\n", (const char*)rcp->GetName().c_str());
 					rcp->Disconnect();
-					IPC_Log("[EC] RCM : Disconnected Component %s\n", rcp->GetName().c_str());
+					Debug::Log("[EC] RCM : Disconnected Component %s\n", rcp->GetName().c_str());
+					printf("[EC] RCM : Disconnected Component %s\n", (const char*) rcp->GetName().c_str());
 				}
 			}
 

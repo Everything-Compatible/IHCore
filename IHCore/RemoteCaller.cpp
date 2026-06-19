@@ -40,9 +40,21 @@ bool RemoteComponent::Register(const InitInput& Input)//generate InitResult
 	if(!BasicInfo.Load(Result.ResponseData))
 		return false;
 
-	if (BasicInfo.SupportedMethods.count(RemoteCallInfoBase::GetInitMethodName()) == 0)return false;
-	if (BasicInfo.SupportedMethods.count(RemoteCallInfoBase::GetPingMethodName()) == 0)return false;
-	if (BasicInfo.SupportedMethods.count(RemoteCallInfoBase::GetResponseMethodName()) == 0)return false;
+	if (BasicInfo.SupportedMethods.count(RemoteCallInfoBase::GetInitMethodName()) == 0)
+	{
+		printf("[EC] RemoteComponent::Register Failed : Init method not supported\n");
+		return false;
+	}
+	if (BasicInfo.SupportedMethods.count(RemoteCallInfoBase::GetPingMethodName()) == 0)
+	{
+		printf("[EC] RemoteComponent::Register Failed : Ping method not supported\n");
+		return false;
+	}
+	if (BasicInfo.SupportedMethods.count(RemoteCallInfoBase::GetResponseMethodName()) == 0)
+	{
+		printf("[EC] RemoteComponent::Register Failed : Response method not supported\n");
+		return false;
+	}
 
 	Register_VerInfo.Version = BasicInfo.Version;
 	Register_VerInfo.LowestSupportedVersion = BasicInfo.LowestSupportedVersion;
