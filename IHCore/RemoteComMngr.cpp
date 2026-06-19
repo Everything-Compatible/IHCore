@@ -423,6 +423,7 @@ namespace RemoteComponentManager
 			IPC_Log("[EC] RCM : Cache Miss. Generating...\n");
 			auto& info = RemoteMethodInfoCache[key];
 			info.Type = FuncType::Remote;
+			info.SetAsCommand(true);
 			info.Func = GetRemoteFunctionAddr(ComponentName, MethodName, Version);
 			IPC_Log("[EC] RCM : Remote Function At 0x%08X\n", info.Func);
 			return &info;
