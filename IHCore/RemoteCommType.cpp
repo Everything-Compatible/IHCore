@@ -6,6 +6,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <SyringeEx.h>
+#include "Debug.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -33,7 +34,54 @@ ServiceProcessManager::~ServiceProcessManager()
 	if (input_thread_.joinable())  input_thread_.join();
 }
 
-bool ServiceProcessManager::StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation)
+std::wstring BuildEnvironmentBlock(
+	const std::unordered_map<std::u8string, std::u8string>& EnvVars)
+{
+	// 若没有要注入的变量，直接传 nullptr 让子进程继承父环境即可
+	if (EnvVars.empty())
+		return {};
+
+	// 将要覆盖的 key 转为 wstring 集合，O(1) 查找
+	std::unordered_set<std::wstring> overrideKeys;
+	for (const auto& [key, _] : EnvVars) {
+		overrideKeys.insert(UTF8toUnicode(~key));
+	}
+
+	std::wstring customEnv;
+
+	// 拷贝父进程环境，跳过会被覆盖的条目
+	LPWCH parentEnv = GetEnvironmentStringsW();
+	if (parentEnv) {
+		LPWCH p = parentEnv;
+		while (*p) {
+			std::wstring entry(p);
+			size_t eqPos = entry.find(L'=');
+			if (eqPos != std::wstring::npos) {
+				std::wstring name = entry.substr(0, eqPos);
+				if (!overrideKeys.count(name)) {
+					customEnv += entry + L'\0';
+				}
+			} else {
+				customEnv += entry + L'\0';
+			}
+			p += entry.length() + 1;
+		}
+		FreeEnvironmentStringsW(parentEnv);
+	}
+
+	// 追加/覆盖自定义变量
+	for (const auto& [key, value] : EnvVars) {
+		std::wstring wkey = UTF8toUnicode(~key);
+		std::wstring wval = UTF8toUnicode(~value);
+		customEnv += wkey + L'=' + wval + L'\0';
+	}
+
+	customEnv += L'\0';  // 双 null 终止
+
+	return customEnv;
+}
+
+bool ServiceProcessManager::StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation, const std::unordered_map<std::u8string, std::u8string>& EnvVars)
 {
 	if (NewLocation.empty())return false;
 	if (CommandLine.empty())return false;
@@ -90,6 +138,13 @@ bool ServiceProcessManager::StartServiceProcess(std::u8string_view CommandLine, 
 
 	auto CmdLineW = UTF8toUnicode(std::string(~CommandLine));
 
+	// 构建自定义环境块（父进程环境 + 组件注入变量）
+	// 空 map → 返回空串 → 传 nullptr 让子进程完全继承父环境
+	std::wstring envBlock = BuildEnvironmentBlock(EnvVars);
+	LPVOID lpEnvironment = envBlock.empty() ? nullptr
+		: reinterpret_cast<LPVOID>(const_cast<wchar_t*>(envBlock.c_str()));
+
+
 	// 创建进程
 	BOOL success = CreateProcessW(
 		nullptr,                    // 应用程序名（在命令行中指定）
@@ -97,14 +152,16 @@ bool ServiceProcessManager::StartServiceProcess(std::u8string_view CommandLine, 
 		nullptr,                    // 进程安全属性
 		nullptr,                    // 线程安全属性
 		TRUE,						// 是否继承句柄
-		RedirectConsole ? 0 : CREATE_NO_WINDOW, // 创建标志（不重定向时隐藏窗口）
-		nullptr,                    // 环境变量
+		(RedirectConsole ? 0 : CREATE_NO_WINDOW) // 创建标志（不重定向时隐藏窗口）
+		| CREATE_UNICODE_ENVIRONMENT, 
+		lpEnvironment,              // 环境变量（含注入变量）
 		nullptr,                    // 当前目录
 		&startup_info,              // 启动信息
 		&process_info // 进程信息
 	);
 
 	if (!success) {
+		Debug::Log("[EC] ServiceProcessManager: Failed to create process, Error: %d\n", GetLastError());
 		CloseHandle(child_stdout_rd);
 		CloseHandle(child_stdout_wr);
 		CloseHandle(child_stdin_rd);
@@ -557,12 +614,12 @@ namespace ServiceProcessComm
 
 //----------------------------------------------
 
-bool RemoteComm_NamedPipe::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit)
+bool RemoteComm_NamedPipe::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit, const std::unordered_map<std::u8string, std::u8string>& EnvVars)
 {
 	Connected = false;
 	KeepAliveOnProcessExit = _KeepAliveOnProcessExit;
 
-	if (!Proc.StartServiceProcess(CmdLine, ECDebug::HasConsole(), Location))
+	if (!Proc.StartServiceProcess(CmdLine, ECDebug::HasConsole(), Location, EnvVars))
 		return false;
 
 	ServiceProcessComm::RegisterProcessComm(std::u8string(RegName), Proc);
@@ -858,12 +915,12 @@ bool RemoteComm_TCP::ConnectToServer(const std::string& host, int port)
 	return false;
 }
 
-bool RemoteComm_TCP::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit)
+bool RemoteComm_TCP::BaseConnect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool _KeepAliveOnProcessExit, const std::unordered_map<std::u8string, std::u8string>& EnvVars)
 {
 	Connected = false;
 	KeepAliveOnProcessExit = _KeepAliveOnProcessExit;
 
-	if (!Proc.StartServiceProcess(CmdLine, ECDebug::HasConsole(), Location))
+	if (!Proc.StartServiceProcess(CmdLine, ECDebug::HasConsole(), Location, EnvVars))
 		return false;
 
 	ServiceProcessComm::RegisterProcessComm(std::u8string(RegName), Proc);

@@ -98,6 +98,7 @@ struct RemoteComponentNameType
 	std::u8string Location;
 	bool KeepAliveOnProcessExit;
 	int TimeOut;//ms, default to RemoteComponentDefaultTimeOut
+	std::unordered_map<std::u8string, std::u8string> EnvVars;
 
 	void Load(JsonObject obj);
 };
@@ -306,6 +307,7 @@ protected:
 	std::u8string Location;
 	bool KeepAliveOnProcessExit;
 	int TimeOut;//ms, default to RemoteComponentDefaultTimeOut
+	std::unordered_map<std::u8string, std::u8string> EnvVars;
 	InitRemoteComponentInfo BasicInfo;
 	std::vector<InitDependency> Register_Dependencies;//auto generated
 	LibVersionInfo Register_VerInfo;//auto generated
@@ -318,7 +320,8 @@ public:
 		RunCommand(std::move(Info.RunCommand)),
 		Location(std::move(Info.Location)),
 		KeepAliveOnProcessExit(Info.KeepAliveOnProcessExit),
-		TimeOut(Info.TimeOut)
+		TimeOut(Info.TimeOut),
+		EnvVars(std::move(Info.EnvVars))
 	{
 	}
 
@@ -421,7 +424,7 @@ struct ServiceProcessManager : public ServiceProcessInfo
 	HANDLE hJob_ = NULL;
 
 	~ServiceProcessManager();
-	bool StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation);
+	bool StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation, const std::unordered_map<std::u8string, std::u8string>& EnvVars = {});
 	void WaitForLocationReset(HANDLE child_stdout_rd, std::u8string& NewLocation, bool RedirectConsole);
 	void StopServiceProcess();
 	bool IsServiceProcessRunning();

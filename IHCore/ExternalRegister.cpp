@@ -97,6 +97,15 @@ void RemoteComponentNameType::Load(JsonObject obj)
 	{
 		TimeOut = RemoteComponentDefaultTimeOut;//default value
 	}
+
+	auto oEnv = obj.GetObjectItem("Env");
+	if (oEnv)
+	{
+		for (auto& [key, value] : oEnv.GetMapString())
+		{
+			EnvVars[~key] = ~value;
+		}
+	}
 }
 
 /*
@@ -119,6 +128,7 @@ std::vector<RemoteComponentNameType> ReadRemoteComponents_File(const std::filesy
 	{
 		Debug::Log("[EC] On Reading Json File \"%s\"\n", ReadRemoteComponents_ErrorContext::CurrentFileName.c_str());
 		Debug::Log("[EC] JSON Parse Error: %s\n", ParseResult.c_str());
+		printf("[EC] Cannot parse component config \"%s\"\n", conv ReadRemoteComponents_ErrorContext::CurrentFileName.c_str());
 		return {};
 	}
 	

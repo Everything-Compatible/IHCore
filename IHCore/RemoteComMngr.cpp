@@ -237,6 +237,7 @@ namespace RemoteComponentManager
 
 		for (auto& c : Comps)
 		{
+			Debug::Log("[EC] RCM : Registering Component \"%s\"\n", c.RegName.c_str());
 			IPC_Log("[EC] RCM : Component Data - \n");
 			IPC_Log("[EC]     CommType = %d\n", c.CommType);
 			IPC_Log("[EC]     RegName = %s\n", c.RegName.c_str());

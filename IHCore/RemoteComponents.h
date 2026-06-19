@@ -25,7 +25,7 @@ public:
 		//assume _Register is supported
 		BasicInfo.SupportedMethods.insert(RemoteCallInfoBase::GetRegisterMethodName());
 
-		Connected = CommBase.Connect(RegName, RunCommand, Location, KeepAliveOnProcessExit);
+		Connected = CommBase.Connect(RegName, RunCommand, Location, KeepAliveOnProcessExit, EnvVars);
 		return Connected;
 	}
 	virtual void Disconnect()

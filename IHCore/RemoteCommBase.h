@@ -9,7 +9,7 @@ concept RemoteCommType = requires(T Comm, std::u8string& U)
 	{ Comm.HasStringToRead() } -> std::same_as<bool>;
 	{ Comm.HasStringToRead() } -> std::same_as<bool>;
 
-	{ Comm.BaseConnect(std::u8string_view{}, std::u8string_view{}, U, bool{}) } -> std::same_as<bool>;
+	{ Comm.BaseConnect(std::u8string_view{}, std::u8string_view{}, U, bool{}, std::unordered_map<std::u8string, std::u8string>{}) } -> std::same_as<bool>;
 	{ Comm.BaseDisconnect() } -> std::same_as<void>;
 	{ Comm.BaseConnected() } -> std::same_as<bool>;
 };
@@ -31,7 +31,7 @@ public:
 	void SendCallUnchecked(const RemoteCallSendInfo& Info, int64_t CallID, bool Discard);
 	RemoteCallRecvInfo ReceiveCall();
 	bool HasReceivedCall();
-	bool Connect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool KeepAliveOnProcessExit);
+	bool Connect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool KeepAliveOnProcessExit, const std::unordered_map<std::u8string, std::u8string>& EnvVars);
 	void Disconnect();
 	void InterruptRecv(RemoteCallRecvInfo&& Recv);
 };
@@ -172,10 +172,10 @@ bool RemoteComponentBase<T>::HasReceivedCall()
 }
 
 template <typename T>
-bool RemoteComponentBase<T>::Connect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool KeepAliveOnProcessExit)
+bool RemoteComponentBase<T>::Connect(std::u8string_view RegName, std::u8string_view CmdLine, std::u8string& Location, bool KeepAliveOnProcessExit, const std::unordered_map<std::u8string, std::u8string>& EnvVars)
 {
 	IPC_Log("[EC] RCB : Connecting Base \"%s\" Initial Location \"%s\"\n", conv RegName.data(), conv Location.c_str());
-	if (!inst()->BaseConnect(RegName, CmdLine, Location, KeepAliveOnProcessExit))return false;
+	if (!inst()->BaseConnect(RegName, CmdLine, Location, KeepAliveOnProcessExit, EnvVars))return false;
 	IPC_Log("[EC] RCB : Complete. Location Redirected to \"%s\"\n", conv Location.c_str());
 
 	SyncRecvQueue.Clear();
