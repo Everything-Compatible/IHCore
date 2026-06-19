@@ -133,6 +133,7 @@ namespace Local
 	extern std::unordered_map<std::string, std::unique_ptr<ActiveRoutine>> RoutineMap;
 	extern LibInputFnTable IHCoreFnTable;
 	extern std::vector<std::string> InitOrder;
+	extern std::unordered_map<std::string, std::u8string> Var_Lib;
 
 
 	void LocalInit();

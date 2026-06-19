@@ -346,6 +346,162 @@ namespace Internal
 
 		return Result;
 	}
+
+	bool WildcardMatch(const char* pattern, const char* str)
+	{
+		// 递归终止：两个指针都到末尾
+		if (*pattern == '\0' && *str == '\0') return true;
+		// pattern 到末尾但 str 没到 → 不匹配
+		if (*pattern == '\0') return false;
+
+		if (*pattern == '*') {
+			// 跳过连续的 *
+			while (*(pattern + 1) == '*') pattern++;
+			// * 匹配零个字符 → pattern+1 vs str
+			if (WildcardMatch(pattern + 1, str)) return true;
+			// * 匹配一个或多个字符 → pattern vs str+1（str 非空时）
+			return (*str != '\0') && WildcardMatch(pattern, str + 1);
+		}
+
+		// ? 匹配任意单个字符，普通字符精确匹配
+		if (*pattern == '?') {
+			return (*str != '\0') && WildcardMatch(pattern + 1, str + 1);
+		}
+
+		return (*pattern == *str) && WildcardMatch(pattern + 1, str + 1);
+	}
+
+	bool ParseVersionCmp(const std::string& expr, int& outOp, int& outVer)
+	{
+		// 解析 >5, >=10, <3, <=8, =7, !=2 等
+		// outOp: 0='>', 1='>=', 2='<', 3='<=', 4='=', 5='!='
+		if (expr.empty()) return false;
+		const char* s = expr.c_str();
+		if (*s == '>') {
+			s++;
+			if (*s == '=') { outOp = 1; s++; }
+			else outOp = 0;
+		} else if (*s == '<') {
+			s++;
+			if (*s == '=') { outOp = 3; s++; }
+			else outOp = 2;
+		} else if (*s == '=') {
+			s++;
+			outOp = 4;
+		} else if (*s == '!') {
+			s++;
+			if (*s != '=') return false;
+			s++;
+			outOp = 5;
+		} else {
+			return false;
+		}
+		if (*s == '\0') return false;
+		try {
+			outVer = std::stoi(s);
+		} catch (...) {
+			return false;
+		}
+		return true;
+	}
+
+	bool VersionCmpPass(int op, int targetVer, int actualVer)
+	{
+		switch (op) {
+		case 0: return actualVer >  targetVer;
+		case 1: return actualVer >= targetVer;
+		case 2: return actualVer <  targetVer;
+		case 3: return actualVer <= targetVer;
+		case 4: return actualVer == targetVer;
+		case 5: return actualVer != targetVer;
+		default: return false;
+		}
+	}
+
+	bool __cdecl FindLib(JsonObject Context)
+	{
+		// FindLib -Name <string> 支持 *? 通配符
+		//         [-Version >/</>=/<=/=/!=<int>]
+		//         [-LSV     >/</>=/<=/=/!=<int>]
+
+		auto oName = Context.GetObjectItem("Name");
+		if (!oName || !oName.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return false;
+		}
+		auto NamePattern = oName.GetString();
+
+		bool hasVerCmp = false;
+		int  verOp = 0, verVal = 0;
+		auto oVer = Context.GetObjectItem("Version");
+		if (oVer && oVer.IsTypeString())
+		{
+			if (!ParseVersionCmp(oVer.GetString(), verOp, verVal))
+			{
+				ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+				return false;
+			}
+			hasVerCmp = true;
+		}
+
+		bool hasLSVCmp = false;
+		int  lsvOp = 0, lsvVal = 0;
+		auto oLSV = Context.GetObjectItem("LSV");
+		if (oLSV && oLSV.IsTypeString())
+		{
+			if (!ParseVersionCmp(oLSV.GetString(), lsvOp, lsvVal))
+			{
+				ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+				return false;
+			}
+			hasLSVCmp = true;
+		}
+
+		bool foundAny = false;
+
+		for (auto& [libName, pLib] : Local::LibMap)
+		{
+			if (!pLib || !pLib->Available) continue;
+
+			if (!WildcardMatch(NamePattern.c_str(), libName.c_str()))
+				continue;
+
+			auto* info = pLib->Out->Info;
+			if (!info) continue;
+
+			if (hasVerCmp && !VersionCmpPass(verOp, verVal, info->Version))
+				continue;
+			if (hasLSVCmp && !VersionCmpPass(lsvOp, lsvVal, info->LowestSupportedVersion))
+				continue;
+
+			auto& var = Local::Var_Lib;
+			auto Name = info->LibName;
+			//.Ver .LSV .Desc .Dep
+			using namespace std::string_literals;
+			auto& Var_Ver = var[Name + ".Ver"s];
+			auto& Var_LSV = var[Name + ".LSV"s];
+			auto& Var_Desc = var[Name + ".Desc"s];
+			auto& Var_Dep = var[Name + ".Dep"s];
+
+			std::cout << "----------------------------------------" << std::endl;
+			std::cout << "Library: " << Name << std::endl;
+			std::cout << "  Version: " << ~Var_Ver << std::endl;
+			std::cout << "  Lowest Supported Version: " << ~Var_LSV << std::endl;
+			std::cout << "  Description: " << ~Var_Desc << std::endl;
+			std::cout << "  Dependencies: " << ~Var_Dep << std::endl;
+
+			foundAny = true;
+		}
+
+		if (!foundAny)
+		{
+			std::cout << "No matching libraries found." << std::endl;
+		}
+
+		ECCommand::DoNotEcho();
+		return foundAny;
+	}
 }
 
 std::unordered_map<std::string, FuncInfo>Internal_Funcs
@@ -363,6 +519,7 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"Resume",FuncInfo(Internal::Resume ,FuncType::Procedure)},
 	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)},
 	{"Ping",FuncInfo(Internal::Ping ,FuncType::Condition)},
+	{"FindLib",FuncInfo(Internal::FindLib ,FuncType::Condition)},
 };
 
 std::vector<std::string> GetInternalSupportedFunctions()
