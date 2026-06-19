@@ -16,7 +16,7 @@ public:
 
 	virtual ~RemoteComponent_CommType()
 	{
-		IPC_Log("[EC] RemoteComponent_CommType::DTOR");
+		IPC_Log("[EC] RemoteComponent_CommType::DTOR\n");
 		Disconnect();
 	}
 
