@@ -5,6 +5,7 @@
 #include "RemoteCommType.h"
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <SyringeEx.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -578,10 +579,24 @@ std::u8string RemoteComm_NamedPipe::ReadString()
 	if (!Connected || pipe_handle_ == INVALID_HANDLE_VALUE) return u8"";
 
 	DWORD bytes_read = 0;
+	
+	DaemonPipeRecordHeader Header(0);
+	memset(&Header, 0, sizeof(Header));
+
+	BOOL header_read = ReadFile(pipe_handle_, &Header, sizeof(Header), &bytes_read, NULL);
+	if (!header_read || bytes_read != sizeof(Header) || Header.Magic != DaemonPipeRecordHeader::HeaderMagic) {
+		if (GetLastError() == ERROR_BROKEN_PIPE) {
+			Connected = false;
+		}
+		return u8"";
+	}
+
+	read_buffer_.resize(Header.DataSize);
+	
 	BOOL success = ReadFile(
 		pipe_handle_,                   // 管道句柄
 		read_buffer_.data(),            // 缓冲区
-		static_cast<DWORD>(read_buffer_.size()), // 缓冲区大小
+		Header.DataSize,				// 缓冲区大小
 		&bytes_read,                    // 实际读取的字节数
 		nullptr);                       // 不重叠
 
@@ -605,10 +620,22 @@ void RemoteComm_NamedPipe::WriteString(std::u8string_view Str)
 	if (!Connected || pipe_handle_ == INVALID_HANDLE_VALUE) return;
 
 	DWORD bytes_written = 0;
+	auto nBytesToWrite = static_cast<DWORD>(Str.length());
+
+	DaemonPipeRecordHeader Header(nBytesToWrite);
+
+	BOOL header_written = WriteFile(pipe_handle_, &Header, sizeof(Header), &bytes_written, NULL);
+	if(!header_written || bytes_written != sizeof(Header)) {
+		if (GetLastError() == ERROR_BROKEN_PIPE) {
+			Connected = false;
+		}
+		return;
+	}
+
 	BOOL success = WriteFile(
 		pipe_handle_,                   // 管道句柄
 		Str.data(),                     // 数据
-		static_cast<DWORD>(Str.length()), // 数据长度
+		nBytesToWrite, // 数据长度
 		&bytes_written,                 // 实际写入的字节数
 		nullptr);                       // 不重叠
 
@@ -832,10 +859,23 @@ std::u8string RemoteComm_TCP::ReadString()
 	// 临时设置为阻塞模式进行读取
 	u_long mode = 0; // 0表示阻塞
 	ioctlsocket(socket_, FIONBIO, &mode);
+	
+	DaemonPipeRecordHeader Header(0);
+	memset(&Header, 0, sizeof(Header));
+	int bytes_received = recv(
+		socket_,
+		reinterpret_cast<char*>(&Header),
+		static_cast<int>(sizeof(Header)), 
+		0
+	);
 
-	int bytes_received = recv(socket_,
-		reinterpret_cast<char*>(read_buffer_.data()),
-		static_cast<int>(read_buffer_.size()), 0);
+	if(bytes_received > 0 && Header.Magic == DaemonPipeRecordHeader::HeaderMagic) {
+		read_buffer_.resize(Header.DataSize);
+
+		bytes_received = recv(socket_,
+			reinterpret_cast<char*>(read_buffer_.data()),
+			static_cast<int>(Header.DataSize), 0);
+	}
 
 	// 恢复为非阻塞模式
 	mode = 1;
@@ -864,9 +904,29 @@ void RemoteComm_TCP::WriteString(std::u8string_view Str)
 
 	if (!Connected || socket_ == INVALID_SOCKET) return;
 
-	int bytes_sent = send(socket_,
+	DaemonPipeRecordHeader Header(static_cast<DWORD>(Str.length()));
+
+	int bytes_sent = send(
+		socket_,
+		reinterpret_cast<const char*>(&Header),
+		static_cast<int>(sizeof(Header)),
+		0
+	);
+
+	if (bytes_sent == SOCKET_ERROR) {
+		int error = WSAGetLastError();
+		if (error != WSAEWOULDBLOCK) {
+			Connected = false;
+		}
+		return;
+	}
+
+	bytes_sent = send(
+		socket_,
 		reinterpret_cast<const char*>(Str.data()),
-		static_cast<int>(Str.length()), 0);
+		static_cast<int>(Str.length()), 
+		0
+	);
 
 	if (bytes_sent == SOCKET_ERROR) {
 		int error = WSAGetLastError();
