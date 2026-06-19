@@ -7,7 +7,8 @@
 #include <optional>
 #include "LocalData.h"
 #include <concepts>
-#include <Mutex>
+#include <mutex>
+#include <atomic>
 #include "InfoStack.h"
 
 //Set to 1 when testing Interprocess Communication
@@ -415,11 +416,20 @@ struct ServiceProcessInfo {
 
 struct ServiceProcessManager : public ServiceProcessInfo
 {
+	std::atomic<bool> console_redirect_stop{ false };
+	HANDLE child_stdout_rd_ = NULL;
+	HANDLE hJob_ = NULL;
+
+	~ServiceProcessManager();
 	bool StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation);
 	void WaitForLocationReset(HANDLE child_stdout_rd, std::u8string& NewLocation, bool RedirectConsole);
 	void StopServiceProcess();
 	bool IsServiceProcessRunning();
 	void StartConsoleRedirection(HANDLE child_stdout_rd, HANDLE child_stdin_wr);
+
+private:
+	std::thread output_thread_;
+	std::thread input_thread_;
 };
 
 namespace ServiceProcessComm

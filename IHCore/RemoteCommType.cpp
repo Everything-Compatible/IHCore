@@ -9,6 +9,30 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+
+ServiceProcessManager::~ServiceProcessManager()
+{
+	console_redirect_stop = true;
+
+	if (hJob_ != NULL) {
+		CloseHandle(hJob_);
+		hJob_ = NULL;
+	}
+
+	if (process_info.hProcess) {
+		CloseHandle(process_info.hProcess);
+		CloseHandle(process_info.hThread);
+	}
+
+	if (child_stdout_rd_ != NULL) {
+		CloseHandle(child_stdout_rd_);
+		IPC_Log("[EC] ServiceProcessManager::~ServiceProcessManager - Closed child_stdout_rd_, Handle %u\n", child_stdout_rd_);
+		child_stdout_rd_ = NULL;
+	}
+	if (output_thread_.joinable()) output_thread_.join();
+	if (input_thread_.joinable())  input_thread_.join();
+}
+
 bool ServiceProcessManager::StartServiceProcess(std::u8string_view CommandLine, bool RedirectConsole, std::u8string& NewLocation)
 {
 	if (NewLocation.empty())return false;
@@ -86,6 +110,18 @@ bool ServiceProcessManager::StartServiceProcess(std::u8string_view CommandLine, 
 		CloseHandle(child_stdin_rd);
 		CloseHandle(child_stdin_wr);
 		return false;
+	}
+
+	hJob_ = CreateJobObjectW(NULL, NULL);
+	if (hJob_ != NULL) {
+		JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = {};
+		jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+		SetInformationJobObject(hJob_, JobObjectExtendedLimitInformation,
+			&jeli, sizeof(jeli));
+		if (!AssignProcessToJobObject(hJob_, process_info.hProcess)) {
+			CloseHandle(hJob_);
+			hJob_ = NULL;
+		}
 	}
 
 	// 关闭子进程端的句柄（我们使用父进程端的句柄）
@@ -178,6 +214,7 @@ void ServiceProcessManager::WaitForLocationReset(HANDLE child_stdout_rd, std::u8
 
 void ServiceProcessManager::StartConsoleRedirection(HANDLE child_stdout_rd, HANDLE child_stdin_wr)
 {
+	child_stdout_rd_ = child_stdout_rd;
 	// 创建线程来处理子进程的输出（从子进程读取并显示在控制台）
 	std::thread output_thread([this, child_stdout_rd]() {
 		const DWORD buffer_size = 4096;
@@ -187,8 +224,13 @@ void ServiceProcessManager::StartConsoleRedirection(HANDLE child_stdout_rd, HAND
 		IPC_Log("[EC] ServiceProcessManager: Started console redirection for %s\n",
 			conv ServiceProcessComm::GetProcessNameByComm(this).c_str());
 
-		while (true) {
+		while (!console_redirect_stop) {
+			int p = rand();
+			IPC_Log("[EC] ServiceProcessManager: <%d> Waiting for output from %s, Handle %u...\n",p,
+				conv ServiceProcessComm::GetProcessNameByComm(this).c_str(), child_stdout_rd);
+
 			BOOL success = ReadFile(child_stdout_rd, buffer, buffer_size - 1, &bytes_read, nullptr);
+			IPC_Log("[EC] ServiceProcessManager: <%d> ReadFile returned %d, bytes_read = %d\n", p, success, bytes_read);
 
 			if (!success || bytes_read == 0) {
 				// 读取失败或子进程关闭了输出
@@ -214,13 +256,13 @@ void ServiceProcessManager::StartConsoleRedirection(HANDLE child_stdout_rd, HAND
 		CloseHandle(child_stdout_rd);
 		});
 
-	output_thread.detach();
+	output_thread_ = std::move(output_thread);
 
 
 	std::thread input_thread([this, child_stdin_wr]() {
 		
 		//read from this->InputBuffer and write to child_stdin_wr
-		while (true) {
+		while (!console_redirect_stop) {
 
 			if (this->InputBuffer.Empty())
 			{
@@ -252,15 +294,19 @@ void ServiceProcessManager::StartConsoleRedirection(HANDLE child_stdout_rd, HAND
 
 	// 分离线程，让它们独立运行
 	
-	input_thread.detach();
+	input_thread_ = std::move(input_thread);
 }
 
 void ServiceProcessManager::StopServiceProcess()
 {
+	console_redirect_stop = true;
+
+	if (hJob_ != NULL) {
+		CloseHandle(hJob_);
+		hJob_ = NULL;
+	}
+
 	if (process_info.hProcess) {
-
-		TerminateProcess(process_info.hProcess, 0);
-
 		WaitForSingleObject(process_info.hProcess, 5000);
 
 		CloseHandle(process_info.hProcess);
