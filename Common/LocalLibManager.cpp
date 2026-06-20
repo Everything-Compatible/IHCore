@@ -38,10 +38,13 @@ char* __fastcall StrDup_Ex(const char* Str);
 namespace Local
 {
 	PArray<LibFuncHandle> InitFn;
+
+	//这4个列表中，前两个是本地库，后两个是远程库。注意不要遗漏。
 	std::vector<LibType> Libs;
 	std::vector<BasicLibData> BasicLibs;
 	std::vector<LibType> RemoteLibs;
 	std::vector<BasicLibData> RemoteBasicLibs;
+
 	std::unordered_map<std::string, LibType*> LibMap;
 	std::unordered_map<std::string, VClass> IHFileStreamer;
 	std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;
@@ -366,6 +369,7 @@ namespace Local
 			static LibVersionInfo Ver;
 			auto& lib = Libs[InitFn.N];
 			auto& blib = BasicLibs[InitFn.N];
+			Init::LibInput = &lib.In;
 
 			Ver.LibName = "IHCore";
 			Ver.Version = Local::GetVersion();

@@ -407,8 +407,24 @@ namespace RemoteComponentManager
 		return (h1 << 32) | (h2 & 0xFFFFFFFF) ^ (h3 << 16);
 	}
 
+	bool HasRemoteMethod(const char* ComponentName, const char* MethodName, int Version)
+	{
+		IPC_Log("[EC] RCM : HasRemoteMethod : Component = %s, Method = %s, Version = %d\n", ComponentName, MethodName, Version);
+		
+		auto comp = GetComponentByName(std::u8string(conv ComponentName));
+
+		if (!comp)return false;
+		if (!comp->IsConnected())return false;
+		if (!comp->HasMethod(std::u8string(conv MethodName)))return false;
+
+		return true;
+	}
+
 	FuncInfo* GetRemoteMethodInfo(const char* ComponentName, const char* MethodName, int Version)
 	{
+		if(!HasRemoteMethod(ComponentName, MethodName, Version))
+			return nullptr;
+
 		auto key = GenerateInternalMethodName(ComponentName, MethodName, Version);
 
 		IPC_Log(
@@ -423,6 +439,7 @@ namespace RemoteComponentManager
 		{
 			IPC_Log("[EC] RCM : Cache Miss. Generating...\n");
 			auto& info = RemoteMethodInfoCache[key];
+			info.ClassVersion = FuncInfo::GClassVersion;
 			info.Type = FuncType::Remote;
 			info.SetAsCommand(true);
 			info.Func = GetRemoteFunctionAddr(ComponentName, MethodName, Version);

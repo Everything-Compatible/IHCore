@@ -361,6 +361,8 @@ namespace RemoteComponentManager
 
 	void OrderedInit(const std::u8string& ComponentName);
 
+	bool HasRemoteMethod(const char* ComponentName, const char* MethodName, int Version);
+
 	FuncInfo* GetRemoteMethodInfo(const char* ComponentName, const char* MethodName, int Version);
 
 	void PostAsyncLocalTask(RemoteCallRecvInfo&& Info);
