@@ -632,7 +632,7 @@ namespace RemoteComponentManager
 					);
 				}
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		}
 	}
 
@@ -643,7 +643,7 @@ namespace RemoteComponentManager
 			if (IsLocalTaskAsyncHandling())
 			{
 				RemoteCommFrameUpdate();
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 			else std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		}

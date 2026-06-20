@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ECInterprocess.h"
+#include <condition_variable>
 
 template<typename T>
 concept RemoteCommType = requires(T Comm, std::u8string& U)
@@ -23,6 +24,10 @@ class RemoteComponentBase
 
 	std::mutex DiscardedCallIDMutex;
 	std::unordered_set<int64_t> DiscardedCallIDs;
+
+	// 条件变量替代 ReceiveCall 的 Sleep(1) 自旋
+	std::mutex RecvCVMutex;
+	std::condition_variable RecvCV;
 
 	T* inst() { return reinterpret_cast<T*>(this); }
 public:
@@ -79,8 +84,11 @@ void RemoteComponentBase<T>::RemoteCommThreadFunction(std::stop_token stok)
 {
 	while (!stok.stop_requested())
 	{
+		bool did_work = false;
+
 		for (RemoteCallRecvInfo& Send : SyncSendQueue.Release())
 		{
+			did_work = true;
 			auto Text = Send.GenerateCompactText();
 
 			LogCommFlow(u8" SEND: " + Text + u8"\n");
@@ -90,6 +98,7 @@ void RemoteComponentBase<T>::RemoteCommThreadFunction(std::stop_token stok)
 
 		if (inst()->HasStringToRead())
 		{
+			did_work = true;
 			auto Str = inst()->ReadString();
 
 			LogCommFlow(u8" RECV RAW: " + Str + u8"\n");
@@ -130,10 +139,13 @@ void RemoteComponentBase<T>::RemoteCommThreadFunction(std::stop_token stok)
 				Recv.Context.DuplicateFromObject(oCtx, true);
 
 				SyncRecvQueue.Push(std::move(Recv));
+				RecvCV.notify_one();
 			}
 		}
 
-		
+		// 本轮既无发送也无接收 → 短暂睡眠，避免空转消耗 CPU
+		if (!did_work)
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
 }
 
@@ -161,7 +173,8 @@ template <typename T>
 RemoteCallRecvInfo RemoteComponentBase<T>::ReceiveCall()
 {
 	IPC_Log("[EC] IPC Lock SyncRecvQueue: " __FUNCTION__ "\n");
-	while (SyncRecvQueue.Empty())Sleep(1);
+	std::unique_lock lk(RecvCVMutex);
+	RecvCV.wait(lk, [this] { return !SyncRecvQueue.Empty(); });
 	return SyncRecvQueue.Pop();
 }
 
@@ -209,5 +222,6 @@ void RemoteComponentBase<T>::InterruptRecv(RemoteCallRecvInfo&& Recv)
 {
 	IPC_Log("[EC] IPC Lock SyncRecvQueue: " __FUNCTION__ "\n");
 	IPC_Log("[EC] RCB : Interrupting Recv Call : \n%s\n", Recv.GenerateText().c_str());
-	SyncRecvQueue.Push(std::move(Recv));;
+	SyncRecvQueue.Push(std::move(Recv));
+	RecvCV.notify_one();
 }
