@@ -283,9 +283,6 @@ namespace Local
 
 		IH::SetTextDrawRouter("Lib", TextDrawRouter_Lib);
 		IH::SetTextDrawRouter("NoMissing", TextDrawRouter_SuppressNotFound);
-
-		UTF8_CString __cdecl TextDrawRouter_Test(const char* Key);
-		IH::SetTextDrawRouter("Test", TextDrawRouter_Test);
 	}
 
 	void InitLibs()
