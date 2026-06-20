@@ -516,6 +516,200 @@ namespace Internal
 			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
 		}
 	}
+
+	bool __cdecl HasLib(JsonObject Context)
+	{
+		//-Name "LibName"
+		auto oName = Context.GetObjectItem("Name");
+		if (!oName || !oName.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return false;
+		}
+
+		auto Name = oName.GetString();
+
+		auto it = Local::LibMap.find(Name);
+		if (it != Local::LibMap.end() && it->second && it->second->Available)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	bool __cdecl HasMethod(JsonObject Context)
+	{
+		//-Lib "LibName" -Method "MethodName" -Version <int>
+		auto oLib = Context.GetObjectItem("Lib");
+		if (!oLib || !oLib.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return false;
+		}
+		auto LibName = oLib.GetString();
+		auto oMethod = Context.GetObjectItem("Method");
+		if (!oMethod || !oMethod.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return false;
+		}
+		auto MethodName = oMethod.GetString();
+		auto oVersion = Context.GetObjectItem("Version");
+		int Version = DoNotCheckVersion;
+		if(oVersion && oVersion.IsTypeNumber())
+		{
+			Version = oVersion.GetInt();
+		}
+
+		auto FuncInfo = Local::GetFuncFromLib(LibName.c_str(), MethodName.c_str(), Version);
+		if (FuncInfo)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	std::string FuncTypeToString(FuncType type)
+	{
+		//enum class FuncType
+		//{
+		//	Default = 0,//idk type
+		//	Condition = 1,//bool (__cdecl *)(JsonObject Context)
+		//	Action = 2,//void (__cdecl *)(JsonObject Context)
+		//	Callback = 3,//void (__cdecl *)(JsonObject Context)
+		//	Procedure = 4,//void (__cdecl *)(void)
+		//	Comm = 5,//void* (__cdecl *)(void*)
+		//	ConditionAlt = 6,//bool (__cdecl *)(GeneratorParam Param)
+		//	ActionAlt = 7,//void (__cdecl *)(GeneratorParam Param)
+		//	CommAlt = 8,//RoutineParam (__cdecl*)(RoutineParam)
+		//	Remote = 9, //void (__cdecl *)(RemoteReturnInfo& Ret, JsonObject Context)
+		//};
+		switch (type)
+		{
+		case FuncType::Default: return "Default";
+		case FuncType::Condition: return "Condition";
+		case FuncType::Action: return "Action";
+		case FuncType::Callback: return "Callback";
+		case FuncType::Procedure: return "Procedure";
+		case FuncType::Comm: return "Comm";
+		case FuncType::ConditionAlt: return "ConditionAlt";
+		case FuncType::ActionAlt: return "ActionAlt";
+		case FuncType::CommAlt: return "CommAlt";
+		case FuncType::Remote: return "Remote";
+		default: return "Unknown";
+		};
+	}
+
+	bool CanInvokeAsRemoteCommand(FuncType type)
+	{
+		return 
+			type == FuncType::Action || 
+			type == FuncType::Procedure || 
+			type == FuncType::Condition ||
+			type == FuncType::Callback ||
+			type == FuncType::Remote
+			;
+	}
+
+	void __cdecl QueryMethodInfo(JsonObject Context)
+	{
+		//-Lib "LibName" -Method "MethodName" -Version <int>
+		auto oLib = Context.GetObjectItem("Lib");
+		if (!oLib || !oLib.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return;
+		}
+		auto LibName = oLib.GetString();
+		auto oMethod = Context.GetObjectItem("Method");
+		if (!oMethod || !oMethod.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return;
+		}
+		auto MethodName = oMethod.GetString();
+		auto oVersion = Context.GetObjectItem("Version");
+		int Version = DoNotCheckVersion;
+		if (oVersion && oVersion.IsTypeNumber())
+		{
+			Version = oVersion.GetInt();
+		}
+
+		auto Info = Local::GetFuncFromLib(LibName.c_str(), MethodName.c_str(), Version);
+		if (Info)
+		{
+			JsonFile ResultJson;
+			auto Obj = ResultJson.GetObj();
+			//Info->ClassVersion;
+			//Info->Type;
+			//Info->IsConsiderAsCommand();
+			//Info->IsReceiveArrayArgs();
+			//Info->Func;
+			Obj.AddInt("ClassVersion", Info->ClassVersion);
+			Obj.AddString("Type", FuncTypeToString(Info->Type));
+			Obj.AddBool("ConsiderAsCommand", Info->IsConsiderAsCommand());
+			Obj.AddBool("ReceiveArrayArgs", Info->IsReceiveArrayArgs());
+			Obj.AddBool("CanInvokeAsRemoteCommand", CanInvokeAsRemoteCommand(Info->Type));
+			Obj.AddInt("FuncPtr", (int)Info->Func);
+			
+			ECCommand::ReturnString(~Obj.GetText());
+		}
+		else
+		{
+			ECCommand::ReturnStdError(ERROR_INVALID_NAME);
+		}
+	}
+
+	void __cdecl QueryLibBasicInfo(JsonObject Context)
+	{
+		//-Name "LibName"
+		auto oName = Context.GetObjectItem("Name");
+		if (!oName || !oName.IsTypeString())
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+			return;
+		}
+		auto Name = oName.GetString();
+		auto it = Local::LibMap.find(Name);
+		if (it != Local::LibMap.end() && it->second && it->second->Available)
+		{
+			auto& Lib = it->second;
+			auto& Out = Lib->Basic->Out;
+			JsonFile ResultJson;
+			auto Obj = ResultJson.GetObj();
+			Obj.AddString("LibName", Out->Info->LibName);
+			Obj.AddInt("Version", Out->Info->Version);
+			Obj.AddInt("LowestSupportedVersion", Out->Info->LowestSupportedVersion);
+			Obj.AddString("Description",  (Out->Info->Description ? conv Out->Info->Description : ""));
+
+			std::vector<JsonFile> DepArray;
+			auto& Dep = Out->Dependencies;
+			for(size_t i = 0; i < Dep.N; i++)
+			{
+				auto& d = Dep.Data[i];
+				DepArray.emplace_back();
+				auto oDep = DepArray.back().GetObj();
+				oDep.AddString("LibName", d.LibName);
+				oDep.AddInt("LowestRequiredVersion", d.LowestRequiredVersion);
+				oDep.AddInt("RequiredLoadSequence", d.RequiredLoadSequence);
+				oDep.AddInt("Version", d.Version);
+			}
+			Obj.AddArrayObject("Dependencies", std::move(DepArray));
+
+			ECCommand::ReturnString(~Obj.GetText());
+		}
+		else
+		{
+			ECCommand::ReturnStdError(ERROR_INVALID_NAME);
+			return;
+		}
+	}
 }
 
 std::unordered_map<std::string, FuncInfo>Internal_Funcs
@@ -535,6 +729,10 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"Ping",FuncInfo(Internal::Ping ,FuncType::Condition)},
 	{"FindLib",FuncInfo(Internal::FindLib ,FuncType::Condition)},
 	{"DebugLog",FuncInfo(Internal::DebugLogLine ,FuncType::Action)},
+	{"HasLib",FuncInfo(Internal::HasLib ,FuncType::Condition) },
+	{"HasMethod",FuncInfo(Internal::HasMethod ,FuncType::Condition) },
+	{"QueryMethodInfo",FuncInfo(Internal::QueryMethodInfo ,FuncType::Action) },
+	{"QueryLibBasicInfo",FuncInfo(Internal::QueryLibBasicInfo ,FuncType::Action) },
 };
 
 std::vector<std::string> GetInternalSupportedFunctions()
