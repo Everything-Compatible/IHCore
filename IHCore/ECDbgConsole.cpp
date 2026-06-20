@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <thread>
 #include <iostream>
+#include <limits>
 #include <sstream>	
 #include <LocalData.h>
 #include <optional>
@@ -882,6 +883,17 @@ namespace ECDebug
 			{
 				std::cout << prompt;
 				std::getline(std::cin, input);
+
+				if (input.empty() && !std::cin)
+				{
+					// Ctrl+C / Ctrl+Break 等信号会使 std::cin
+					// 进入错误状态（eofbit / failbit），
+					// std::getline 立即返回而不阻塞，
+					// 导致高速刷屏。重置状态并短暂休眠。
+					std::cin.clear();
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					std::this_thread::sleep_for(std::chrono::milliseconds(200));
+				}
 			}
 		});
 
