@@ -615,7 +615,7 @@ namespace RemoteComponentManager
 				//Target是HOST且不是响应
 				//此时需要在本地执行请求，并向Source发送响应
 
-				auto targetComp = GetComponentByName(Recv.Source);
+				auto targetComp = GetComponentByName(Recv.Component);
 				//assume targetComp != nullptr since it's local task response
 				targetComp->SendCall(Recv.Forward(), Recv.CallID);
 			}

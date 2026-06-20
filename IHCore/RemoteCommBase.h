@@ -161,7 +161,7 @@ template <typename T>
 RemoteCallRecvInfo RemoteComponentBase<T>::ReceiveCall()
 {
 	IPC_Log("[EC] IPC Lock SyncRecvQueue: " __FUNCTION__ "\n");
-	while (SyncRecvQueue.Empty())Sleep(0);
+	while (SyncRecvQueue.Empty())Sleep(1);
 	return SyncRecvQueue.Pop();
 }
 

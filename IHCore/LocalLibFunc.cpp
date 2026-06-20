@@ -502,6 +502,20 @@ namespace Internal
 		ECCommand::DoNotEcho();
 		return foundAny;
 	}
+
+	void __cdecl DebugLogLine(JsonObject Context)
+	{
+		auto s = Context.GetObjectItem("Line");
+		if (s.Available() && s.IsTypeString())
+		{
+			Debug::Log("%s\n", ~s.GetString());
+			ECCommand::DoNotEcho();
+		}
+		else
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+		}
+	}
 }
 
 std::unordered_map<std::string, FuncInfo>Internal_Funcs
@@ -520,6 +534,7 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"KABOOM",FuncInfo(Internal::KABOOM ,FuncType::Procedure)},
 	{"Ping",FuncInfo(Internal::Ping ,FuncType::Condition)},
 	{"FindLib",FuncInfo(Internal::FindLib ,FuncType::Condition)},
+	{"DebugLog",FuncInfo(Internal::DebugLogLine ,FuncType::Action)},
 };
 
 std::vector<std::string> GetInternalSupportedFunctions()
