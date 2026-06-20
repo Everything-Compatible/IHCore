@@ -248,8 +248,9 @@ namespace Local
 		auto pInt = Internal_GetFunc(pFunc, DoNotCheckVersion);
 		if (pInt)Result[""] = pInt;
 
-		for (auto& Lib : Libs)
+		for (auto& [Name, pLib] : LibMap)
 		{
+			auto& Lib = *pLib;
 			if (!Lib.Available)continue;
 			FuncInfo* pInfo;
 			if (Lib.RemoteComponent)pInfo = RemoteComponentManager::GetRemoteMethodInfo(Lib.Out->Info->LibName, pFunc, Lib.Out->Info->Version);
@@ -269,12 +270,13 @@ namespace Local
 		auto pInt = Internal_GetFunc(pFunc, DoNotCheckVersion);
 		if (pInt)pVec.push_back(pInt);
 
-		for (auto& Lib : Libs)
+		for (auto& [Name, pLib] : LibMap)
 		{
+			auto& Lib = *pLib;
 			if (!Lib.Available)continue;
 			if (Lib.RemoteComponent)
 			{
-				auto pInfo = RemoteComponentManager::GetRemoteMethodInfo(Lib.Out->Info->LibName, pFunc, Lib.Out->Info->Version);
+				auto pInfo = RemoteComponentManager::GetRemoteMethodInfo(Lib.Out->Info->LibName, pFunc, DoNotCheckVersion);
 				if (pInfo && pInfo->ClassVersion <= FuncInfo::GClassVersion)
 					pVec.push_back(pInfo);
 			}
@@ -565,6 +567,17 @@ namespace Local
 			pf();
 			return GenCallRetType::Void;
 		}break;
+		case FuncType::Remote:
+		{
+			auto pf = (FuncType_Remote)Fn.Func;
+			JsonFile File;
+			if (!Context.Available())return GenCallRetType::Default;
+			File.DuplicateFromObject(Context, true);
+			GenerateContext(File.GetObj());
+			RemoteReturnInfo RetInfo;
+			pf(RetInfo, File.GetObj());
+			return RetInfo.Succeeded() ? GenCallRetType::True : GenCallRetType::False;
+		}
 		case FuncType::Default:
 		default:
 			return GenCallRetType::Default;
@@ -1102,10 +1115,7 @@ namespace Local
 		auto List = GetFuncByName("IHCore::Reset");
 		for (size_t i = 0; i < List.N; i++)
 		{
-			if (List.Data[i]->Type == FuncType::Procedure)
-			{
-				((void(__cdecl*)(void))List.Data[i]->Func)();
-			}
+			GeneralCall(*List.Data[i], PlaceholderJsonObject);
 		}
 	}
 
@@ -1114,10 +1124,7 @@ namespace Local
 		auto List = GetFuncByName("IHCore::FrameUpdate");
 		for (size_t i = 0; i < List.N; i++)
 		{
-			if (List.Data[i]->Type == FuncType::Procedure)
-			{
-				((void(__cdecl*)(void))List.Data[i]->Func)();
-			}
+			GeneralCall(*List.Data[i], PlaceholderJsonObject);
 		}
 	}
 
