@@ -598,6 +598,7 @@
     <ResourceCompile Include="Version.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.gitignore" />
     <None Include="YRPP\YRpp.props" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
