@@ -25,9 +25,9 @@ ServiceProcessManager::~ServiceProcessManager()
 		CloseHandle(process_info.hThread);
 	}
 
-	if (child_stdout_rd_ != NULL) {
-		CloseHandle(child_stdout_rd_);
+	if (child_stdout_rd_ != NULL && child_stdout_rd_ != INVALID_HANDLE_VALUE) {
 		IPC_Log("[EC] ServiceProcessManager::~ServiceProcessManager - Closed child_stdout_rd_, Handle %u\n", child_stdout_rd_);
+		//CloseHandle(child_stdout_rd_);
 		child_stdout_rd_ = NULL;
 	}
 	if (output_thread_.joinable()) output_thread_.join();
