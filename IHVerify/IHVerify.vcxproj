@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Common\IHLoader;$(SolutionDir)Common\IHVerify;$(SolutionDir)Common\Logger</IncludePath>
-    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(SolutionDir)..\IHInspector\YRpp;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -189,6 +189,7 @@
     <ClCompile Include="IHVerify.Actions.cpp" />
     <ClCompile Include="Pointers.cpp" />
     <ClCompile Include="IHVerify.Marker.cpp" />
+    <ClCompile Include="IHVerify.Coord.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

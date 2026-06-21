@@ -23,6 +23,23 @@ void __cdecl IHVerify_GetHouseInfo(JsonObject Context);
 // Action: QueueMission -Address <0x...> -Mission <name|int> (Guard/Harvest/...)
 void __cdecl IHVerify_QueueMission(JsonObject Context);
 
+// Action: GetMapInfo — returns map dimensions
+void __cdecl IHVerify_GetMapInfo(JsonObject Context);
+// Action: IsOnMap -X -Y — check cell validity
+void __cdecl IHVerify_IsOnMap(JsonObject Context);
+// Action: GetObjectCoords -Address <0x...> — position/height/air status
+void __cdecl IHVerify_GetObjectCoords(JsonObject Context);
+// Action: GetCellInfo -X -Y — terrain properties
+void __cdecl IHVerify_GetCellInfo(JsonObject Context);
+// Action: FindObjectsOnCell -X -Y — things on a cell
+void __cdecl IHVerify_FindObjectsOnCell(JsonObject Context);
+// Action: FindObjectsInRange -X -Y -Range [-WhatAmI] [-House]
+void __cdecl IHVerify_FindObjectsInRange(JsonObject Context);
+// Action: FindAerialObjects -X -Y -Range — flying Technos
+void __cdecl IHVerify_FindAerialObjects(JsonObject Context);
+// Action: CalcCellSpread -Spread — cell list for spread value
+void __cdecl IHVerify_CalcCellSpread(JsonObject Context);
+
 // Action: SelectObject -Address <0x...> [-Deselect]
 void __cdecl IHVerify_SelectObject(JsonObject Context);
 
