@@ -46,6 +46,48 @@ void __cdecl IHVerify_SelectObject(JsonObject Context);
 // Action: DeployObject -Address <0x...> [-Method clicked|mission]
 void __cdecl IHVerify_DeployObject(JsonObject Context);
 
+// Action: IssueOrder -Address <0x...> -Mission <Move|Attack|AttackMove|Guard|AreaGuard|Stop|Hunt|Retreat|Harvest|Enter|Capture|Patrol|Unload> [-ToX -ToY | -To <0x...>] [-Target <0x...>]
+void __cdecl IHVerify_IssueOrder(JsonObject Context);
+
+// Action: SetDestination -Address <0x...> [-ToX -ToY | -To <0x...> | -Clear]
+void __cdecl IHVerify_SetDestination(JsonObject Context);
+
+// Action: GetMovementState -Address <0x...>
+void __cdecl IHVerify_GetMovementState(JsonObject Context);
+
+// Condition: CanEnterCell -Address <0x...> -X <int> -Y <int>
+void __cdecl IHVerify_CanEnterCell(JsonObject Context);
+
+// ═══════════════════════════════════════════════════════════
+//  Cell operations — Shroud / Tiberium / Radiation
+// ═══════════════════════════════════════════════════════════
+
+// Conversion: CellAddrToCoords -Address <cell 0x...>  → {X,Y}
+void __cdecl IHVerify_CellAddrToCoords(JsonObject Context);
+// Conversion: CellCoordsToAddr -X <int> -Y <int>  → "0x..." | error
+void __cdecl IHVerify_CellCoordsToAddr(JsonObject Context);
+
+// Shroud
+void __cdecl IHVerify_GetCellShroud(JsonObject Context);        // -X -Y → {IsShrouded,ShroudCounter}
+void __cdecl IHVerify_UnshroudCell(JsonObject Context);         // -X -Y
+void __cdecl IHVerify_AdjustCellShroud(JsonObject Context);     // -X -Y -Action Increase|Decrease|Clear
+
+// Tiberium
+void __cdecl IHVerify_GetCellTiberium(JsonObject Context);      // -X -Y → {Index,Value,TypeName}
+void __cdecl IHVerify_AddCellTiberium(JsonObject Context);      // -X -Y -Index <int> -Amount <int>
+void __cdecl IHVerify_RemoveCellTiberium(JsonObject Context);   // -X -Y -Amount <int>
+void __cdecl IHVerify_SpreadCellTiberium(JsonObject Context);   // -X -Y [-Force]
+
+// Radiation
+void __cdecl IHVerify_GetCellRadiation(JsonObject Context);     // -X -Y → {IsRadiated,RadLevel}
+void __cdecl IHVerify_IncreaseCellRadiation(JsonObject Context);// -X -Y -Amount <double>
+void __cdecl IHVerify_DecreaseCellRadiation(JsonObject Context);// -X -Y -Amount <double>
+
+// Action: WatchPointer -Address <0x...> -CallbackLib <str> -CallbackMethod <str> [-RemovedOnly bool]
+void __cdecl IHVerify_WatchPointer(JsonObject Context);
+// Called every frame via IHCore::FrameUpdate broadcast
+void __cdecl IHVerify_FrameUpdate(JsonObject Context);
+
 // ═══════════════════════════════════════════════════════════
 //  Marker system
 // ═══════════════════════════════════════════════════════════

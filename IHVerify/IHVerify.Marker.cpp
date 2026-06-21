@@ -34,15 +34,90 @@ bool IsObjectMarked(DWORD addr, std::string& outLabel)
     return false;
 }
 
+// ── Watch storage ──
+struct WatchEntry {
+    DWORD address;
+    std::string callbackLib;
+    std::string callbackMethod;
+    bool removedOnly;
+};
+static std::vector<WatchEntry> _Watches;
+static std::mutex _WatchMutex;
+
 // ── PointerExpiredProcess — auto cleanup on object death ──
 void CALLBACK PointerExpiredProcess(AbstractClass* pDyingObj, bool bRemoved)
 {
-    if (!bRemoved) return;  // only clear on real destruction
     DWORD addr = (DWORD)pDyingObj;
-    UnmarkObject(addr);
+
+    // 1) auto-mark cleanup
+    if (bRemoved) UnmarkObject(addr);
+
+    // 2) fire watch callbacks
+    std::lock_guard<std::mutex> lk(_WatchMutex);
+    for (auto it = _Watches.begin(); it != _Watches.end(); ) {
+        if (it->address == addr) {
+            if (!it->removedOnly || bRemoved) {
+                auto* root = cJSON_CreateObject();
+                char buf[20];
+                sprintf_s(buf, "0x%08X", addr);
+                cJSON_AddStringToObject(root, "Pointer", buf);
+                cJSON_AddNumberToObject(root, "Removed", bRemoved ? 1 : 0);
+                Ext::PostAsyncRemoteCall(
+                    it->callbackLib.c_str(),
+                    it->callbackMethod.c_str(),
+                    2147483647,
+                    JsonObject(root)
+                );
+                it = _Watches.erase(it);
+                continue;
+            }
+        }
+        ++it;
+    }
 }
 
 // ── EC Actions ──
+
+void __cdecl IHVerify_WatchPointer(JsonObject Context)
+{
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
+        return;
+    }
+    DWORD addr = (DWORD)oAddr.GetInt();
+
+    auto oLib = Context.GetObjectItem("CallbackLib");
+    if (!oLib || !oLib.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
+        return;
+    }
+    std::string cbLib = oLib.GetString();
+
+    auto oMethod = Context.GetObjectItem("CallbackMethod");
+    if (!oMethod || !oMethod.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
+        return;
+    }
+    std::string cbMethod = oMethod.GetString();
+
+    bool removedOnly = true;
+    auto oRO = Context.GetObjectItem("RemovedOnly");
+    if (oRO && oRO.IsTypeBool()) removedOnly = oRO.GetBool();
+
+    std::lock_guard<std::mutex> lk(_WatchMutex);
+    _Watches.push_back({ addr, cbLib, cbMethod, removedOnly });
+
+    std::cout << std::format("WatchPointer 0x{:08X} callback={}.{} removedOnly={}",
+        addr, cbLib, cbMethod, removedOnly ? "true" : "false") << std::endl;
+    ECDebug::DoNotEcho();
+}
+
+void __cdecl IHVerify_FrameUpdate(JsonObject)
+{
+    // Watches are fired directly from PointerExpiredProcess via PostAsyncRemoteCall.
+    // This handler exists to keep IHVerify registered in the IHCore::FrameUpdate broadcast.
+}
 
 void __cdecl IHVerify_MarkObject(JsonObject Context)
 {

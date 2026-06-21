@@ -205,6 +205,195 @@ void __cdecl IHVerify_QueueMission(JsonObject Context)
 }
 
 // ------------------------------------------------------------------
+//  IssueOrder: high-level order combining SetDestination/SetTarget + QueueMission
+//    -Address <0x...>
+//    -Mission <Move|Attack|AttackMove|Guard|AreaGuard|Stop|Hunt|Retreat|Harvest|Enter|Capture|Patrol|Unload>
+//    [-ToX <int> -ToY <int> | -To <0x...>]   — destination
+//    [-Target <0x...>]                          — attack target
+// ------------------------------------------------------------------
+struct OrderSpec {
+    const char* name;
+    Mission mission;
+    bool needsDest;
+    bool destCellOk;
+    bool destObjOk;
+    bool targetOrDest;  // Attack: Target or Destination accepted
+};
+
+static const OrderSpec s_Orders[] = {
+    {"Move",        Mission::Move,        true,  true,  true,  false},
+    {"Attack",      Mission::Attack,      false, true,  true,  true },
+    {"AttackMove",  Mission::AttackMove,  true,  true,  true,  false},
+    {"Guard",       Mission::Guard,       false, false, false, false},
+    {"AreaGuard",   Mission::Area_Guard,  true,  true,  true,  false},
+    {"Stop",        Mission::Stop,        false, false, false, false},
+    {"Hunt",        Mission::Hunt,        false, false, false, false},
+    {"Retreat",     Mission::Retreat,     true,  true,  false, false},
+    {"Harvest",     Mission::Harvest,     true,  false, true,  false},
+    {"Enter",       Mission::Enter,       true,  false, true,  false},
+    {"Capture",     Mission::Capture,     true,  false, true,  false},
+    {"Patrol",      Mission::Patrol,      true,  true,  false, false},
+    {"Unload",      Mission::Unload,      false, false, false, false},
+};
+
+void __cdecl IHVerify_IssueOrder(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    // Parse -Address
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    DWORD addr = (DWORD)oAddr.GetInt();
+    auto pAbs = (AbstractClass*)addr;
+    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    auto absType = pAbs->WhatAmI();
+    if (absType != AbstractType::Unit && absType != AbstractType::Infantry &&
+        absType != AbstractType::Building && absType != AbstractType::Aircraft) {
+        ECDebug::ReturnStdError(ERROR_INVALID_FUNCTION); return;
+    }
+    auto pTechno = (TechnoClass*)pAbs;
+
+    // Parse -Mission
+    auto oMission = Context.GetObjectItem("Mission");
+    if (!oMission || !oMission.IsTypeString()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    std::string missionName = oMission.GetString();
+
+    const OrderSpec* pSpec = nullptr;
+    for (auto& spec : s_Orders) {
+        if (missionName == spec.name) { pSpec = &spec; break; }
+    }
+    if (!pSpec) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    // Parse Destination
+    AbstractClass* pDest = nullptr;
+    bool hasDest = false;
+    auto oToX = Context.GetObjectItem("ToX"), oToY = Context.GetObjectItem("ToY");
+    auto oTo = Context.GetObjectItem("To");
+    if (oToX && oToY && oToX.IsTypeNumber() && oToY.IsTypeNumber()) {
+        if (!pSpec->destCellOk && !pSpec->targetOrDest) {
+            ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+        }
+        CellStruct cs { (short)oToX.GetInt(), (short)oToY.GetInt() };
+        pDest = (AbstractClass*)MapClass::Instance->TryGetCellAt(cs);
+        if (!pDest) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+        hasDest = true;
+    } else if (oTo && oTo.IsTypeNumber()) {
+        if (!pSpec->destObjOk && !pSpec->targetOrDest) {
+            ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+        }
+        pDest = (AbstractClass*)(DWORD)oTo.GetInt();
+        hasDest = true;
+    }
+
+    // Parse Target
+    AbstractClass* pTarget = nullptr;
+    bool hasTarget = false;
+    auto oTarget = Context.GetObjectItem("Target");
+    if (oTarget && oTarget.IsTypeNumber()) {
+        pTarget = (AbstractClass*)(DWORD)oTarget.GetInt();
+        hasTarget = true;
+    }
+
+    // Validate parameter requirements
+    if (pSpec->targetOrDest) {
+        // Attack: either Target or Destination required
+        if (!hasTarget && !hasDest) {
+            ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+        }
+    } else {
+        if (pSpec->needsDest && !hasDest) {
+            ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+        }
+    }
+
+    // Execute
+    if (pSpec->mission == Mission::Attack) {
+        if (hasTarget) {
+            pTechno->SetTarget(pTarget);
+        } else {
+            pTechno->SetDestination(pDest, true);
+        }
+    } else {
+        if (hasDest) {
+            pTechno->SetDestination(pDest, true);
+        } else if (pSpec->mission == Mission::Stop) {
+            pTechno->SetDestination(nullptr, true);
+        }
+        if (hasTarget) {
+            pTechno->SetTarget(pTarget);
+        }
+    }
+
+    pTechno->QueueMission(pSpec->mission, true);
+
+    // Output
+    std::string out = std::format("IssueOrder: {} addr=0x{:08X}", pSpec->name, addr);
+    if (hasTarget) out += std::format(" target=0x{:08X}", (DWORD)pTarget);
+    if (hasDest) {
+        if (pDest->WhatAmI() == AbstractType::Cell)
+            out += std::format(" toCell=({},{})", (int)((CellClass*)pDest)->MapCoords.X, (int)((CellClass*)pDest)->MapCoords.Y);
+        else
+            out += std::format(" to=0x{:08X}", (DWORD)pDest);
+    }
+    std::cout << out << std::endl;
+    ECDebug::DoNotEcho();
+}
+
+// ------------------------------------------------------------------
+//  SetDestination: set movement destination (without queuing a Mission)
+//    -Address <0x...>  [-ToX <int> -ToY <int> | -To <0x...> | -Clear]
+// ------------------------------------------------------------------
+void __cdecl IHVerify_SetDestination(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    DWORD addr = (DWORD)oAddr.GetInt();
+    auto pAbs = (AbstractClass*)addr;
+    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    auto absType = pAbs->WhatAmI();
+    if (absType != AbstractType::Unit && absType != AbstractType::Infantry &&
+        absType != AbstractType::Building && absType != AbstractType::Aircraft) {
+        ECDebug::ReturnStdError(ERROR_INVALID_FUNCTION); return;
+    }
+    auto pTechno = (TechnoClass*)pAbs;
+
+    AbstractClass* pDest = nullptr;
+    bool hasClear = false;
+    auto oClear = Context.GetObjectItem("Clear");
+    if (oClear && oClear.IsTypeBool()) hasClear = oClear.GetBool();
+
+    auto oToX = Context.GetObjectItem("ToX"), oToY = Context.GetObjectItem("ToY");
+    auto oTo = Context.GetObjectItem("To");
+
+    if (hasClear) {
+        pDest = nullptr;
+    } else if (oToX && oToY && oToX.IsTypeNumber() && oToY.IsTypeNumber()) {
+        CellStruct cs { (short)oToX.GetInt(), (short)oToY.GetInt() };
+        pDest = (AbstractClass*)MapClass::Instance->TryGetCellAt(cs);
+        if (!pDest) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    } else if (oTo && oTo.IsTypeNumber()) {
+        pDest = (AbstractClass*)(DWORD)oTo.GetInt();
+    } else {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+
+    pTechno->SetDestination(pDest, true);
+
+    if (pDest) {
+        if (pDest->WhatAmI() == AbstractType::Cell)
+            std::cout << std::format("SetDestination addr=0x{:08X} toCell=({},{})", addr,
+                (int)((CellClass*)pDest)->MapCoords.X, (int)((CellClass*)pDest)->MapCoords.Y) << std::endl;
+        else
+            std::cout << std::format("SetDestination addr=0x{:08X} to=0x{:08X}", addr, (DWORD)pDest) << std::endl;
+    } else {
+        std::cout << std::format("SetDestination addr=0x{:08X} cleared", addr) << std::endl;
+    }
+    ECDebug::DoNotEcho();
+}
+
+// ------------------------------------------------------------------
 //  GetFunc -- also accessible via ECInitLibrary actions map
 // ------------------------------------------------------------------
 static std::unordered_map<std::string, FuncInfo> s_Funcs
@@ -213,6 +402,8 @@ static std::unordered_map<std::string, FuncInfo> s_Funcs
     {"SelectObject",  FuncInfo(IHVerify_SelectObject,  FuncType::Action)},
     {"DeployObject",  FuncInfo(IHVerify_DeployObject,  FuncType::Action)},
     {"QueueMission",  FuncInfo(IHVerify_QueueMission,  FuncType::Action)},
+    {"IssueOrder",    FuncInfo(IHVerify_IssueOrder,    FuncType::Action)},
+    {"SetDestination",FuncInfo(IHVerify_SetDestination,FuncType::Action)},
 };
 
 FuncInfo* IHVerify_GetFunc(const char* Name, int Version)
