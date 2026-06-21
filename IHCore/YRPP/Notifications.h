@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include <ArrayClasses.h>
+#include <Helpers\CompileTime.h>
 
 class AbstractClass;
 
