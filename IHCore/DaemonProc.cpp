@@ -48,7 +48,7 @@ std::string MakeAddressComment(const AddressCommentInfo& AddrInfo)
 	{
 		auto Str = Provider.Handle(AddrInfo);
 
-		if (strlen(Str))
+		if (Str && strlen(Str))
 		{
 			std::string s;
 			s += Provider.Name;
