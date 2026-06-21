@@ -16,6 +16,9 @@
     <Filter Include="EC SDK">
       <UniqueIdentifier>{90acac8b-52b3-47a5-867e-bd0812b70d5b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Logger">
+      <UniqueIdentifier>{2d0639b4-9953-472e-801c-ac2e8a4a602f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -93,6 +96,15 @@
     <ClInclude Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Logger\Debug.h">
+      <Filter>Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Pointers.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IHVerify.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -133,6 +145,21 @@
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c">
       <Filter>EC SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Logger\Debug.cpp">
+      <Filter>Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="IHVerify.Actions.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IHVerify.Core.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IHVerify.Marker.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pointers.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

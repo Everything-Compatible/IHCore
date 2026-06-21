@@ -1,11 +1,14 @@
-﻿// dllmain.cpp : 定义 DLL 应用程序的入口点。
+﻿// dllmain.cpp : IHVerify DLL entry point.
 #include "framework.h"
 #include <EC.h>
 #include <Version.h>
+#include "IHVerify.h"
+#include "Pointers.h"
+#include <CRT.h>
 
 extern "C" __declspec(dllexport) void SyringeForceLoad()
 {
-    ; // This function is intentionally left empty to force the DLL to load.
+    ;
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -22,14 +25,30 @@ BOOL APIENTRY DllMain( HMODULE hModule,
             PRODUCT_LOWEST_SUPPORTED_VERSION,
             PRODUCT_FULLNAME_U8STR,
             []() {
+                IHVerify_Init();
+                IH::SetTextDrawRouter("Status", StatusRouter);
             },
             []() {
+                IHVerify_OrderedInit();
+            },
+            {
+                {"IHCore::Reset",FuncInfo{IHVerify_OnGameReset,  FuncType::Action}},
+                {"FindObjects",  FuncInfo{IHVerify_FindObjects,  FuncType::Action}},
+                {"FindTypes",    FuncInfo{IHVerify_FindTypes,    FuncType::Action}},
+                {"GetHouseInfo", FuncInfo{IHVerify_GetHouseInfo, FuncType::Action}},
+                {"QueueMission", FuncInfo{IHVerify_QueueMission, FuncType::Action}},
+                {"SelectObject", FuncInfo{IHVerify_SelectObject, FuncType::Action}},
+                {"DeployObject", FuncInfo{IHVerify_DeployObject, FuncType::Action}},
+                {"MarkObject",   FuncInfo{IHVerify_MarkObject,   FuncType::Action}},
+                {"UnmarkObject", FuncInfo{IHVerify_UnmarkObject, FuncType::Action}},
+                {"ListMarks",    FuncInfo{IHVerify_ListMarks,    FuncType::Action}},
+                {"ClearMarks",   FuncInfo{IHVerify_ClearMarks,   FuncType::Action}},
             },
             {}
             ))
         {
-
         }
+        break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
@@ -37,4 +56,3 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
-

@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Common\IHLoader;</IncludePath>
-    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(SolutionDir)Common\IHVerify;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Common\IHLoader;$(SolutionDir)Common\IHVerify;$(SolutionDir)Common\Logger</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)IHCore\YRPP;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -165,7 +165,10 @@
     <ClInclude Include="..\Common\IHLoader\WIC.Interface.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Template.h" />
     <ClInclude Include="..\Common\IHVerify\Version.h" />
+    <ClInclude Include="..\Common\Logger\Debug.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="IHVerify.h" />
+    <ClInclude Include="Pointers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\IHLoader\EC.cpp" />
@@ -180,7 +183,12 @@
     <ClCompile Include="..\Common\IHLoader\WIC.Buff.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp" />
+    <ClCompile Include="..\Common\Logger\Debug.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="IHVerify.Core.cpp" />
+    <ClCompile Include="IHVerify.Actions.cpp" />
+    <ClCompile Include="Pointers.cpp" />
+    <ClCompile Include="IHVerify.Marker.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
