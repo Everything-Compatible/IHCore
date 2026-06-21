@@ -52,6 +52,9 @@
     <Filter Include="Console">
       <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Logger">
+      <UniqueIdentifier>{1db42dc3-0bd0-4f2f-a07f-e95005cb7336}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -71,9 +74,6 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Debug.h">
-      <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="ExtLog.h">
       <Filter>File</Filter>
@@ -1176,6 +1176,9 @@
     <ClInclude Include="SyringeCaller.h">
       <Filter>Interprocess</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Logger\Debug.h">
+      <Filter>Logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1336,6 +1339,9 @@
     </ClCompile>
     <ClCompile Include="SyringeCaller.cpp">
       <Filter>Interprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Logger\Debug.cpp">
+      <Filter>Logger</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

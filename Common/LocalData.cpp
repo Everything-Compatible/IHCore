@@ -2,7 +2,7 @@
 #include "LocalData.h"
 #include <Windows.h>
 #include <map>
-#include "..\IHCore\Debug.h"
+#include <Debug.h>
 #include "..\IHCore\SomeData.h"
 #include "..\IHCore\ECDbgConsole.h"
 #include "..\IHCore\ECInterprocess.h"

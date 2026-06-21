@@ -1,9 +1,9 @@
 ﻿#include "ExtFNT.h"
 #include "Patch.h"
 #include "ToolFunc.h"
-#include "Debug.h"
+#include <Debug.h>
 #include <unordered_map>
-
+#include <Helpers/Macro.h>
 
 //acutally timeGetTime() >> 4;
 DWORD sub_6C8C40()

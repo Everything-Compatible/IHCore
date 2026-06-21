@@ -4,7 +4,7 @@
 #include <YRPP.h>
 #include <locale>
 #include <IH.Loader.h>
-#include "..\IHCore\Debug.h"
+#include <Debug.h>
 #include "..\IHCore\Patch.h"
 #include <SyringeEx.h>
 #include "..\IHCore\ECDbgConsole.h"

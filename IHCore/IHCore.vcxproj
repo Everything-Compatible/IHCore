@@ -75,7 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(WindowsSDK_IncludePath);$(VC_IncludePath);$(MSBuildProjectDirectory)\YRPP;$(SolutionDir)Common;$(SolutionDir)Common\IHCore;$(SolutionDir)Common\IHLoader</IncludePath>
+    <IncludePath>$(WindowsSDK_IncludePath);$(VC_IncludePath);$(MSBuildProjectDirectory)\YRPP;$(SolutionDir)Common;$(SolutionDir)Common\IHCore;$(SolutionDir)Common\Logger;$(SolutionDir)Common\IHLoader</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -184,9 +184,9 @@
     <ClInclude Include="..\Common\IHLoader\WIC.Interface.h" />
     <ClInclude Include="..\Common\IHLoader\WIC.Template.h" />
     <ClInclude Include="..\Common\LocalData.h" />
+    <ClInclude Include="..\Common\Logger\Debug.h" />
     <ClInclude Include="..\Common\ToolFunc.h" />
     <ClInclude Include="ConfData.h" />
-    <ClInclude Include="Debug.h" />
     <ClInclude Include="ECDbgConsole.h" />
     <ClInclude Include="ECInterprocess.h" />
     <ClInclude Include="ExtCD.h" />
@@ -552,6 +552,7 @@
     <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp" />
     <ClCompile Include="..\Common\LocalData.cpp" />
     <ClCompile Include="..\Common\LocalLibManager.cpp" />
+    <ClCompile Include="..\Common\Logger\Debug.cpp" />
     <ClCompile Include="..\Common\ToolFunc.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="DaemonProc.cpp" />
