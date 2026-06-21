@@ -517,6 +517,20 @@ namespace Internal
 		}
 	}
 
+	void __cdecl PrintMessageLine(JsonObject Context)
+	{
+		auto s = Context.GetObjectItem("Line");
+		if (s.Available() && s.IsTypeString())
+		{
+			MessageListClass::Instance().PrintMessage(UTF8toUnicode(s.GetString()).c_str());
+			ECCommand::DoNotEcho();
+		}
+		else
+		{
+			ECCommand::ReturnStdError(ERROR_BAD_ARGUMENTS);
+		}
+	}
+
 	bool __cdecl HasLib(JsonObject Context)
 	{
 		//-Name "LibName"
@@ -729,6 +743,7 @@ std::unordered_map<std::string, FuncInfo>Internal_Funcs
 	{"Ping",FuncInfo(Internal::Ping ,FuncType::Condition)},
 	{"FindLib",FuncInfo(Internal::FindLib ,FuncType::Condition)},
 	{"DebugLog",FuncInfo(Internal::DebugLogLine ,FuncType::Action)},
+	{"PrintMessage",FuncInfo(Internal::PrintMessageLine ,FuncType::Action)},
 	{"HasLib",FuncInfo(Internal::HasLib ,FuncType::Condition) },
 	{"HasMethod",FuncInfo(Internal::HasMethod ,FuncType::Condition) },
 	{"QueryMethodInfo",FuncInfo(Internal::QueryMethodInfo ,FuncType::Action) },
