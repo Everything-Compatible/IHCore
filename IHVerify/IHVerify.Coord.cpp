@@ -10,6 +10,8 @@
 #include <FootClass.h>
 #include <LocomotionClass.h>
 #include <TiberiumClass.h>
+#include <FPSCounter.h>
+#include <GameOptionsClass.h>
 
 // ---------- GetMapInfo ----------
 void __cdecl IHVerify_GetMapInfo(JsonObject)
@@ -608,5 +610,35 @@ void __cdecl IHVerify_DecreaseCellRadiation(JsonObject Context)
     std::cout << std::format("DecreaseCellRadiation ({},{}) -{} → RadLevel={}",
         (int)pCell->MapCoords.X, (int)pCell->MapCoords.Y,
         oAmt.GetDouble(), pCell->RadLevel) << std::endl;
+    ECDebug::DoNotEcho();
+}
+
+// ---------- GetFrameRateInfo ----------
+static const char* GameSpeedName(int gs)
+{
+    switch (gs) {
+        case 0:  return "Fastest";
+        case 1:  return "Fast";
+        case 2:  return "Medium";
+        case 3:  return "Slow";
+        case 4:  return "VerySlow";
+        case 5:  return "Slowest";
+        default: return "Unknown";
+    }
+}
+
+void __cdecl IHVerify_GetFrameRateInfo(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    int  instantFPS = (int)FPSCounter::CurrentFrameRate;
+    double avgFPS  = FPSCounter::GetAverageFrameRate();
+    int  curFrame  = Unsorted::CurrentFrame;
+    int  gameSpeed = GameOptionsClass::Instance->GameSpeed;
+    auto s = std::format(
+        R"({{"CurrentFrame":{},"InstantFPS":{},"AverageFPS":{:.2f},"GameSpeed":{},"SpeedName":"{}"}})",
+        curFrame, instantFPS, avgFPS, gameSpeed, GameSpeedName(gameSpeed)
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
     ECDebug::DoNotEcho();
 }

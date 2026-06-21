@@ -83,6 +83,9 @@ void __cdecl IHVerify_GetCellRadiation(JsonObject Context);     // -X -Y → {Is
 void __cdecl IHVerify_IncreaseCellRadiation(JsonObject Context);// -X -Y -Amount <double>
 void __cdecl IHVerify_DecreaseCellRadiation(JsonObject Context);// -X -Y -Amount <double>
 
+// Action: GetFrameRateInfo — returns {CurrentFrame,InstantFPS,AverageFPS,GameSpeed,SpeedName}
+void __cdecl IHVerify_GetFrameRateInfo(JsonObject Context);
+
 // Action: WatchPointer -Address <0x...> -CallbackLib <str> -CallbackMethod <str> [-RemovedOnly bool]
 void __cdecl IHVerify_WatchPointer(JsonObject Context);
 // Called every frame via IHCore::FrameUpdate broadcast
