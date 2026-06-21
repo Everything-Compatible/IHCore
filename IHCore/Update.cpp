@@ -11,6 +11,7 @@
 #include "Global.h"
 #include "ExtIni.h"
 #include "ECDbgConsole.h"
+#include <EC.Listener.h>
 
 namespace Local
 {
@@ -87,4 +88,15 @@ DEFINE_HOOK(0x6F9E50, IHTechnoClassUpdate, 5)
 }
 
 
+DEFINE_HOOK(0x7258D0, AbstractClass_AnnounceExpiredPointer_GlobalNotify, 0x6)
+{
+	GET(AbstractClass*, pDyingObj, ECX);  
+	GET(bool, bRemoved, EDX);             
 
+	for (auto hd : ECListener::GetAll("EC::PointerExpired"))
+	{
+		AsType<void CALLBACK()>(hd)();
+	}
+
+	return 0;  
+}
