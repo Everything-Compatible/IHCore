@@ -95,7 +95,7 @@ DEFINE_HOOK(0x7258D0, AbstractClass_AnnounceExpiredPointer_GlobalNotify, 0x6)
 
 	for (auto hd : ECListener::GetAll("EC::PointerExpired"))
 	{
-		AsType<void CALLBACK()>(hd)();
+		((ECListener::Listener_PointerExpired)hd)(pDyingObj, bRemoved);
 	}
 
 	return 0;  
