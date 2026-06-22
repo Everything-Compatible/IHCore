@@ -184,6 +184,7 @@
     <ClCompile Include="..\Common\IHLoader\WIC.Define.cpp" />
     <ClCompile Include="..\Common\IHLoader\WIC.Interface.cpp" />
     <ClCompile Include="..\Common\Logger\Debug.cpp" />
+    <ClCompile Include="..\IHCore\YRPP\StaticInits.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="IHVerify.Core.cpp" />
     <ClCompile Include="IHVerify.Actions.cpp" />

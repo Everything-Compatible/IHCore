@@ -19,6 +19,9 @@
     <Filter Include="Logger">
       <UniqueIdentifier>{2d0639b4-9953-472e-801c-ac2e8a4a602f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="YRPP">
+      <UniqueIdentifier>{627db69a-54f5-41f3-8534-38a97a6db172}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -163,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="IHVerify.Coord.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\IHCore\YRPP\StaticInits.cpp">
+      <Filter>YRPP</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

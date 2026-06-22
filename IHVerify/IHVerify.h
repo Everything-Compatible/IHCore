@@ -86,8 +86,67 @@ void __cdecl IHVerify_DecreaseCellRadiation(JsonObject Context);// -X -Y -Amount
 // Action: GetFrameRateInfo — returns {CurrentFrame,InstantFPS,AverageFPS,GameSpeed,SpeedName}
 void __cdecl IHVerify_GetFrameRateInfo(JsonObject Context);
 
+// ═══════════════════════════════════════════════════════════
+//  Production / Factory / TechnoType / Building queries
+// ═══════════════════════════════════════════════════════════
+
+// Action: CheckBuildability — CanBuild + HasFactoryForObject + GetFactoryProducing + GetPrimaryFactory
+//   -House <int>  -TypeID <str>  [-BuildLimitOnly false] [-AllowInProduction false]
+void __cdecl IHVerify_CheckBuildability(JsonObject Context);
+
+// Action: GetFactoryInfo — query factory state
+//   -Address <0x...>
+void __cdecl IHVerify_GetFactoryInfo(JsonObject Context);
+
+// Action: FactoryProduce — fire PRODUCE event (equiv. clicking cameo)
+//   -House <int>  -TypeID <str>
+void __cdecl IHVerify_FactoryProduce(JsonObject Context);
+
+// Action: FactoryPlace — fire PLACE event (equiv. placing building)
+//   -House <int>  -TypeID <str>  -X <int>  -Y <int>
+void __cdecl IHVerify_FactoryPlace(JsonObject Context);
+
+// Action: FactorySuspend — fire SUSPEND event
+//   -House <int>  -TypeID <str>
+void __cdecl IHVerify_FactorySuspend(JsonObject Context);
+
+// Action: FactoryAbandon — fire ABANDON event
+//   -House <int>  -TypeID <str>
+void __cdecl IHVerify_FactoryAbandon(JsonObject Context);
+
+// Action: FactoryCompleteProduction  -Address <0x...>
+//   Calls CompletedProduction() to finalize the current item and start next in queue
+void __cdecl IHVerify_FactoryCompleteProduction(JsonObject Context);
+
+// Condition: FindFactory — FactoryClass::FindByOwnerAndProduct
+//   -House <int>  -TypeID <str>
+void __cdecl IHVerify_FindFactory(JsonObject Context);
+
+// Action: GetTechnoTypeInfo — static TechnoType properties
+//   -TypeID <str>
+void __cdecl IHVerify_GetTechnoTypeInfo(JsonObject Context);
+
+// Action: GetBuildingStatus — building placement/construction state
+//   -Address <0x...>
+void __cdecl IHVerify_GetBuildingStatus(JsonObject Context);
+
+// Condition: CanPlaceBuilding — BuildingTypeClass::CanPlaceHere
+//   -TypeID <str>  -X <int>  -Y <int>  [-House 0]
+void __cdecl IHVerify_CanPlaceBuilding(JsonObject Context);
+
+// Action: GetHouseProduction — current production type indices
+//   -House <int>
+void __cdecl IHVerify_GetHouseProduction(JsonObject Context);
+
+// Action: ListAllFactories — iterate FactoryClass::Array, return all factory addresses with owner
+//   (no args)
+void __cdecl IHVerify_ListAllFactories(JsonObject Context);
+
 // Action: WatchPointer -Address <0x...> -CallbackLib <str> -CallbackMethod <str> [-RemovedOnly bool]
 void __cdecl IHVerify_WatchPointer(JsonObject Context);
+// Action: WatchBuildingReady -Address <0x...> -CallbackLib <str> -CallbackMethod <str>
+//   Calls back when building is ActuallyPlacedOnMap && HasBuildUp && !InLimbo
+void __cdecl IHVerify_WatchBuildingReady(JsonObject Context);
 // Called every frame via IHCore::FrameUpdate broadcast
 void __cdecl IHVerify_FrameUpdate(JsonObject Context);
 
@@ -118,6 +177,9 @@ void __cdecl IHVerify_ClearMarks(JsonObject Context);
 
 // ACP callback (registered in Reset)
 const char* __cdecl MarkerACP(const AddressCommentInfo& AddrInfo);
+
+// Manual test 
+void __cdecl IHVerify_ManualTest(JsonObject Context);
 
 // Shared game-started flag
 extern std::atomic<bool> _GameStarted;

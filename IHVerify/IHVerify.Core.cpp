@@ -157,6 +157,7 @@ void __cdecl IHVerify_FindObjects(JsonObject Context)
         if (s == u8"Building" || s == u8"BuildingType") filterAbs = (int)AbstractType::Building;
         if (s == u8"Aircraft" || s == u8"AircraftType") filterAbs = (int)AbstractType::Aircraft;
         if (s == u8"House")    filterAbs = (int)AbstractType::House;
+        if (s == u8"Factory")  filterAbs = (int)AbstractType::Factory;
     }
 
     int filterHouse = -1;
@@ -187,22 +188,48 @@ void __cdecl IHVerify_FindObjects(JsonObject Context)
 
     for (auto pAbs : *AbstractClass::Array)
     {
-        if (!pAbs || ((ObjectClass*)pAbs)->InLimbo) continue;
-
+        if (!pAbs) continue;
         auto absType = (int)pAbs->WhatAmI();
+
+        // InLimbo only applies to ObjectClass descendants — skip for Factory/House/etc
+        if (absType == (int)AbstractType::Factory) {
+            // FactoryClass doesn't inherit ObjectClass — no InLimbo, no GetOwningHouse
+        } else if (absType == (int)AbstractType::House) {
+            // HouseClass doesn't have InLimbo either
+        } else {
+            if (((ObjectClass*)pAbs)->InLimbo) continue;
+        }
+
         if (filterAbs >= 0 && absType != filterAbs) continue;
 
         if (filterHouse >= 0)
         {
-            auto pHouse = pAbs->GetOwningHouse();
-            if (!pHouse || pHouse->ArrayIndex != filterHouse) continue;
+            int houseIdx = -1;
+            if (absType == (int)AbstractType::Factory) {
+                houseIdx = ((FactoryClass*)pAbs)->Owner ? ((FactoryClass*)pAbs)->Owner->ArrayIndex : -1;
+            } else if (absType == (int)AbstractType::House) {
+                houseIdx = ((HouseClass*)pAbs)->ArrayIndex;
+            } else {
+                auto pHouse = pAbs->GetOwningHouse();
+                houseIdx = pHouse ? pHouse->ArrayIndex : -1;
+            }
+            if (houseIdx != filterHouse) continue;
         }
 
         if (!filterType.empty())
         {
-            if (absType == (int)AbstractType::House) continue;
-            auto pType = ((TechnoClass*)pAbs)->GetTechnoType();
-            if (!pType || std::string(pType->ID) != filterType) continue;
+            if (absType == (int)AbstractType::Factory) {
+                // Factory: match by Object's TechnoType ID, or skip
+                auto pFact = (FactoryClass*)pAbs;
+                if (!pFact->Object) continue;
+                auto pTT = pFact->Object->GetTechnoType();
+                if (!pTT || std::string(pTT->ID) != filterType) continue;
+            }
+            else if (absType == (int)AbstractType::House) continue;
+            else {
+                auto pType = ((TechnoClass*)pAbs)->GetTechnoType();
+                if (!pType || std::string(pType->ID) != filterType) continue;
+            }
         }
 
         if (!filterMission.empty())

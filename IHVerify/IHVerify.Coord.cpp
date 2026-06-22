@@ -12,6 +12,7 @@
 #include <TiberiumClass.h>
 #include <FPSCounter.h>
 #include <GameOptionsClass.h>
+#include <EventClass.h>
 
 // ---------- GetMapInfo ----------
 void __cdecl IHVerify_GetMapInfo(JsonObject)
@@ -638,6 +639,606 @@ void __cdecl IHVerify_GetFrameRateInfo(JsonObject Context)
         R"({{"CurrentFrame":{},"InstantFPS":{},"AverageFPS":{:.2f},"GameSpeed":{},"SpeedName":"{}"}})",
         curFrame, instantFPS, avgFPS, gameSpeed, GameSpeedName(gameSpeed)
     );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Production / Factory / TechnoType / Building helpers
+// ═══════════════════════════════════════════════════════════
+
+static const char* CanBuildResultName(int cbr)
+{
+    switch (cbr) {
+        case  1: return "Buildable";
+        case  0: return "Unbuildable";
+        case -1: return "TemporarilyUnbuildable";
+        default: return "Unknown";
+    }
+}
+
+static const char* BStateName(int st)
+{
+    switch (st) {
+        case 0: return "Construction";
+        case 1: return "Idle";
+        case 2: return "Active";
+        case 3: return "Full";
+        case 4: return "Aux1";
+        case 5: return "Aux2";
+        default: return "Unknown";
+    }
+}
+
+static const char* BuildCatName(int cat)
+{
+    switch (cat) {
+        case 0: return "DontCare";
+        case 1: return "Tech";
+        case 2: return "Resource";
+        case 3: return "Power";
+        case 4: return "Infrastructure";
+        case 5: return "Combat";
+        default: return "Unknown";
+    }
+}
+
+// Helper: get AbstractType string name
+static const char* AbsTypeName(AbstractType at)
+{
+    if (at == AbstractType::UnitType)     return "UnitType";
+    if (at == AbstractType::InfantryType) return "InfantryType";
+    if (at == AbstractType::BuildingType) return "BuildingType";
+    if (at == AbstractType::AircraftType) return "AircraftType";
+    if (at == AbstractType::Unit)         return "Unit";
+    if (at == AbstractType::Infantry)     return "Infantry";
+    if (at == AbstractType::Building)     return "Building";
+    if (at == AbstractType::Aircraft)     return "Aircraft";
+    if (at == AbstractType::House)        return "House";
+    if (at == AbstractType::Factory)      return "Factory";
+    return "Unknown";
+}
+
+// Helper: find TechnoType by ID string (searches all TechnoType arrays)
+static TechnoTypeClass* FindTechnoTypeByID(const char* id)
+{
+    for (auto pItem : *TechnoTypeClass::Array) {
+        if (pItem && !_strcmpi(pItem->ID, id))
+            return pItem;
+    }
+    return nullptr;
+}
+
+// ---------- CheckBuildability ----------
+void __cdecl IHVerify_CheckBuildability(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    bool buildLimitOnly   = false;
+    bool allowInProduction = false;
+    auto oBLO = Context.GetObjectItem("BuildLimitOnly");
+    if (oBLO && oBLO.IsTypeBool()) buildLimitOnly = oBLO.GetBool();
+    auto oAIP = Context.GetObjectItem("AllowInProduction");
+    if (oAIP && oAIP.IsTypeBool()) allowInProduction = oAIP.GetBool();
+
+    CanBuildResult cbr = pHouse->CanBuild(pType, buildLimitOnly, allowInProduction);
+    bool hasFactory     = pHouse->HasFactoryForObject(pType);
+    FactoryClass* pProd = pHouse->GetFactoryProducing(pType);
+    FactoryClass* pPrim = pHouse->GetPrimaryFactory(pType->WhatAmI(), pType->Naval, BuildCat::DontCare);
+
+    // BuildCat only exists on BuildingTypeClass
+    int buildCat = 0;
+    const char* buildCatName = "DontCare";
+    if (pType->WhatAmI() == AbstractType::BuildingType) {
+        buildCat = (int)((BuildingTypeClass*)pType)->BuildCat;
+        buildCatName = BuildCatName(buildCat);
+    }
+
+    auto s = std::format(
+        R"({{"TypeID":"{}","CanBuildResult":"{}","CanBuildValue":{},"HasFactory":{},)"
+        R"("FactoryProducing":"0x{:08X}","PrimaryFactory":"0x{:08X}","PrimaryBuildCat":"{}","WhatAmI":"{}","House":{}}})",
+        pType->ID, CanBuildResultName((int)cbr), (int)cbr,
+        hasFactory ? "true" : "false",
+        (DWORD)pProd, (DWORD)pPrim,
+        buildCatName, AbsTypeName(pType->WhatAmI()), hidx
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- GetFactoryInfo ----------
+void __cdecl IHVerify_GetFactoryInfo(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pFactory = (FactoryClass*)(DWORD)oAddr.GetInt();
+    if (!pFactory || pFactory->WhatAmI() != AbstractType::Factory) {
+        ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return;
+    }
+
+    int progress = pFactory->GetProgress();
+    int costPerStep = pFactory->GetCostPerStep();
+    bool done = pFactory->IsDone();
+
+    int ownerIdx = pFactory->Owner ? pFactory->Owner->ArrayIndex : -1;
+    std::string objTypeStr = "null";
+    if (pFactory->Object) {
+        auto pTT = pFactory->Object->GetTechnoType();
+        objTypeStr = pTT ? std::format("\"{}\"", pTT->ID) : "null";
+    }
+
+    // Build queue listing — guard against corrupt Count
+    std::string qList = "[";
+    int qCount = pFactory->QueuedObjects.Count;
+    if (qCount > 0 && qCount < 100) {
+        for (int i = 0; i < qCount; i++) {
+            auto pQ = pFactory->QueuedObjects.Items[i];
+            if (!pQ) continue;
+            if (i > 0) qList += ",";
+            qList += std::format("\"{}\"", pQ->ID);
+        }
+    }
+    qList += "]";
+
+    auto s = std::format(
+        R"({{"Address":"0x{:08X}","Owner":{},"IsSuspended":{},"IsManual":{},"OnHold":{})"
+        R"(,"IsDone":{},"IsDifferent":{},"Progress":{},"TotalSteps":54,"CostPerStep":{})"
+        R"(,"Balance":{},"SpecialItem":{})"
+        R"(,"Object":"0x{:08X}","ObjectTypeID":{})"
+        R"(,"QueueLength":{},"QueueTypes":{}}})",
+        (DWORD)pFactory, ownerIdx,
+        pFactory->IsSuspended ? "true" : "false",
+        pFactory->IsManual ? "true" : "false",
+        pFactory->OnHold ? "true" : "false",
+        done ? "true" : "false",
+        pFactory->IsDifferent ? "true" : "false",
+        progress, costPerStep,
+        pFactory->Balance, pFactory->SpecialItem,
+        (DWORD)pFactory->Object, objTypeStr,
+        pFactory->QueuedObjects.Count, qList
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- FactoryProduce ----------
+// Fires a PRODUCE event — equivalent to clicking the cameo.  The game
+// finds (or creates) the right factory and drives production from there.
+void __cdecl IHVerify_FactoryProduce(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    auto AbsTypeOfType = pType->WhatAmI();
+    bool Success = EventClass::AddEvent(EventClass(
+        pHouse->ArrayIndex,
+        EventType::PRODUCE,
+        (int)AbsTypeOfType,
+        pType->GetArrayIndex(),
+        pType->Naval
+    ));
+
+    auto s = std::format(
+        R"({{"Action":"FactoryProduce","TypeID":"{}","House":{},"Success":{}}})",
+        pType->ID, hidx, Success ? "true" : "false"
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- FactoryPlace ----------
+// Fires a PLACE event — places a building produced by the factory at (X,Y).
+// Buildings need Produce + Place; other Techno types only need Produce.
+void __cdecl IHVerify_FactoryPlace(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    auto oX     = Context.GetObjectItem("X");
+    auto oY     = Context.GetObjectItem("Y");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()
+        || !oX || !oX.IsTypeNumber() || !oY || !oY.IsTypeNumber()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    short X = (short)oX.GetInt();
+    short Y = (short)oY.GetInt();
+
+    auto AbsTypeOfType = pType->WhatAmI();
+    bool Success = EventClass::AddEvent(EventClass(
+        pHouse->ArrayIndex,
+        EventType::PLACE,
+        AbsTypeOfType,
+        pType->GetArrayIndex(),
+        pType->Naval,
+        CellStruct{ X, Y }
+    ));
+
+    auto s = std::format(
+        R"({{"Action":"FactoryPlace","TypeID":"{}","House":{},"Cell":[{},{}],"Success":{}}})",
+        pType->ID, hidx, (int)X, (int)Y, Success ? "true" : "false"
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- FactorySuspend ----------
+// Fires a SUSPEND event — pauses production of this type.
+// Same constructor shape as PRODUCE.
+void __cdecl IHVerify_FactorySuspend(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    auto AbsTypeOfType = pType->WhatAmI();
+    bool Success = EventClass::AddEvent(EventClass(
+        pHouse->ArrayIndex,
+        EventType::SUSPEND,
+        (int)AbsTypeOfType,
+        pType->GetArrayIndex(),
+        pType->Naval
+    ));
+
+    auto s = std::format(
+        R"({{"Action":"FactorySuspend","TypeID":"{}","House":{},"Success":{}}})",
+        pType->ID, hidx, Success ? "true" : "false"
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- FactoryAbandon ----------
+// Fires an ABANDON event — cancels production of this type.
+// Same constructor shape as PRODUCE.
+void __cdecl IHVerify_FactoryAbandon(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    auto AbsTypeOfType = pType->WhatAmI();
+    bool Success = EventClass::AddEvent(EventClass(
+        pHouse->ArrayIndex,
+        EventType::ABANDON,
+        (int)AbsTypeOfType,
+        pType->GetArrayIndex(),
+        pType->Naval
+    ));
+
+    auto s = std::format(
+        R"({{"Action":"FactoryAbandon","TypeID":"{}","House":{},"Success":{}}})",
+        pType->ID, hidx, Success ? "true" : "false"
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- FactoryCompleteProduction ----------
+void __cdecl IHVerify_FactoryCompleteProduction(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pFactory = (FactoryClass*)(DWORD)oAddr.GetInt();
+    if (!pFactory || pFactory->WhatAmI() != AbstractType::Factory) {
+        ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return;
+    }
+    bool done = pFactory->CompletedProduction();
+    auto s = std::format(
+        R"({{"Action":"CompleteProduction","Factory":"0x{:08X}","Result":{},"IsSuspended":{},"QueueLen":{}}})",
+        (DWORD)pFactory, done ? "true" : "false",
+        pFactory->IsSuspended ? "true" : "false", pFactory->QueuedObjects.Count
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- FindFactory (Condition) ----------
+void __cdecl IHVerify_FindFactory(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    FactoryClass* pFound = FactoryClass::FindByOwnerAndProduct(pHouse, pType);
+    if (pFound) {
+        auto s = std::format("\"0x{:08X}\"", (DWORD)pFound);
+        std::cout << s << std::endl;
+        ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    } else {
+        std::cout << "null" << std::endl;
+        ECDebug::ReturnString({ u8"null", 4 });
+    }
+    ECDebug::DoNotEcho();
+}
+
+// ---------- GetTechnoTypeInfo ----------
+void __cdecl IHVerify_GetTechnoTypeInfo(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oType = Context.GetObjectItem("TypeID");
+    if (!oType || !oType.IsTypeString()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    auto s = std::format(
+        R"({{"TypeID":"{}","Name":"{}","WhatAmI":"{}","WhatAmIInt":{})"
+        R"(,"Cost":{},"Soylent":{},"Strength":{},"Armor":{})"
+        R"(,"TechLevel":{},"BuildLimit":{},"Sight":{},"Speed":{},"ROT":{})"
+        R"(,"Passengers":{},"Storage":{},"Weight":{},"PhysicalSize":{})"
+        R"(,"Naval":{},"Organic":{},"Cloakable":{},"Crusher":{},"OmniCrusher":{})"
+        R"(,"Repairable":{},"Crewed":{},"BuildTimeMultiplier":{})"
+        R"(,"ThreatPosed":{},"Points":{},"IsTrain":{},"ResourceGatherer":{})"
+        R"(,"CanBeHidden":{},"BuildCat":"{}","BuildCatInt":{})"
+        R"(,"TurretCount":{},"WeaponCount":{})"
+        R"(,"Subterranean":{},"Underwater":{},"JumpJet":{})"
+        R"(,"GuardRange":{},"Category":{},"SpeedType":{})"
+        R"(,"MovementZone":{},"DeployTime":{},"UndeployDelay":{}}})",
+        pType->ID, pType->get_ID(), AbsTypeName(pType->WhatAmI()), (int)pType->WhatAmI(),
+        pType->Cost, pType->Soylent, pType->Strength, (int)pType->Armor,
+        pType->TechLevel, pType->BuildLimit, pType->Sight, pType->Speed, pType->ROT,
+        pType->Passengers, pType->Storage, pType->Weight, pType->PhysicalSize,
+        pType->Naval ? "true" : "false",
+        pType->Organic ? "true" : "false",
+        pType->Cloakable ? "true" : "false",
+        pType->Crusher ? "true" : "false",
+        pType->OmniCrusher ? "true" : "false",
+        pType->Repairable ? "true" : "false",
+        pType->Crewed ? "true" : "false",
+        pType->BuildTimeMultiplier,
+        pType->ThreatPosed, pType->Points,
+        pType->IsTrain ? "true" : "false",
+        pType->ResourceGatherer ? "true" : "false",
+        pType->CanBeHidden ? "true" : "false",
+        (pType->WhatAmI() == AbstractType::BuildingType)
+            ? BuildCatName((int)((BuildingTypeClass*)pType)->BuildCat)
+            : "N/A",
+        (pType->WhatAmI() == AbstractType::BuildingType)
+            ? (int)((BuildingTypeClass*)pType)->BuildCat : -1,
+        pType->TurretCount, pType->WeaponCount,
+        pType->IsSubterranean ? "true" : "false",
+        pType->Underwater ? "true" : "false",
+        pType->JumpJet ? "true" : "false",
+        pType->GuardRange, (int)pType->Category, (int)pType->SpeedType,
+        (int)pType->MovementZone, pType->DeployTime, pType->UndeployDelay
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- GetBuildingStatus ----------
+void __cdecl IHVerify_GetBuildingStatus(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pAbs = (AbstractClass*)(DWORD)oAddr.GetInt();
+    if (!pAbs || pAbs->WhatAmI() != AbstractType::Building) {
+        ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return;
+    }
+    auto pBld = (BuildingClass*)pAbs;
+
+    bool factorySuspended = false;
+    bool factoryIsManual  = false;
+    DWORD factoryAddr = 0;
+    if (pBld->Factory) {
+        factorySuspended = pBld->Factory->IsSuspended;
+        factoryIsManual  = pBld->Factory->IsManual;
+        factoryAddr      = (DWORD)pBld->Factory;
+    }
+
+    auto mapCoords = pBld->GetMapCoords();
+
+    auto s = std::format(
+        R"({{"Address":"0x{:08X}","TypeID":"{}","Cell":[{},{}])"
+        R"(,"ActuallyPlacedOnMap":{},"IsReadyToCommence":{},"HasBuildUp":{},"InLimbo":{})"
+        R"(,"BState":{},"BStateName":"{}","QueueBState":{})"
+        R"(,"Factory":"0x{:08X}","FactorySuspended":{},"FactoryManual":{})"
+        R"(,"HasPower":{},"UpgradeLevel":{},"OwnerIndex":{})"
+        R"(,"BeingProduced":{},"ShouldRebuild":{})"
+        R"(,"HasBeenCaptured":{},"IsDamaged":{}}})",
+        (DWORD)pBld, pBld->Type->ID,
+        (int)mapCoords.X, (int)mapCoords.Y,
+        pBld->ActuallyPlacedOnMap ? "true" : "false",
+        pBld->IsReadyToCommence ? "true" : "false",
+        pBld->HasBuildUp ? "true" : "false",
+        pBld->InLimbo ? "true" : "false",
+        pBld->BState, BStateName(pBld->BState), pBld->QueueBState,
+        factoryAddr,
+        factorySuspended ? "true" : "false",
+        factoryIsManual ? "true" : "false",
+        pBld->HasPower ? "true" : "false",
+        pBld->UpgradeLevel,
+        pBld->Owner ? pBld->Owner->ArrayIndex : -1,
+        pBld->BeingProduced ? "true" : "false",
+        pBld->ShouldRebuild ? "true" : "false",
+        pBld->HasBeenCaptured ? "true" : "false",
+        pBld->IsDamaged ? "true" : "false"
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- CanPlaceBuilding (Condition) ----------
+void __cdecl IHVerify_CanPlaceBuilding(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oType = Context.GetObjectItem("TypeID");
+    auto oX    = Context.GetObjectItem("X");
+    auto oY    = Context.GetObjectItem("Y");
+    if (!oType || !oType.IsTypeString() || !oX || !oX.IsTypeNumber() || !oY || !oY.IsTypeNumber()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType || pType->WhatAmI() != AbstractType::BuildingType) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    auto pBldType = (BuildingTypeClass*)pType;
+
+    int houseIdx = 0;
+    auto oHouse = Context.GetObjectItem("House");
+    if (oHouse && oHouse.IsTypeNumber()) houseIdx = oHouse.GetInt();
+    HouseClass* pHouse = nullptr;
+    if (houseIdx >= 0 && houseIdx < HouseClass::Array->Count)
+        pHouse = HouseClass::Array->Items[houseIdx];
+    if (!pHouse) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    CellStruct cell { (short)oX.GetInt(), (short)oY.GetInt() };
+    bool canPlace = pBldType->CanPlaceHere(&cell, pHouse);
+
+    std::cout << (canPlace ? "true" : "false") << std::endl;
+    if (canPlace)
+        ECDebug::ReturnString({ u8"true", 4 });
+    else
+        ECDebug::ReturnString({ u8"false", 5 });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- GetHouseProduction ----------
+void __cdecl IHVerify_GetHouseProduction(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+    auto oHouse = Context.GetObjectItem("House");
+    if (!oHouse || !oHouse.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    // Resolve type indices to IDs
+    auto resolveTypeID = [](int idx, AbstractType at) -> std::string {
+        if (idx < 0) return "null";
+        auto pTT = TechnoTypeClass::GetByTypeAndIndex(at, idx);
+        return pTT ? std::format("\"{}\"", pTT->ID) : "null";
+    };
+
+    auto s = std::format(
+        R"({{"House":{},"ProducingBuildingTypeIndex":{},"ProducingBuildingTypeID":{})"
+        R"(,"ProducingUnitTypeIndex":{},"ProducingUnitTypeID":{})"
+        R"(,"ProducingInfantryTypeIndex":{},"ProducingInfantryTypeID":{})"
+        R"(,"ProducingAircraftTypeIndex":{},"ProducingAircraftTypeID":{}}})",
+        hidx,
+        pHouse->ProducingBuildingTypeIndex,
+        resolveTypeID(pHouse->ProducingBuildingTypeIndex, AbstractType::BuildingType),
+        pHouse->ProducingUnitTypeIndex,
+        resolveTypeID(pHouse->ProducingUnitTypeIndex, AbstractType::UnitType),
+        pHouse->ProducingInfantryTypeIndex,
+        resolveTypeID(pHouse->ProducingInfantryTypeIndex, AbstractType::InfantryType),
+        pHouse->ProducingAircraftTypeIndex,
+        resolveTypeID(pHouse->ProducingAircraftTypeIndex, AbstractType::AircraftType)
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- ListAllFactories ----------
+void __cdecl IHVerify_ListAllFactories(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    bool first = true;
+    std::string s = "[";
+    for (auto pFact : *FactoryClass::Array)
+    {
+        if (!pFact) continue;
+        if (first) first = false; else s += ",";
+        int ownerIdx = pFact->Owner ? pFact->Owner->ArrayIndex : -1;
+        std::string objType = "null";
+        if (pFact->Object) {
+            auto pTT = pFact->Object->GetTechnoType();
+            objType = pTT ? std::format("\"{}\"", pTT->ID) : "null";
+        }
+        s += std::format(
+            R"({{"Address":"0x{:08X}","Owner":{},"Object":"0x{:08X}","ObjectType":{},)"
+            R"("IsSuspended":{},"IsManual":{},"QueueLen":{},"Progress":{},"IsDone":{}}})",
+            (DWORD)pFact, ownerIdx,
+            (DWORD)pFact->Object, objType,
+            pFact->IsSuspended ? "true" : "false",
+            pFact->IsManual ? "true" : "false",
+            pFact->QueuedObjects.Count,
+            pFact->GetProgress(), pFact->IsDone() ? "true" : "false"
+        );
+    }
+    s += "]";
     std::cout << s << std::endl;
     ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
     ECDebug::DoNotEcho();
