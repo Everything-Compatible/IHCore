@@ -522,7 +522,7 @@ namespace Internal
 		auto s = Context.GetObjectItem("Line");
 		if (s.Available() && s.IsTypeString())
 		{
-			MessageListClass::Instance().PrintMessage(UTF8toUnicode(s.GetString()).c_str());
+			MessageListClass::Instance().PrintMessage(UTF8toUnicode(s.GetString()).c_str(), 400);
 			ECCommand::DoNotEcho();
 		}
 		else
