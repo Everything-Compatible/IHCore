@@ -23,7 +23,7 @@ void __cdecl IHVerify_SelectObject(JsonObject Context)
     DWORD addr = (DWORD)oAddr.GetInt();
 
     auto pAbs = (TechnoClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
 
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit &&
@@ -73,7 +73,7 @@ void __cdecl IHVerify_DeployObject(JsonObject Context)
     DWORD addr = (DWORD)oAddr.GetInt();
 
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
 
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit &&
@@ -150,6 +150,41 @@ static int ParseMission(const std::string& s)
     return -2;
 }
 
+void __cdecl IHVerify_StartRepairBuilding(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber())
+    {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
+        return;
+    }
+    DWORD addr = (DWORD)oAddr.GetInt();
+
+    auto pAbs = (AbstractClass*)addr;
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+
+    auto absType = pAbs->WhatAmI();
+    if (absType != AbstractType::Building)
+    {
+        ECDebug::ReturnStdError(ERROR_INVALID_FUNCTION);
+        return;
+    }
+
+	auto pBld = (BuildingClass*)pAbs;
+
+    if (!pBld->CanBeRepaired())
+    {
+		ECDebug::ReturnError(~std::format("Building 0x{:08X} cannot be repaired", addr), ERROR_INVALID_FUNCTION);
+		return;
+    }
+
+    pBld->IsBeingRepaired = true;
+    std::cout << std::format("Building 0x{:08X} is being repaired", addr) << std::endl;
+    ECDebug::DoNotEcho();
+}
+
 void __cdecl IHVerify_QueueMission(JsonObject Context)
 {
     if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
@@ -186,7 +221,7 @@ void __cdecl IHVerify_QueueMission(JsonObject Context)
     }
 
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
 
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit &&
@@ -245,7 +280,7 @@ void __cdecl IHVerify_IssueOrder(JsonObject Context)
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     DWORD addr = (DWORD)oAddr.GetInt();
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit && absType != AbstractType::Infantry &&
         absType != AbstractType::Building && absType != AbstractType::Aircraft) {
@@ -351,7 +386,7 @@ void __cdecl IHVerify_SetDestination(JsonObject Context)
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     DWORD addr = (DWORD)oAddr.GetInt();
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit && absType != AbstractType::Infantry &&
         absType != AbstractType::Building && absType != AbstractType::Aircraft) {

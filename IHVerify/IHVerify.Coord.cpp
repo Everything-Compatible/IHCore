@@ -1,4 +1,4 @@
-#include "IHVerify.h"
+﻿#include "IHVerify.h"
 #include <format>
 #include <iostream>
 #include <string>
@@ -55,7 +55,7 @@ void __cdecl IHVerify_GetObjectCoords(JsonObject Context)
         ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
     }
     auto pAbs = (AbstractClass*)(DWORD)oAddr.GetInt();
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive((DWORD)pAbs)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
 
     auto pObj = (ObjectClass*)pAbs;
     auto coords = pObj->GetCoords();
@@ -155,7 +155,7 @@ void __cdecl IHVerify_FindObjectsInRange(JsonObject Context)
     std::string s = "[";
     int total = 0;
 
-    for (size_t i = 0; i < count && total < 200; i++)
+    for (size_t i = 0; i < count && total < 5000; i++)
     {
         auto offset = CellSpread::GetCell(i);
         CellStruct cs { (short)(cx + offset.X), (short)(cy + offset.Y) };
@@ -284,7 +284,7 @@ void __cdecl IHVerify_GetMovementState(JsonObject Context)
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     DWORD addr = (DWORD)oAddr.GetInt();
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive((DWORD)pAbs)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit && absType != AbstractType::Infantry &&
         absType != AbstractType::Building && absType != AbstractType::Aircraft) {
@@ -371,7 +371,7 @@ void __cdecl IHVerify_CanEnterCell(JsonObject Context)
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     DWORD addr = (DWORD)oAddr.GetInt();
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (!pAbs || !IsPointerAlive((DWORD)pAbs)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
     auto absType = pAbs->WhatAmI();
     if (absType != AbstractType::Unit && absType != AbstractType::Infantry &&
         absType != AbstractType::Building && absType != AbstractType::Aircraft) {
@@ -728,14 +728,11 @@ void __cdecl IHVerify_CheckBuildability(JsonObject Context)
     TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
     if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
 
-    bool buildLimitOnly   = false;
     bool allowInProduction = false;
-    auto oBLO = Context.GetObjectItem("BuildLimitOnly");
-    if (oBLO && oBLO.IsTypeBool()) buildLimitOnly = oBLO.GetBool();
     auto oAIP = Context.GetObjectItem("AllowInProduction");
     if (oAIP && oAIP.IsTypeBool()) allowInProduction = oAIP.GetBool();
 
-    CanBuildResult cbr = pHouse->CanBuild(pType, buildLimitOnly, allowInProduction);
+    CanBuildResult cbr = pHouse->CanBuild(pType, false, allowInProduction);
     bool hasFactory     = pHouse->HasFactoryForObject(pType);
     FactoryClass* pProd = pHouse->GetFactoryProducing(pType);
     FactoryClass* pPrim = pHouse->GetPrimaryFactory(pType->WhatAmI(), pType->Naval, BuildCat::DontCare);
@@ -768,7 +765,8 @@ void __cdecl IHVerify_GetFactoryInfo(JsonObject Context)
     auto oAddr = Context.GetObjectItem("Address");
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     auto pFactory = (FactoryClass*)(DWORD)oAddr.GetInt();
-    if (!pFactory || pFactory->WhatAmI() != AbstractType::Factory) {
+    if (!pFactory || !IsPointerAlive((DWORD)pFactory) || !IsFactoryAlive((DWORD)pFactory)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (pFactory->WhatAmI() != AbstractType::Factory) {
         ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return;
     }
 
@@ -837,6 +835,26 @@ void __cdecl IHVerify_FactoryProduce(JsonObject Context)
     auto typeStr = oType.GetString();
     TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
     if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    // Validate buildability before enqueuing — rejects faction-mismatch,
+    // missing prerequisites, and build-limit-exceeded orders at the C++ level
+    // instead of letting the factory silently accept them and then stall.
+    CanBuildResult cbr = pHouse->CanBuild(pType, false, false);
+    if ((int)cbr < 1) {
+        // Enriched diagnostic: which house, which type, why rejected
+        const char* houseCountry = (pHouse->Type) ? pHouse->Type->ID : "(unknown)";
+        int sideIndex = pHouse->SideIndex;
+        auto err = std::format(
+            R"({{"Action":"FactoryProduce","TypeID":"{}","House":{},"HouseName":"{}","HouseFaction":"{}","SideIndex":{},)"
+            R"("Success":false,"Reason":"{}","CanBuildValue":{},"CanBuildMeaning":{}}})",
+            pType->ID, hidx, pHouse->PlainName, houseCountry, sideIndex,
+            CanBuildResultName((int)cbr), (int)cbr,
+            (int)cbr == 0 ? "\"type is not buildable by this house (wrong faction, missing prerequisite, or build limit reached)\""
+                          : "\"temporarily unbuildable (insufficient funds, power, or constructing pre-requisite)\"");
+        std::cout << err << std::endl;
+        ECDebug::ReturnStdError(ERROR_INVALID_DATA);
+        return;
+    }
 
     auto AbsTypeOfType = pType->WhatAmI();
     bool Success = EventClass::AddEvent(EventClass(
@@ -984,7 +1002,8 @@ void __cdecl IHVerify_FactoryCompleteProduction(JsonObject Context)
     auto oAddr = Context.GetObjectItem("Address");
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     auto pFactory = (FactoryClass*)(DWORD)oAddr.GetInt();
-    if (!pFactory || pFactory->WhatAmI() != AbstractType::Factory) {
+    if (!pFactory || !IsPointerAlive((DWORD)pFactory) || !IsFactoryAlive((DWORD)pFactory)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (pFactory->WhatAmI() != AbstractType::Factory) {
         ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return;
     }
     bool done = pFactory->CompletedProduction();
@@ -1090,7 +1109,8 @@ void __cdecl IHVerify_GetBuildingStatus(JsonObject Context)
     auto oAddr = Context.GetObjectItem("Address");
     if (!oAddr || !oAddr.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
     auto pAbs = (AbstractClass*)(DWORD)oAddr.GetInt();
-    if (!pAbs || pAbs->WhatAmI() != AbstractType::Building) {
+    if (!pAbs || !IsPointerAlive((DWORD)pAbs)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (pAbs->WhatAmI() != AbstractType::Building) {
         ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return;
     }
     auto pBld = (BuildingClass*)pAbs;
@@ -1204,6 +1224,107 @@ void __cdecl IHVerify_GetHouseProduction(JsonObject Context)
         resolveTypeID(pHouse->ProducingInfantryTypeIndex, AbstractType::InfantryType),
         pHouse->ProducingAircraftTypeIndex,
         resolveTypeID(pHouse->ProducingAircraftTypeIndex, AbstractType::AircraftType)
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- AIProduce ----------
+// Directly sets ProducingXxxTypeIndex on the House — the AI production path.
+// BuildingClass::AI collects the index next frame and calls BeginProduction.
+// No EventClass involved; works for both AI and human houses.
+void __cdecl IHVerify_AIProduce(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    auto oType  = Context.GetObjectItem("TypeID");
+    if (!oHouse || !oHouse.IsTypeNumber() || !oType || !oType.IsTypeString()) {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    auto typeStr = oType.GetString();
+    TechnoTypeClass* pType = FindTechnoTypeByID(typeStr.c_str());
+    if (!pType) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+
+    auto at = pType->WhatAmI();
+    int idx = pType->GetArrayIndex();
+
+    if (at == AbstractType::BuildingType)
+        pHouse->ProducingBuildingTypeIndex = idx;
+    else if (at == AbstractType::UnitType)
+        pHouse->ProducingUnitTypeIndex = idx;
+    else if (at == AbstractType::InfantryType)
+        pHouse->ProducingInfantryTypeIndex = idx;
+    else if (at == AbstractType::AircraftType)
+        pHouse->ProducingAircraftTypeIndex = idx;
+    else {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+    }
+
+    auto s = std::format(
+        R"({{"Action":"AIProduce","TypeID":"{}","WhatAmI":"{}","ArrayIndex":{},"House":{}}})",
+        pType->ID, AbsTypeName(at), idx, hidx
+    );
+    std::cout << s << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ---------- AIStopProduction ----------
+// Clears ProducingXxxTypeIndex back to -1, stopping AI production of that category.
+// Use -WhatAmI to target one category, or -All (bool) to clear all four.
+void __cdecl IHVerify_AIStopProduction(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oHouse = Context.GetObjectItem("House");
+    if (!oHouse || !oHouse.IsTypeNumber()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    int hidx = oHouse.GetInt();
+    if (hidx < 0 || hidx >= HouseClass::Array->Count) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+    auto pHouse = HouseClass::Array->Items[hidx];
+
+    bool clearAll = false;
+    auto oAll = Context.GetObjectItem("All");
+    if (oAll && oAll.IsTypeBool()) clearAll = oAll.GetBool();
+
+    std::string cleared;
+
+    if (clearAll) {
+        pHouse->ProducingBuildingTypeIndex = -1;
+        pHouse->ProducingUnitTypeIndex = -1;
+        pHouse->ProducingInfantryTypeIndex = -1;
+        pHouse->ProducingAircraftTypeIndex = -1;
+        cleared = "all";
+    } else {
+        auto oWA = Context.GetObjectItem("WhatAmI");
+        if (!oWA || !oWA.IsTypeString()) { ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return; }
+        auto swa = oWA.GetString();
+
+        if (swa == "BuildingType" || swa == "Building") {
+            pHouse->ProducingBuildingTypeIndex = -1;
+            cleared = "BuildingType";
+        } else if (swa == "UnitType" || swa == "Unit") {
+            pHouse->ProducingUnitTypeIndex = -1;
+            cleared = "UnitType";
+        } else if (swa == "InfantryType" || swa == "Infantry") {
+            pHouse->ProducingInfantryTypeIndex = -1;
+            cleared = "InfantryType";
+        } else if (swa == "AircraftType" || swa == "Aircraft") {
+            pHouse->ProducingAircraftTypeIndex = -1;
+            cleared = "AircraftType";
+        } else {
+            ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS); return;
+        }
+    }
+
+    auto s = std::format(
+        R"({{"Action":"AIStopProduction","House":{},"Cleared":"{}"}})",
+        hidx, cleared
     );
     std::cout << s << std::endl;
     ECDebug::ReturnString({ (const char8_t*)s.c_str(), s.size() });

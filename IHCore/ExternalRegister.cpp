@@ -122,6 +122,8 @@ std::vector<RemoteComponentNameType> ReadRemoteComponents_File(const std::filesy
 	E.Open(file.wstring().c_str(), ExtFileClass::GetReadSignW());
 	auto PA = E.ReadWholeFile();
 	std::string Content(PA.AsStringView());
+	if (Content.empty())
+		return {};
 	auto ParseResult = F.ParseTmpChecked(std::move(Content), conv u8"[ERROR POSITION]");
 	PA.Delete();
 	if (!ParseResult.empty())

@@ -147,7 +147,8 @@ void __cdecl IHVerify_WatchBuildingReady(JsonObject Context)
 
     // Validate the address looks like a building
     auto pAbs = (AbstractClass*)addr;
-    if (!pAbs || pAbs->WhatAmI() != AbstractType::Building) {
+    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
+    if (pAbs->WhatAmI() != AbstractType::Building) {
         ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS);
         return;
     }
@@ -172,8 +173,8 @@ void __cdecl IHVerify_FrameUpdate(JsonObject)
         std::lock_guard<std::mutex> lk(_BuildingWatchMutex);
         for (auto it = _BuildingWatches.begin(); it != _BuildingWatches.end(); ) {
             auto pAbs = (AbstractClass*)it->address;
-            if (!pAbs || pAbs->WhatAmI() != AbstractType::Building) {
-                // Pointer is no longer a building — drop the watch
+            if (!pAbs || !IsPointerAlive(it->address) || pAbs->WhatAmI() != AbstractType::Building) {
+                // Pointer is dead, or no longer a building — drop the watch
                 it = _BuildingWatches.erase(it);
                 continue;
             }

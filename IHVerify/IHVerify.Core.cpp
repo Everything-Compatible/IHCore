@@ -1,12 +1,19 @@
-#include "IHVerify.h"
+﻿#include "IHVerify.h"
 #include "Pointers.h"
 #include <format>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
+#include <vector>
 #include <atomic>
 #include <CRT.h>
 #include <AbstractTypeClass.h>
 #include <YRPP.h>
+#include <UnitTypeClass.h>
+#include <InfantryTypeClass.h>
+#include <BuildingTypeClass.h>
+#include <AircraftTypeClass.h>
+#include <ExtJson.h>
 #include <iostream>
 
 // Only usable after game start — set when IHCore::Reset broadcasts to all DLLs + remote components
@@ -257,6 +264,150 @@ void __cdecl IHVerify_FindObjects(JsonObject Context)
 }
 
 // ------------------------------------------------------------------
+//  FindTechnoInfo: enumerate *TechnoClass::Array with brief info per entry
+//    -WhatAmI Unit/Infantry/Building/Aircraft  (optional)
+//    -House <int>  -Type <str>  -Mission <str>  -Limit <int>  -Offset <int>
+//  Returns [{addr,whatami,whatami_str,type,hp,maxhp,mission,cell,house,selected,inlimbo},...]
+//  Use this for battlefield awareness — iterates TechnoClass::Array only,
+//  skipping all non-Techno objects (House/Factory/Bullet/Anim/etc.).
+// ------------------------------------------------------------------
+void __cdecl IHVerify_FindTechnoInfo(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    int filterAbs = -1;
+    auto oWA = Context.GetObjectItem("WhatAmI");
+    if (oWA && oWA.IsTypeString()) {
+        auto s = ~oWA.GetString();
+        if (s == u8"Unit")              filterAbs = (int)AbstractType::Unit;
+        if (s == u8"Infantry")          filterAbs = (int)AbstractType::Infantry;
+        if (s == u8"Building")          filterAbs = (int)AbstractType::Building;
+        if (s == u8"Aircraft")          filterAbs = (int)AbstractType::Aircraft;
+    }
+
+    int filterHouse = -1;
+    auto oH = Context.GetObjectItem("House");
+    if (oH && oH.IsTypeNumber()) filterHouse = oH.GetInt();
+
+    std::string filterType;
+    auto oT = Context.GetObjectItem("Type");
+    if (oT && oT.IsTypeString()) filterType = oT.GetString();
+
+    std::string filterMission;
+    auto oM = Context.GetObjectItem("Mission");
+    if (oM && oM.IsTypeString()) filterMission = oM.GetString();
+
+    int limit = 50;
+    auto oL = Context.GetObjectItem("Limit");
+    if (oL && oL.IsTypeNumber()) limit = oL.GetInt();
+    if (limit > 500) limit = 500;
+
+    int offset = 0;
+    auto oO = Context.GetObjectItem("Offset");
+    if (oO && oO.IsTypeNumber()) offset = oO.GetInt();
+
+	bool selectedOnly = false;
+    auto oSel = Context.GetObjectItem("SelectedOnly");
+    if (oSel && oSel.IsTypeBool()) selectedOnly = oSel.GetBool();
+
+    bool considerLimbo = false;
+    auto oCon = Context.GetObjectItem("ConsiderLimbo");
+    if (oCon && oCon.IsTypeBool()) considerLimbo = oCon.GetBool();
+
+    bool limboOnly = false;
+    auto oLim = Context.GetObjectItem("LimboOnly");
+    if (oLim && oLim.IsTypeBool()) limboOnly = oLim.GetBool();
+
+    bool techBuilding = false;
+	auto oTB = Context.GetObjectItem("TechBuilding");
+	if (oTB && oTB.IsTypeBool()) techBuilding = oTB.GetBool();
+
+	std::unordered_set<TechnoTypeClass*> techBuildingTypes;
+    if (techBuilding)
+    {
+        for (auto pType : RulesClass::Instance->NeutralTechBuildings)
+            techBuildingTypes.insert(pType);
+    }
+
+    std::string result = "[";
+    result.reserve(16384);
+    int skipped = 0;
+    int collected = 0;
+
+    for (auto pTechno : *TechnoClass::Array)
+    {
+        if (!pTechno) continue;
+        if (!considerLimbo && !limboOnly && pTechno->InLimbo) continue;
+		if (limboOnly && !pTechno->InLimbo) continue;
+
+        auto absType = (int)pTechno->WhatAmI();
+        if (filterAbs >= 0 && absType != filterAbs) continue;
+
+        if (filterHouse >= 0)
+        {
+            auto pHouse = pTechno->GetOwningHouse();
+            if (!pHouse || pHouse->ArrayIndex != filterHouse) continue;
+        }
+
+        if (selectedOnly)
+        {
+			if (!pTechno->IsSelected) continue;
+        }
+
+        auto pType = pTechno->GetTechnoType();
+
+        if (!filterType.empty())
+        {
+            if (!pType || filterType != std::string(pType->ID)) continue;
+        }
+
+        if (techBuilding)
+        {
+            if (!pType || techBuildingTypes.find(pType) == techBuildingTypes.end()) continue;
+        }
+
+        if (!filterMission.empty())
+        {
+            auto mis = (int)pTechno->GetCurrentMission();
+            if (std::to_string(mis) != filterMission) continue;
+        }
+
+        if (skipped < offset) { skipped++; continue; }
+
+        auto coords = pTechno->GetCoords();
+        auto cell = pTechno->GetMapCoords();
+        int hp = pTechno->Health;
+        int maxhp = pType ? pType->Strength : 0;
+        int misInt = (int)pTechno->GetCurrentMission();
+        const char* waStr = pTechno->GetClassName();
+        int houseIdx = -1;
+        auto pHouse = pTechno->GetOwningHouse();
+        if (pHouse) houseIdx = pHouse->ArrayIndex;
+
+        if (collected > 0) result += ",";
+        result += std::format(
+            R"({{"addr":"0x{:08X}","whatami":{},"whatami_str":"{}","type":"{}",)"
+            R"("hp":{},"maxhp":{},"mission":{},)"
+            R"("cell":[{},{}],"house":{},)"
+            R"("selected":{},"inlimbo":{}}})",
+            (DWORD)pTechno, absType, waStr,
+            pType ? pType->ID : "",
+            hp, maxhp, misInt,
+            (int)cell.X, (int)cell.Y, houseIdx,
+            pTechno->IsSelected ? "true" : "false",
+            pTechno->InLimbo ? "true" : "false"
+        );
+        collected++;
+        if (collected >= limit) break;
+    }
+
+    result += "]";
+    std::cout << result << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)result.c_str(), result.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ------------------------------------------------------------------
 //  FindTypes: enumerate *AbstractTypeClass::Array for type definitions
 // ------------------------------------------------------------------
 void __cdecl IHVerify_FindTypes(JsonObject Context)
@@ -326,6 +477,8 @@ void __cdecl IHVerify_FindTypes(JsonObject Context)
 // ------------------------------------------------------------------
 //  GetHouseInfo: structured JSON for a House
 //    -House <index>  (optional, default 0)
+//  Includes cluster detection: groups of ≥5 same-house Unit/Infantry
+//  within a 3×3 cell radius.
 // ------------------------------------------------------------------
 void __cdecl IHVerify_GetHouseInfo(JsonObject Context)
 {
@@ -342,14 +495,15 @@ void __cdecl IHVerify_GetHouseInfo(JsonObject Context)
     if (!pHouse) { ECDebug::ReturnStdError(ERROR_INVALID_DATA); return; }
 
     std::string result = std::format(
-        R"({{"Index":{},"Name":"{}","Faction":"{}","Country":"{}")"
+        R"({{"Index":{},"Name":"{}","ParentCountry":"{}","Country":"{}","SideIndex":{})"
         R"(,"Color":"{},{},{}","LaserColor":"{},{},{}")"
         R"(,"Money":{},"OwnedUnits":{},"OwnedBuildings":{},"OwnedInfantry":{},"OwnedAircraft":{})"
-        R"(,"IsPlayer":"{}","Player":{}}})",
+        R"(,"IsPlayer":"{}","Player":{})",
         idx,
         pHouse->PlainName,
         pHouse->Type ? pHouse->Type->ID : "(unknown)",
         (pHouse->Type && pHouse->Type->ParentCountry) ? (const char*)pHouse->Type->ParentCountry : "(unknown)",
+        pHouse->SideIndex,
         (int)pHouse->Color.R, (int)pHouse->Color.G, (int)pHouse->Color.B,
         (int)pHouse->LaserColor.R, (int)pHouse->LaserColor.G, (int)pHouse->LaserColor.B,
         pHouse->Available_Money(),
@@ -359,7 +513,470 @@ void __cdecl IHVerify_GetHouseInfo(JsonObject Context)
         pHouse->ArrayIndex
     );
 
+    // ── Cluster Detection ──────────────────────────────────────────
+    // Iterate Unit + Infantry of this house, map cell→pointers,
+    // then detect cells where ≥5 same-house Technos are within 3×3.
+    {
+        // Step 1: collect Unit & Infantry positions by cell key
+        // We use a map from cellKey (Y*10000+X) → vector of TechnoClass*
+        std::unordered_map<int, std::vector<TechnoClass*>> cellMap;
+        for (auto pT : *TechnoClass::Array)
+        {
+            if (!pT || pT->InLimbo) continue;
+            auto wa = (int)pT->WhatAmI();
+            if (wa != (int)AbstractType::Unit && wa != (int)AbstractType::Infantry) continue;
+            auto pH = pT->GetOwningHouse();
+            if (!pH || pH->ArrayIndex != idx) continue;
+
+            auto mc = pT->GetMapCoords();
+            int cellKey = ((int)mc.Y) * 10000 + (int)mc.X;
+            cellMap[cellKey].push_back(pT);
+        }
+
+        // Step 2: for each populated cell, check 3×3 neighborhood
+        // Store detected clusters; dedup by cellKey so each cluster only
+        // appears once even if multiple cells in the same cluster trigger.
+        std::unordered_set<int> reportedCells;
+        std::string clusters = "[";
+
+        for (auto& [cellKey, vec] : cellMap)
+        {
+            if (reportedCells.count(cellKey)) continue;
+            if (vec.empty()) continue;
+
+            int cx = cellKey % 10000;
+            int cy = cellKey / 10000;
+
+            // Count same-house Technos in 3×3 area
+            int cellTotal = 0;
+            std::unordered_map<std::string, int> typeCount;
+
+            for (int dy = -1; dy <= 1; ++dy)
+            {
+                for (int dx = -1; dx <= 1; ++dx)
+                {
+                    int nk = (cy + dy) * 10000 + (cx + dx);
+                    auto it = cellMap.find(nk);
+                    if (it == cellMap.end()) continue;
+                    for (auto pT : it->second)
+                    {
+                        auto pTT = pT->GetTechnoType();
+                        if (pTT && pTT->ID[0])
+                            typeCount[pTT->ID]++;
+                        cellTotal++;
+                    }
+                }
+            }
+
+            if (cellTotal >= 5)
+            {
+                // Mark all cells in this 3×3 region as reported
+                for (int dy = -1; dy <= 1; ++dy)
+                    for (int dx = -1; dx <= 1; ++dx)
+                        reportedCells.insert((cy + dy) * 10000 + (cx + dx));
+
+                if (clusters.size() > 1) clusters += ",";
+
+                // Build Types dict: "HTNK":3,"E1":2
+                std::string typesDict = "{";
+                bool firstType = true;
+                for (auto& [tid, cnt] : typeCount)
+                {
+                    if (!firstType) typesDict += ",";
+                    firstType = false;
+                    typesDict += std::format(R"("{}":{})", tid, cnt);
+                }
+                typesDict += "}";
+
+                clusters += std::format(
+                    R"({{"cell":[{},{}],"count":{},"Types":{}}})",
+                    cx, cy, cellTotal, typesDict);
+            }
+        }
+
+        clusters += "]";
+        result += std::format(R"(,"Clusters":{})", clusters);
+    }
+
+    result += "}";  // close root JSON object
     std::cout << result << std::endl;
     ECDebug::ReturnString({ (const char8_t*)result.c_str(), result.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ── Helper: format a single TechnoType entry for GetHouseTechTree ──
+static void AppendTypeEntry(std::string& result, const char* whatAmI, TechnoTypeClass* pType)
+{
+    JsonFile F;
+    auto Obj = F.GetObj();
+    Obj.AddString("WhatAmI", whatAmI);
+    Obj.AddInt("WhatAmIInt", (int)pType->WhatAmI());
+    Obj.AddString("ID", pType->ID);
+    Obj.AddString("Name", pType->Name ? pType->Name : "");
+    if (pType->UIName)
+    {
+        auto u8s = UTF16ToUTF8(pType->UIName);
+        Obj.AddString("UIName", ~u8s);
+    }
+    else
+        Obj.AddString("UIName", "");
+
+    Obj.AddInt("Cost", pType->Cost);
+    Obj.AddInt("Soylent", pType->Soylent);
+    Obj.AddInt("Strength", pType->Strength);
+    Obj.AddInt("BuildLimit", pType->BuildLimit);
+    Obj.AddInt("Sight", pType->Sight);
+    Obj.AddInt("Speed", pType->Speed);
+    Obj.AddInt("Armor", (int)pType->Armor);
+    Obj.AddInt("Passengers", pType->Passengers);
+
+    Obj.AddBool("Naval", pType->Naval);
+    Obj.AddBool("ResourceGatherer", pType->ResourceGatherer);
+    Obj.AddBool("Subterranean", pType->IsSubterranean);
+    Obj.AddBool("Underwater", pType->Underwater);
+    Obj.AddBool("JumpJet", pType->JumpJet);
+
+    auto Mov = pType->MovementZone;
+    bool IsAmphibious = (Mov == MovementZone::Amphibious || Mov == MovementZone::AmphibiousCrusher || Mov == MovementZone::AmphibiousDestroyer);
+    Obj.AddBool("IsAmphibious", IsAmphibious);
+
+    Obj.AddDouble("SizeLimit", pType->SizeLimit);
+
+    result += Obj.GetText();
+}
+
+// ------------------------------------------------------------------
+//  GetHouseTechTree: enumerate all TechnoTypes that a House can build
+//    -House <index>  (optional, default 0)
+//  Calls CanBuild(type, true, false) on every type in the four
+//  TechnoType arrays (UnitType, InfantryType, BuildingType, AircraftType)
+//  and returns only the buildable entries with brief info.
+// ------------------------------------------------------------------
+void __cdecl IHVerify_GetHouseTechTree(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    int hidx = 0;
+    auto oH = Context.GetObjectItem("House");
+    if (oH && oH.IsTypeNumber()) hidx = oH.GetInt();
+
+    if (hidx < 0 || hidx >= (*HouseClass::Array).Count) {
+        ECDebug::ReturnStdError(ERROR_INVALID_INDEX); return;
+    }
+    auto pHouse = (*HouseClass::Array)[hidx];
+    if (!pHouse) { ECDebug::ReturnStdError(ERROR_INVALID_DATA); return; }
+
+    std::string result = "{\"House\":";
+    result += std::to_string(hidx);
+    result += ",\"Buildable\":[";
+    result.reserve(65536);
+    int total = 0;
+
+    // UnitType
+    for (auto pType : *UnitTypeClass::Array) {
+        if (!pType) continue;
+        if ((int)pHouse->CanBuild(pType, false, false) >= 1) {
+            if (total > 0) result += ",";
+            AppendTypeEntry(result, "UnitType", pType);
+            total++;
+        }
+    }
+    // InfantryType
+    for (auto pType : *InfantryTypeClass::Array) {
+        if (!pType) continue;
+        if ((int)pHouse->CanBuild(pType, false, false) >= 1) {
+            if (total > 0) result += ",";
+            AppendTypeEntry(result, "InfantryType", pType);
+            total++;
+        }
+    }
+    // BuildingType
+    for (auto pType : *BuildingTypeClass::Array) {
+        if (!pType) continue;
+        if ((int)pHouse->CanBuild(pType, false, false) >= 1) {
+            if (total > 0) result += ",";
+            AppendTypeEntry(result, "BuildingType", pType);
+            total++;
+        }
+    }
+    // AircraftType
+    for (auto pType : *AircraftTypeClass::Array) {
+        if (!pType) continue;
+        if ((int)pHouse->CanBuild(pType, false, false) >= 1) {
+            if (total > 0) result += ",";
+            AppendTypeEntry(result, "AircraftType", pType);
+            total++;
+        }
+    }
+
+    result += std::format("],\"TotalCount\":{}}}", total);
+    std::cout << result << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)result.c_str(), result.size() });
+    ECDebug::DoNotEcho();
+}
+
+// ------------------------------------------------------------------
+// GetTechBuildingTypes
+//   (no args)
+// ------------------------------------------------------------------
+void __cdecl IHVerify_GetTechBuildingTypes(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    std::string result = "{\"Buildable\":[";
+    result.reserve(65536);
+    int total = 0;
+
+    for (auto pType : RulesClass::Instance->NeutralTechBuildings) {
+        if (!pType) continue;
+        if (total > 0) result += ",";
+        AppendTypeEntry(result, "BuildingType", pType);
+        total++;
+    }
+
+    result += std::format("],\"TotalCount\":{}}}", total);
+    std::cout << result << std::endl;
+    ECDebug::ReturnString({ (const char8_t*)result.c_str(), result.size() });
+    ECDebug::DoNotEcho();
+}
+
+BuildingClass* FindGarrisonBuilding(InfantryClass* pInfantry)
+{
+    HouseClass* pHouse = pInfantry->Owner;
+    if (!pHouse) return nullptr;
+
+    for (auto pBuilding : pHouse->Buildings)
+    {
+        for(auto& occ : pBuilding->Occupants)
+        {
+            if (occ == pInfantry)
+                return pBuilding;
+		}
+    }
+
+    return nullptr;
+}
+
+// ------------------------------------------------------------------
+//  GetTechnoInfo: structured JSON for a Techno
+//    -Address <object address>  (required)
+// ------------------------------------------------------------------
+void __cdecl IHVerify_GetTechnoInfo(JsonObject Context)
+{
+    if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
+
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber())
+    {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
+        return;
+    }
+    DWORD addr = (DWORD)oAddr.GetInt();
+
+    {
+        auto pAbs = (AbstractClass*)addr;
+        if (!pAbs || !IsPointerAlive(addr)) {
+            ECDebug::ReturnStdError(ERROR_INVALID_DATA);
+            return;
+        }
+        auto wa = pAbs->WhatAmI();
+        if (
+            wa != AbstractType::Infantry && 
+			wa != AbstractType::Unit &&
+			wa != AbstractType::Building &&
+			wa != AbstractType::Aircraft
+            ) {
+            ECDebug::ReturnStdError(ERROR_INVALID_DATA);
+            return;
+        }
+    }
+
+    auto pTechno = (TechnoClass*)addr;
+    auto pType = pTechno->GetTechnoType();
+    if (!pType) {
+        ECDebug::ReturnStdError(ERROR_INVALID_DATA);
+        return;
+	}
+
+
+	int WhatAmI = (int)pTechno->WhatAmI();
+    const char* WhatAmIStr = pTechno->GetClassName();
+	DWORD UniqueID = pTechno->UniqueID;
+    CoordStruct Coords = pTechno->GetCoords();
+    int CoordsInt[3] = { Coords.X, Coords.Y, Coords.Z };
+    int HouseIndex = pTechno->GetOwningHouseIndex();
+	const char* TypeId = pType->ID;
+    const char* TypeName = pType->Name ? pType->Name : "";
+	const wchar_t* TypeUIName = pType->UIName ? pType->UIName : L"";
+	std::string TypeUINameU8 = ~UTF16ToUTF8(TypeUIName);
+    int Health = pTechno->Health;
+    int MaxHealth = pType->Strength;
+	int Ammo = pTechno->Ammo;
+    int MaxAmmo = pType->Ammo;
+	bool InLimbo = pTechno->InLimbo;
+	bool Controllable = pTechno->IsControllable();
+	int Mission = (int)pTechno->GetCurrentMission();
+	bool Selected = pTechno->IsSelected;
+    
+    
+    
+
+    JsonFile F;
+    auto Obj = F.GetObj();
+	Obj.AddInt("WhatAmI", WhatAmI);
+	Obj.AddString("WhatAmIStr", WhatAmIStr);
+	Obj.AddInt("UniqueID", UniqueID);
+    Obj.AddObjectItem("Coords", cJSON_CreateIntArray(CoordsInt, 3));
+	Obj.AddInt("HouseIndex", HouseIndex);
+	Obj.AddString("TypeId", TypeId);
+	Obj.AddString("TypeName", TypeName);
+	Obj.AddString("TypeUIName", TypeUINameU8);
+	Obj.AddInt("Health", Health);
+	Obj.AddInt("MaxHealth", MaxHealth);
+	Obj.AddInt("Ammo", Ammo);
+	Obj.AddInt("MaxAmmo", MaxAmmo);
+    Obj.AddInt("Mission", Mission);
+	Obj.AddBool("InLimbo", InLimbo);
+	Obj.AddBool("Controllable", Controllable);
+	Obj.AddBool("Selected", Selected);
+
+    /*
+    passenger
+    Transporter
+    occupant
+    BunkerLinkedItem
+    */
+    if(pTechno->Transporter)
+		Obj.AddString("Transporter", std::format("0x{:08X}", (DWORD)pTechno->Transporter));
+    else
+		Obj.AddNull("Transporter");
+    if (pTechno->Passengers.NumPassengers && pTechno->Passengers.FirstPassenger)
+    {
+		std::vector<std::string> passengerAddrs;
+		auto pPassenger = pTechno->Passengers.FirstPassenger;
+        while (pPassenger)
+        {
+			passengerAddrs.push_back(std::format("0x{:08X}", (DWORD)pPassenger));
+            pPassenger = abstract_cast<FootClass*>(pPassenger->NextObject);
+        }
+		Obj.AddArrayString("Passengers", passengerAddrs);
+    }
+    else
+		Obj.AddNull("Passengers");
+    if (auto pBld = abstract_cast<BuildingClass*>(pTechno); pBld)
+    {
+        auto pBldType = pBld->Type;
+        if (pBldType->BridgeRepairHut)
+        {
+            if(MapClass::Instance->IsLinkedBridgeDestroyed(pBld->GetMapCoords()))
+				Obj.AddString("BridgeStatus", "Destroyed");
+			else
+				Obj.AddString("BridgeStatus", "Intact");
+        }
+        else
+			Obj.AddNull("BridgeStatus");
+
+
+        std::vector<std::string> occupantAddrs;
+        for(auto pOcc : pBld->Occupants)
+        {
+            occupantAddrs.push_back(std::format("0x{:08X}", (DWORD)pOcc));
+		}
+		if (!occupantAddrs.empty())
+            Obj.AddArrayString("Occupants", occupantAddrs);
+        else 
+			Obj.AddNull("Occupants");
+    }
+    else
+    {
+        Obj.AddNull("Occupants");
+        Obj.AddNull("BridgeStatus");
+    }
+
+    if(auto pInf = abstract_cast<InfantryClass*>(pTechno); pInf)
+    {
+        if (pInf->InLimbo && pInf->Type->Occupier)
+        {
+            auto pGarrison = FindGarrisonBuilding(pInf);
+            if (pGarrison)
+                Obj.AddString("GarrisonBuilding", std::format("0x{:08X}", (DWORD)pGarrison));
+            else
+                Obj.AddNull("GarrisonBuilding");
+        }
+        else
+			Obj.AddNull("GarrisonBuilding");
+    }
+    else
+		Obj.AddNull("GarrisonBuilding");
+
+    auto HealthStatus = pTechno->GetHealthStatus();
+    switch (HealthStatus)
+    {
+    case HealthState::Green:
+        Obj.AddString("HealthStatus", "Green");
+		break;
+    case HealthState::Yellow:
+		Obj.AddString("HealthStatus", "Yellow");
+        break;
+	case HealthState::Red:
+		Obj.AddString("HealthStatus", "Red");
+        break;
+    default:
+		Obj.AddString("HealthStatus", "Unknown");
+    }
+
+
+
+
+    std::string result = Obj.GetText();
+    std::cout << result << std::endl;
+    ECDebug::ReturnString(~result);
+	ECDebug::DoNotEcho();
+}
+
+// ------------------------------------------------------------------
+//  IsObjectAlive (Condition): check if an address is still in AbstractClass::Array
+//    -Address <0x...>
+//  Returns true if the pointer is alive (still in the global object array),
+//  false if it has been destroyed or was never valid.
+// ------------------------------------------------------------------
+
+bool IsPointerAlive(DWORD addr)
+{
+    if (!addr) return false;
+    for (auto pAbs : *AbstractClass::Array)
+    {
+        if ((DWORD)pAbs == addr)
+            return true;
+    }
+    return false;
+}
+
+bool IsFactoryAlive(DWORD addr)
+{
+    if (!addr) return false;
+    for (auto pFact : *FactoryClass::Array)
+    {
+        if ((DWORD)pFact == addr)
+            return true;
+    }
+    return false;
+}
+
+void __cdecl IHVerify_IsObjectAlive(JsonObject Context)
+{
+    auto oAddr = Context.GetObjectItem("Address");
+    if (!oAddr || !oAddr.IsTypeNumber())
+    {
+        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
+        return;
+    }
+    DWORD addr = (DWORD)oAddr.GetInt();
+    bool alive = IsPointerAlive(addr);
+    std::cout << (alive ? "true" : "false") << std::endl;
+    if (alive)
+        ECDebug::ReturnString({ u8"true", 4 });
+    else
+        ECDebug::ReturnString({ u8"false", 5 });
     ECDebug::DoNotEcho();
 }

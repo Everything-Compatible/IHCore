@@ -8,11 +8,23 @@ void IHVerify_OrderedInit();  // checks IHCore version, sets up listeners + ACP
 void __cdecl IHVerify_OnGameReset(JsonObject);  // called via IHCore::Reset at game start
 FuncInfo* IHVerify_GetFunc(const char* Name, int Version);
 
+// Helper: check if a pointer is still in AbstractClass::Array (alive)
+bool IsPointerAlive(DWORD addr);
+// Helper: check if a factory pointer is still in FactoryClass::Array
+bool IsFactoryAlive(DWORD addr);
+
 // Route: <Status.xxx> / <Status.House.N.xxx>
 UTF8_CString __cdecl StatusRouter(const char* Key);
 
 // Action: FindObjects -Type -House -WhatAmI -Mission -Limit -Offset
 void __cdecl IHVerify_FindObjects(JsonObject Context);
+
+// Action: FindTechnoInfo — enumerate TechnoClass::Array with brief info per entry
+//   -WhatAmI Unit/Infantry/Building/Aircraft (optional; all four if omitted)
+//   -House <int>  -Type <str>  -Mission <str>  -Limit <int>  -Offset <int>
+//   Returns [{addr,whatami,whatami_str,type,hp,maxhp,mission,cell,house,selected,inlimbo},...]
+//   Use this for battlefield awareness — it's faster than FindObjects for Techno queries.
+void __cdecl IHVerify_FindTechnoInfo(JsonObject Context);
 
 // Action: FindTypes -ID <pattern> -WhatAmI <UnitType|BuildingType|...> -Limit -Offset
 void __cdecl IHVerify_FindTypes(JsonObject Context);
@@ -20,8 +32,16 @@ void __cdecl IHVerify_FindTypes(JsonObject Context);
 // Action: GetHouseInfo -House <index>  (default 0)
 void __cdecl IHVerify_GetHouseInfo(JsonObject Context);
 
+// Action: GetTechnoInfo -Address <0x...>  (Unit/Infantry/Building/Aircraft)
+void __cdecl IHVerify_GetTechnoInfo(JsonObject Context);
+
+// Condition: IsObjectAlive -Address <0x...> — check if pointer exists in AbstractClass::Array
+void __cdecl IHVerify_IsObjectAlive(JsonObject Context);
+
 // Action: QueueMission -Address <0x...> -Mission <name|int> (Guard/Harvest/...)
 void __cdecl IHVerify_QueueMission(JsonObject Context);
+
+void __cdecl IHVerify_StartRepairBuilding(JsonObject Context);
 
 // Action: GetMapInfo — returns map dimensions
 void __cdecl IHVerify_GetMapInfo(JsonObject Context);
@@ -91,7 +111,7 @@ void __cdecl IHVerify_GetFrameRateInfo(JsonObject Context);
 // ═══════════════════════════════════════════════════════════
 
 // Action: CheckBuildability — CanBuild + HasFactoryForObject + GetFactoryProducing + GetPrimaryFactory
-//   -House <int>  -TypeID <str>  [-BuildLimitOnly false] [-AllowInProduction false]
+//   -House <int>  -TypeID <str>  [-AllowInProduction false]
 void __cdecl IHVerify_CheckBuildability(JsonObject Context);
 
 // Action: GetFactoryInfo — query factory state
@@ -122,6 +142,16 @@ void __cdecl IHVerify_FactoryCompleteProduction(JsonObject Context);
 //   -House <int>  -TypeID <str>
 void __cdecl IHVerify_FindFactory(JsonObject Context);
 
+// Action: GetHouseTechTree — enumerate all types that a House can build
+//   -House <int>  (default 0)
+//   Returns {House, Buildable:[{WhatAmI,ID,Name,UIName,Cost,TechLevel,...}], TotalCount}
+void __cdecl IHVerify_GetHouseTechTree(JsonObject Context);
+
+// Action: GetTechBuildingTypes — enumerate Neutral Tech Building Types.
+//  (no args)
+//   Returns {Buildable:[{OwningHouseID,WhatAmI,ID,Name,UIName,Cost,TechLevel,...}], TotalCount}
+void __cdecl IHVerify_GetTechBuildingTypes(JsonObject Context);
+
 // Action: GetTechnoTypeInfo — static TechnoType properties
 //   -TypeID <str>
 void __cdecl IHVerify_GetTechnoTypeInfo(JsonObject Context);
@@ -137,6 +167,17 @@ void __cdecl IHVerify_CanPlaceBuilding(JsonObject Context);
 // Action: GetHouseProduction — current production type indices
 //   -House <int>
 void __cdecl IHVerify_GetHouseProduction(JsonObject Context);
+
+// Action: AIProduce — directly set ProducingXxxTypeIndex for AI house
+//   -House <int>  -TypeID <str>
+//   BuildingClass::AI picks it up next frame and calls BeginProduction.
+//   This is the AI path — no EventClass involved. Works for AI houses.
+void __cdecl IHVerify_AIProduce(JsonObject Context);
+
+// Action: AIStopProduction — clear ProducingXxxTypeIndex back to -1
+//   -House <int>  -WhatAmI <str>   (UnitType|BuildingType|InfantryType|AircraftType)
+//   or  -All  to clear all four at once
+void __cdecl IHVerify_AIStopProduction(JsonObject Context);
 
 // Action: ListAllFactories — iterate FactoryClass::Array, return all factory addresses with owner
 //   (no args)
