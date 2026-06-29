@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHIProj", "IHIProj\IHIProj.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHAgentBackend", "IHAgentBackend\IHAgentBackend.vcxproj", "{7E0817D2-F5CF-447D-B749-2E8C4214BBD5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHAgentFrontend", "IHAgentFrontend\IHAgentFrontend.vcxproj", "{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{7E0817D2-F5CF-447D-B749-2E8C4214BBD5}.Release|x64.Build.0 = Release|x64
 		{7E0817D2-F5CF-447D-B749-2E8C4214BBD5}.Release|x86.ActiveCfg = Release|Win32
 		{7E0817D2-F5CF-447D-B749-2E8C4214BBD5}.Release|x86.Build.0 = Release|Win32
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Debug|x64.ActiveCfg = Debug|x64
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Debug|x64.Build.0 = Debug|x64
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Debug|x86.ActiveCfg = Debug|Win32
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Debug|x86.Build.0 = Debug|Win32
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Release|x64.ActiveCfg = Release|x64
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Release|x64.Build.0 = Release|x64
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Release|x86.ActiveCfg = Release|Win32
+		{8A3C4B5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
