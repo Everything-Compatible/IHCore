@@ -105,7 +105,7 @@
     <ClInclude Include="Pointers.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="IHVerify.h">
+    <ClInclude Include="AgentBackend.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -152,23 +152,23 @@
     <ClCompile Include="..\Common\Logger\Debug.cpp">
       <Filter>Logger</Filter>
     </ClCompile>
-    <ClCompile Include="IHVerify.Actions.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IHVerify.Core.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IHVerify.Marker.cpp">
+    <ClCompile Include="Agent.Actions.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Pointers.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="IHVerify.Coord.cpp">
+    <ClCompile Include="Agent.Coord.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\IHCore\YRPP\StaticInits.cpp">
       <Filter>YRPP</Filter>
+    </ClCompile>
+    <ClCompile Include="Agent.Core.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Agent.Marker.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

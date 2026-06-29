@@ -24,6 +24,7 @@
     <ProjectGuid>{7e0817d2-f5cf-447d-b749-2e8c4214bbd5}</ProjectGuid>
     <RootNamespace>IHVerify</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>IHAgentBackend</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -171,7 +172,7 @@
     <ClInclude Include="..\Common\IHVerify\Version.h" />
     <ClInclude Include="..\Common\Logger\Debug.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="IHVerify.h" />
+    <ClInclude Include="AgentBackend.h" />
     <ClInclude Include="Pointers.h" />
   </ItemGroup>
   <ItemGroup>
@@ -190,11 +191,11 @@
     <ClCompile Include="..\Common\Logger\Debug.cpp" />
     <ClCompile Include="..\IHCore\YRPP\StaticInits.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="IHVerify.Core.cpp" />
-    <ClCompile Include="IHVerify.Actions.cpp" />
+    <ClCompile Include="Agent.Core.cpp" />
+    <ClCompile Include="Agent.Actions.cpp" />
     <ClCompile Include="Pointers.cpp" />
-    <ClCompile Include="IHVerify.Marker.cpp" />
-    <ClCompile Include="IHVerify.Coord.cpp" />
+    <ClCompile Include="Agent.Marker.cpp" />
+    <ClCompile Include="Agent.Coord.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
