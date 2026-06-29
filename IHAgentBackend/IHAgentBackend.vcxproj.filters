@@ -27,7 +27,7 @@
     <ClInclude Include="framework.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\IHVerify\Version.h">
+    <ClInclude Include="..\Common\IHAgentBackend\Version.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\EC.Exception.h">

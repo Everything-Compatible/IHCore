@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHLibList", "IHLibList\IHLi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHIProj", "IHIProj\IHIProj.vcxproj", "{1CDBD76F-990E-4A41-93AC-1AD9AAE12CE2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHVerify", "IHVerify\IHVerify.vcxproj", "{7E0817D2-F5CF-447D-B749-2E8C4214BBD5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IHAgentBackend", "IHAgentBackend\IHAgentBackend.vcxproj", "{7E0817D2-F5CF-447D-B749-2E8C4214BBD5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
