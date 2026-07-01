@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <YRPP.h>
 
-// ── Mark storage ──
+// ── 标记存储 ──
 static std::unordered_map<DWORD, std::u8string> _Marks;
 static std::mutex _MarksMutex;
 
@@ -34,173 +34,69 @@ bool IsObjectMarked(DWORD addr, std::string& outLabel)
     return false;
 }
 
-// ── Watch storage ──
-struct WatchEntry {
-    DWORD address;
-    std::string callbackLib;
-    std::string callbackMethod;
-    bool removedOnly;
-};
-static std::vector<WatchEntry> _Watches;
-static std::mutex _WatchMutex;
-
-// ── Building-ready watch storage ──
-struct BuildingReadyWatch {
-    DWORD address;
-    std::string callbackLib;
-    std::string callbackMethod;
-};
-static std::vector<BuildingReadyWatch> _BuildingWatches;
-static std::mutex _BuildingWatchMutex;
-
-// ── PointerExpiredProcess — auto cleanup on object death ──
+// ── PointerExpiredProcess — 对象销毁时自动清理 ──
+// v2: 同时为属于某个 Session 所属 House 的 TechnoClass 对象分发
+//     OnUnitDestroyed 事件。vtable 安全：仅在
+//     IsPointerAlive(addr) 确认对象仍在 AbstractClass::Array 中之后，
+//     才能访问 pDyingObj 的 vtable。根据 Pointers.cpp:13 的警告，
+//     不要对已释放的对象调用 vtable 方法。
 void CALLBACK PointerExpiredProcess(AbstractClass* pDyingObj, bool bRemoved)
 {
+    if (!pDyingObj) return;
     DWORD addr = (DWORD)pDyingObj;
 
-    // 1) auto-mark cleanup
+    // 1) auto-mark cleanup (preserve v1 behavior)
     if (bRemoved) UnmarkObject(addr);
 
-    // 2) fire watch callbacks
-    std::lock_guard<std::mutex> lk(_WatchMutex);
-    for (auto it = _Watches.begin(); it != _Watches.end(); ) {
-        if (it->address == addr) {
-            if (!it->removedOnly || bRemoved) {
-                auto* root = cJSON_CreateObject();
-                char buf[20];
-                sprintf_s(buf, "0x%08X", addr);
-                cJSON_AddStringToObject(root, "Pointer", buf);
-                cJSON_AddNumberToObject(root, "Removed", bRemoved ? 1 : 0);
-                Ext::PostAsyncRemoteCall(
-                    it->callbackLib.c_str(),
-                    it->callbackMethod.c_str(),
-                    2147483647,
-                    JsonObject(root)
-                );
-                it = _Watches.erase(it);
-                continue;
-            }
-        }
-        ++it;
+    // 2) v2 OnUnitDestroyed dispatch — only for final removal (not temp
+    //    limbo transitions like entering a transport)
+    if (!bRemoved) return;
+
+    // vtable safety: if the object is no longer in AbstractClass::Array,
+    // its vtable may have been freed — skip dispatch
+    if (!IsPointerAlive(addr)) return;
+
+    auto wa = pDyingObj->WhatAmI();
+    if (wa != AbstractType::Unit && wa != AbstractType::Infantry &&
+        wa != AbstractType::Building && wa != AbstractType::Aircraft) {
+        return;
     }
+
+    auto pT = static_cast<TechnoClass*>(pDyingObj);
+    auto pH = pT->GetOwningHouse();
+    if (!pH) return;
+    int houseIdx = pH->ArrayIndex;
+
+    // 查找控制该 House 的 Session
+    AgentSession* pS = FindSessionByHouse(houseIdx);
+    if (!pS) return;
+
+    // 在分发前查找类型 ID — pS 可能因并发的 Session 删除而失效
+    // session erase, so we copy nothing here and let DispatchUnitDestroyed
+    // handle field copying under its own mutex discipline.
+    const char* typeId = "";
+    auto* pType = pT->GetTechnoType();
+    if (pType) typeId = pType->ID;
+
+    DispatchUnitDestroyed(pS, typeId, addr);
 }
 
-// ── EC Actions ──
+// ── EC 动作 ──
 
-void __cdecl IHVerify_WatchPointer(JsonObject Context)
+void __cdecl IHAgentBackend_FrameUpdate(JsonObject)
 {
-    auto oAddr = Context.GetObjectItem("Address");
-    if (!oAddr || !oAddr.IsTypeNumber()) {
-        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
-        return;
-    }
-    DWORD addr = (DWORD)oAddr.GetInt();
+    // v2: session timeout detection + viewport sampling (Phase A)
+    Session_FrameUpdate();
 
-    auto oLib = Context.GetObjectItem("CallbackLib");
-    if (!oLib || !oLib.IsTypeString()) {
-        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
-        return;
-    }
-    std::string cbLib = oLib.GetString();
+    // v2: OnBuildingReady auto-dispatch (Phase D)
+    Session_BuildingReadyPoll();
 
-    auto oMethod = Context.GetObjectItem("CallbackMethod");
-    if (!oMethod || !oMethod.IsTypeString()) {
-        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
-        return;
-    }
-    std::string cbMethod = oMethod.GetString();
-
-    bool removedOnly = true;
-    auto oRO = Context.GetObjectItem("RemovedOnly");
-    if (oRO && oRO.IsTypeBool()) removedOnly = oRO.GetBool();
-
-    std::lock_guard<std::mutex> lk(_WatchMutex);
-    _Watches.push_back({ addr, cbLib, cbMethod, removedOnly });
-
-    std::cout << std::format("WatchPointer 0x{:08X} callback={}.{} removedOnly={}",
-        addr, cbLib, cbMethod, removedOnly ? "true" : "false") << std::endl;
-    ECDebug::DoNotEcho();
+    // Marker 系统不需要每帧轮询。
+    // 旧的每个建筑的 watch 轮询已在 Phase D 中移除，
+    // 改为 Session 级别的 OnBuildingReady 自动分发（Session_BuildingReadyPoll）。
 }
 
-void __cdecl IHVerify_WatchBuildingReady(JsonObject Context)
-{
-    auto oAddr = Context.GetObjectItem("Address");
-    if (!oAddr || !oAddr.IsTypeNumber()) {
-        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
-        return;
-    }
-    DWORD addr = (DWORD)oAddr.GetInt();
-
-    auto oLib = Context.GetObjectItem("CallbackLib");
-    if (!oLib || !oLib.IsTypeString()) {
-        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
-        return;
-    }
-    std::string cbLib = oLib.GetString();
-
-    auto oMethod = Context.GetObjectItem("CallbackMethod");
-    if (!oMethod || !oMethod.IsTypeString()) {
-        ECDebug::ReturnStdError(ERROR_BAD_ARGUMENTS);
-        return;
-    }
-    std::string cbMethod = oMethod.GetString();
-
-    // Validate the address looks like a building
-    auto pAbs = (AbstractClass*)addr;
-    if (!pAbs || !IsPointerAlive(addr)) { ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS); return; }
-    if (pAbs->WhatAmI() != AbstractType::Building) {
-        ECDebug::ReturnStdError(ERROR_INVALID_ADDRESS);
-        return;
-    }
-
-    std::lock_guard<std::mutex> lk(_BuildingWatchMutex);
-    _BuildingWatches.push_back({ addr, cbLib, cbMethod });
-
-    auto pBld = (BuildingClass*)pAbs;
-    std::cout << std::format("WatchBuildingReady 0x{:08X} type={} callback={}.{}",
-        addr, pBld->Type->ID, cbLib, cbMethod) << std::endl;
-    ECDebug::DoNotEcho();
-}
-
-void __cdecl IHVerify_FrameUpdate(JsonObject)
-{
-    // Watches are fired directly from PointerExpiredProcess via PostAsyncRemoteCall.
-    // This handler exists to keep IHVerify registered in the IHCore::FrameUpdate broadcast
-    // and to poll building-ready watches each frame.
-
-    // ── Poll building-ready watches ──
-    {
-        std::lock_guard<std::mutex> lk(_BuildingWatchMutex);
-        for (auto it = _BuildingWatches.begin(); it != _BuildingWatches.end(); ) {
-            auto pAbs = (AbstractClass*)it->address;
-            if (!pAbs || !IsPointerAlive(it->address) || pAbs->WhatAmI() != AbstractType::Building) {
-                // Pointer is dead, or no longer a building — drop the watch
-                it = _BuildingWatches.erase(it);
-                continue;
-            }
-            auto pBld = (BuildingClass*)pAbs;
-            // Building is ready: placed, built-up, not in limbo
-            if (pBld->ActuallyPlacedOnMap && pBld->HasBuildUp && !pBld->InLimbo) {
-                auto* root = cJSON_CreateObject();
-                char buf[20];
-                sprintf_s(buf, "0x%08X", it->address);
-                cJSON_AddStringToObject(root, "Address", buf);
-                cJSON_AddStringToObject(root, "TypeID", pBld->Type->ID);
-                Ext::PostAsyncRemoteCall(
-                    it->callbackLib.c_str(),
-                    it->callbackMethod.c_str(),
-                    2147483647,
-                    JsonObject(root)
-                );
-                it = _BuildingWatches.erase(it);
-            } else {
-                ++it;
-            }
-        }
-    }
-}
-
-void __cdecl IHVerify_MarkObject(JsonObject Context)
+void __cdecl IHAgentBackend_MarkObject(JsonObject Context)
 {
     auto oAddr = Context.GetObjectItem("Address");
     if (!oAddr || !oAddr.IsTypeNumber())
@@ -223,7 +119,7 @@ void __cdecl IHVerify_MarkObject(JsonObject Context)
     ECDebug::DoNotEcho();
 }
 
-void __cdecl IHVerify_UnmarkObject(JsonObject Context)
+void __cdecl IHAgentBackend_UnmarkObject(JsonObject Context)
 {
     auto oAddr = Context.GetObjectItem("Address");
     if (!oAddr || !oAddr.IsTypeNumber())
@@ -238,7 +134,7 @@ void __cdecl IHVerify_UnmarkObject(JsonObject Context)
     ECDebug::DoNotEcho();
 }
 
-void __cdecl IHVerify_ListMarks(JsonObject Context)
+void __cdecl IHAgentBackend_ListMarks(JsonObject Context)
 {
     std::lock_guard<std::mutex> lk(_MarksMutex);
     if (_Marks.empty())
@@ -263,7 +159,7 @@ void __cdecl IHVerify_ListMarks(JsonObject Context)
     ECDebug::DoNotEcho();
 }
 
-void __cdecl IHVerify_ClearMarks(JsonObject Context)
+void __cdecl IHAgentBackend_ClearMarks(JsonObject Context)
 {
     std::lock_guard<std::mutex> lk(_MarksMutex);
     size_t n = _Marks.size();
@@ -274,7 +170,7 @@ void __cdecl IHVerify_ClearMarks(JsonObject Context)
 
 // ── ACP (Address Comment Provider) ──
 
-// Move string to IH-managed heap (same pattern as IHInspector)
+// 将字符串移动到 IH 管理的堆上（与 IHInspector 相同模式）
 static const char* MoveToIHCore(const std::string& S)
 {
     char* p = (char*)IH::Malloc(S.size() + 1);
@@ -294,8 +190,8 @@ const char* __cdecl MarkerACP(const AddressCommentInfo& AddrInfo)
     std::string msg;
     if (AddrInfo.FirstAddrOfReport)
     {
-        msg = std::format("--- IHVerify Marked Objects ({}) ---\n", _Marks.size());
+        msg = std::format("--- IHAgentBackend Marked Objects ({}) ---\n", _Marks.size());
     }
-    msg += std::format(" [IHVerify: \"{}\"]", label);
+    msg += std::format(" [IHAgentBackend: \"{}\"]", label);
     return MoveToIHCore(msg);
 }

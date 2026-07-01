@@ -5,17 +5,17 @@
 #include <EventClass.h>
 
 
-// PointerExpiredProcess is implemented in IHVerify.Marker.cpp
-// This file exists to:
-// 1) satisfy the linker with the declaration from Pointers.h
-// 2) provide a place for IHVerify to expand pointer-lifetime management
+// PointerExpiredProcess 在 IHAgentBackend.Marker.cpp 中实现
+// 此文件的目的：
+// 1) 提供 Pointers.h 中声明的链接满足
+// 2) 为 IHAgentBackend 提供扩展指针生命周期管理的场所
 //
-// DO NOT call GetClassName/vtable on pDyingObj — it has already been freed.
-// pDyingObj may be broadcast multiple times (multiple references holding it).
-// bRemoved=false means the object is temporarily leaving the map, not dying.
+// 不要对 pDyingObj 调用 GetClassName/vtable —— 它已被释放。
+// pDyingObj 可能被多次广播（多个引用持有它）。
+// bRemoved=false 表示对象暂时离开地图，而非销毁。
 
 
-void __cdecl IHVerify_ManualTest(JsonObject Context)
+void __cdecl IHAgentBackend_ManualTest(JsonObject Context)
 {
 	if (!_GameStarted.load(std::memory_order_acquire)) { ECDebug::ReturnStdError(ERROR_NOT_READY); return; }
 

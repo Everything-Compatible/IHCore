@@ -196,6 +196,7 @@
     <ClCompile Include="Pointers.cpp" />
     <ClCompile Include="Agent.Marker.cpp" />
     <ClCompile Include="Agent.Coord.cpp" />
+    <ClCompile Include="Agent.Session.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
