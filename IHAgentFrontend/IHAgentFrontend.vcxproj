@@ -76,6 +76,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;IHAGENTFRONTEND_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -93,6 +95,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;IHAGENTFRONTEND_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -110,6 +114,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;IHAGENTFRONTEND_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -127,6 +133,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;IHAGENTFRONTEND_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -141,6 +149,34 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Coordinator.h" />
+    <ClInclude Include="Utils\IdTypes.h" />
+    <ClInclude Include="Utils\Cell.h" />
+    <ClInclude Include="Utils\CommonTypes.h" />
+    <ClInclude Include="Utils\GameState.h" />
+    <ClInclude Include="Utils\BackendInterface.h" />
+    <ClInclude Include="Utils\StubBackendClient.h" />
+    <ClInclude Include="Utils\LLMClient.h" />
+    <ClInclude Include="Utils\Geometry.h" />
+    <ClInclude Include="Utils\Logger.h" />
+    <ClInclude Include="Utils\SessionLifecycle.h" />
+    <ClInclude Include="Utils\BackendCallbacks.h" />
+    <ClInclude Include="StrategicAgent\StrategicAgent.h" />
+    <ClInclude Include="StrategicAgent\SituationPreprocessor.h" />
+    <ClInclude Include="StrategicAgent\StrategicContext.h" />
+    <ClInclude Include="DispatchAgent\DispatchAgent.h" />
+    <ClInclude Include="DispatchAgent\PlayerCommandParser.h" />
+    <ClInclude Include="DispatchAgent\TaskDecomposer.h" />
+    <ClInclude Include="DispatchAgent\TemplateSelector.h" />
+    <ClInclude Include="DispatchAgent\DispatchValidator.h" />
+    <ClInclude Include="DispatchAgent\EmergencyClassifier.h" />
+    <ClInclude Include="DispatchAgent\DispatchContext.h" />
+    <ClInclude Include="InterventionAgent\InterventionAgent.h" />
+    <ClInclude Include="InterventionAgent\BehaviorChain.h" />
+    <ClInclude Include="InterventionAgent\BehaviorTemplates.h" />
+    <ClInclude Include="InterventionAgent\BranchResolver.h" />
+    <ClInclude Include="InterventionAgent\LLMIntervention.h" />
+    <ClInclude Include="InterventionAgent\InterventionContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -150,6 +186,24 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Coordinator.cpp" />
+    <ClCompile Include="Utils\Logger.cpp" />
+    <ClCompile Include="Utils\SessionLifecycle.cpp" />
+    <ClCompile Include="StrategicAgent\StrategicAgent.cpp" />
+    <ClCompile Include="StrategicAgent\SituationPreprocessor.cpp" />
+    <ClCompile Include="StrategicAgent\StrategicContext.cpp" />
+    <ClCompile Include="DispatchAgent\DispatchAgent.cpp" />
+    <ClCompile Include="DispatchAgent\PlayerCommandParser.cpp" />
+    <ClCompile Include="DispatchAgent\TaskDecomposer.cpp" />
+    <ClCompile Include="DispatchAgent\TemplateSelector.cpp" />
+    <ClCompile Include="DispatchAgent\DispatchValidator.cpp" />
+    <ClCompile Include="DispatchAgent\EmergencyClassifier.cpp" />
+    <ClCompile Include="DispatchAgent\DispatchContext.cpp" />
+    <ClCompile Include="InterventionAgent\InterventionAgent.cpp" />
+    <ClCompile Include="InterventionAgent\BehaviorTemplates.cpp" />
+    <ClCompile Include="InterventionAgent\BranchResolver.cpp" />
+    <ClCompile Include="InterventionAgent\LLMIntervention.cpp" />
+    <ClCompile Include="InterventionAgent\InterventionContext.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

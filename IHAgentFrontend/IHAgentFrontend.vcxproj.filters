@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{A1A1A1A1-0001-0001-0001-000000000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StrategicAgent">
+      <UniqueIdentifier>{A1A1A1A1-0002-0002-0002-000000000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DispatchAgent">
+      <UniqueIdentifier>{A1A1A1A1-0003-0003-0003-000000000003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InterventionAgent">
+      <UniqueIdentifier>{A1A1A1A1-0004-0004-0004-000000000004}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -21,6 +33,94 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Coordinator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <!-- Utils -->
+    <ClInclude Include="Utils\IdTypes.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Cell.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\CommonTypes.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\GameState.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\BackendInterface.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\StubBackendClient.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\LLMClient.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Geometry.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Logger.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SessionLifecycle.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\BackendCallbacks.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <!-- StrategicAgent -->
+    <ClInclude Include="StrategicAgent\StrategicAgent.h">
+      <Filter>StrategicAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategicAgent\SituationPreprocessor.h">
+      <Filter>StrategicAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="StrategicAgent\StrategicContext.h">
+      <Filter>StrategicAgent</Filter>
+    </ClInclude>
+    <!-- DispatchAgent -->
+    <ClInclude Include="DispatchAgent\DispatchAgent.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchAgent\PlayerCommandParser.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchAgent\TaskDecomposer.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchAgent\TemplateSelector.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchAgent\DispatchValidator.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchAgent\EmergencyClassifier.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchAgent\DispatchContext.h">
+      <Filter>DispatchAgent</Filter>
+    </ClInclude>
+    <!-- InterventionAgent -->
+    <ClInclude Include="InterventionAgent\InterventionAgent.h">
+      <Filter>InterventionAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="InterventionAgent\BehaviorChain.h">
+      <Filter>InterventionAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="InterventionAgent\BehaviorTemplates.h">
+      <Filter>InterventionAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="InterventionAgent\BranchResolver.h">
+      <Filter>InterventionAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="InterventionAgent\LLMIntervention.h">
+      <Filter>InterventionAgent</Filter>
+    </ClInclude>
+    <ClInclude Include="InterventionAgent\InterventionContext.h">
+      <Filter>InterventionAgent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -28,6 +128,60 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Coordinator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Logger.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\SessionLifecycle.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategicAgent\StrategicAgent.cpp">
+      <Filter>StrategicAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategicAgent\SituationPreprocessor.cpp">
+      <Filter>StrategicAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="StrategicAgent\StrategicContext.cpp">
+      <Filter>StrategicAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\DispatchAgent.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\PlayerCommandParser.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\TaskDecomposer.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\TemplateSelector.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\DispatchValidator.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\EmergencyClassifier.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="DispatchAgent\DispatchContext.cpp">
+      <Filter>DispatchAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="InterventionAgent\InterventionAgent.cpp">
+      <Filter>InterventionAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="InterventionAgent\BehaviorTemplates.cpp">
+      <Filter>InterventionAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="InterventionAgent\BranchResolver.cpp">
+      <Filter>InterventionAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="InterventionAgent\LLMIntervention.cpp">
+      <Filter>InterventionAgent</Filter>
+    </ClCompile>
+    <ClCompile Include="InterventionAgent\InterventionContext.cpp">
+      <Filter>InterventionAgent</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

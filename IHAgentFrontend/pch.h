@@ -8,6 +8,21 @@
 #define PCH_H
 
 // 添加要在此处预编译的标头
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include "framework.h"
+
+// 三层 Agent 实现常用标准库
+#include <string>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <deque>
+#include <optional>
+#include <variant>
+#include <functional>
+#include <memory>
+#include <cstdint>
+#include <algorithm>
 
 #endif //PCH_H
