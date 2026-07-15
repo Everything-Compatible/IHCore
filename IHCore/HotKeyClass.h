@@ -20,6 +20,17 @@ static_assert(sizeof(HotKeyClass) == 8);
 
 auto KeyCompare = reinterpret_cast<int(__cdecl *)(const void* a1, const void* a2)>(0x48BC20);
 
+//int __cdecl KeyCompare(HotKeyClass* a1, HotKeyClass* a2)
+//{
+//	int result; // eax
+//
+//	if (a1->KeyID == a2->KeyID)
+//		result = 0;
+//	else
+//		result = a1->KeyID >= a2->KeyID ? 1 : -1;
+//	return result;
+//}
+
 struct HotKeyListClass
 {
 	static constexpr reference<HotKeyListClass, 0x87F680u> const Instance{};

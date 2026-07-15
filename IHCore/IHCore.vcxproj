@@ -173,6 +173,7 @@
     <ClInclude Include="..\Common\IHLoader\ExtJson.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Config.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Ext.h" />
+    <ClInclude Include="..\Common\IHLoader\IH.File.h" />
     <ClInclude Include="..\Common\IHLoader\IH.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Initial.h" />
     <ClInclude Include="..\Common\IHLoader\IH.Loader.h" />
@@ -554,7 +555,7 @@
     <ClCompile Include="..\Common\LocalLibManager.cpp" />
     <ClCompile Include="..\Common\Logger\Debug.cpp" />
     <ClCompile Include="..\Common\ToolFunc.cpp" />
-    <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Init.Info.cpp" />
     <ClCompile Include="DaemonProc.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ECDbgConsole.cpp" />

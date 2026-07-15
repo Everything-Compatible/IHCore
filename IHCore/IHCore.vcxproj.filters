@@ -16,12 +16,6 @@
     <Filter Include="Util">
       <UniqueIdentifier>{de6bf841-7e20-4fb7-aaa6-ffd7cbb19cf0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="File">
-      <UniqueIdentifier>{557e34a7-b3bf-45da-bf90-e06723cab448}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Data">
-      <UniqueIdentifier>{3fa4902d-d76d-48c8-8d5e-4efb03d53bad}</UniqueIdentifier>
-    </Filter>
     <Filter Include="YRPP">
       <UniqueIdentifier>{c02b0147-8d64-49e2-87c3-cbc9cb653f0a}</UniqueIdentifier>
     </Filter>
@@ -40,20 +34,44 @@
     <Filter Include="External">
       <UniqueIdentifier>{2615cac3-38f9-4ee7-b6b2-c9fc78fb9e4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Extended">
-      <UniqueIdentifier>{0ca357d0-daac-4c46-82dd-86e7a903b164}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Init">
-      <UniqueIdentifier>{a39303ce-aa50-4e26-a978-cc70bdb390ea}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Interprocess">
       <UniqueIdentifier>{eb1d2467-1306-4145-b99d-45213ab53dad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Console">
-      <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Logger">
       <UniqueIdentifier>{1db42dc3-0bd0-4f2f-a07f-e95005cb7336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CSF">
+      <UniqueIdentifier>{99d8b507-e556-422c-8d8d-5c2bcff322b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EC Framework">
+      <UniqueIdentifier>{3fa4902d-d76d-48c8-8d5e-4efb03d53bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debug Console">
+      <UniqueIdentifier>{81a458c4-2f42-4875-9953-8a11bba9a5c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Life Cycle">
+      <UniqueIdentifier>{a39303ce-aa50-4e26-a978-cc70bdb390ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File Process">
+      <UniqueIdentifier>{557e34a7-b3bf-45da-bf90-e06723cab448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File System">
+      <UniqueIdentifier>{95fcbfe1-60e9-4d1f-8500-87a5ab9ce8f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExceptIH">
+      <UniqueIdentifier>{c768fe48-bf56-4261-91c4-bb5ec29c3934}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text Drawing">
+      <UniqueIdentifier>{2c17e99a-bf49-451a-b256-2e8e875fec4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hot Key">
+      <UniqueIdentifier>{f8e909a0-9c44-4c8e-ba20-9d82641d0e86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Loading">
+      <UniqueIdentifier>{0ca357d0-daac-4c46-82dd-86e7a903b164}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="INI">
+      <UniqueIdentifier>{40b68e68-564f-49f2-9edc-5518b4f6c521}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -64,19 +82,19 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ExtFile.h">
-      <Filter>File</Filter>
+      <Filter>File Process</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\ToolFunc.h">
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\LocalData.h">
-      <Filter>Data</Filter>
+      <Filter>EC Framework</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ExtLog.h">
-      <Filter>File</Filter>
+      <Filter>File Process</Filter>
     </ClInclude>
     <ClInclude Include="Global.h">
       <Filter>Util</Filter>
@@ -1066,13 +1084,13 @@
       <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="InitialLoad.h">
-      <Filter>Data</Filter>
+      <Filter>EC Framework</Filter>
     </ClInclude>
     <ClInclude Include="sha1.h">
       <Filter>External</Filter>
     </ClInclude>
     <ClInclude Include="ConfData.h">
-      <Filter>Data</Filter>
+      <Filter>EC Framework</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\IH.Config.h">
       <Filter>EC SDK</Filter>
@@ -1123,22 +1141,13 @@
       <Filter>EC SDK</Filter>
     </ClInclude>
     <ClInclude Include="ECDbgConsole.h">
-      <Filter>Console</Filter>
-    </ClInclude>
-    <ClInclude Include="InfoStack.h">
-      <Filter>Console</Filter>
+      <Filter>Debug Console</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\EC.h">
       <Filter>EC SDK</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\IH.h">
       <Filter>EC SDK</Filter>
-    </ClInclude>
-    <ClInclude Include="HotKeyClass.h">
-      <Filter>External</Filter>
-    </ClInclude>
-    <ClInclude Include="StringManagerExt.h">
-      <Filter>Extended</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IHLoader\PArray.h">
       <Filter>EC SDK</Filter>
@@ -1158,26 +1167,38 @@
     <ClInclude Include="RemoteCommType.h">
       <Filter>Interprocess</Filter>
     </ClInclude>
-    <ClInclude Include="ExtCD.h">
-      <Filter>Extended</Filter>
-    </ClInclude>
-    <ClInclude Include="ExtCsf.h">
-      <Filter>Extended</Filter>
-    </ClInclude>
-    <ClInclude Include="ExtFNT.h">
-      <Filter>Extended</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\IHLoader\EC.Exception.h">
       <Filter>EC SDK</Filter>
-    </ClInclude>
-    <ClInclude Include="ExtIni.h">
-      <Filter>Extended</Filter>
     </ClInclude>
     <ClInclude Include="SyringeCaller.h">
       <Filter>Interprocess</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Logger\Debug.h">
       <Filter>Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\IHLoader\IH.File.h">
+      <Filter>EC SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtCD.h">
+      <Filter>File System</Filter>
+    </ClInclude>
+    <ClInclude Include="InfoStack.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="StringManagerExt.h">
+      <Filter>CSF</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtCsf.h">
+      <Filter>CSF</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtFNT.h">
+      <Filter>Text Drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="HotKeyClass.h">
+      <Filter>Hot Key</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtIni.h">
+      <Filter>INI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1187,20 +1208,17 @@
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Command.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\ToolFunc.cpp">
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\LocalData.cpp">
-      <Filter>Data</Filter>
+      <Filter>EC Framework</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\LocalLibManager.cpp">
-      <Filter>Data</Filter>
+      <Filter>EC Framework</Filter>
     </ClCompile>
     <ClCompile Include="ExtLog.cpp">
-      <Filter>File</Filter>
+      <Filter>File Process</Filter>
     </ClCompile>
     <ClCompile Include="Global.cpp">
       <Filter>Util</Filter>
@@ -1212,10 +1230,10 @@
       <Filter>YRPP</Filter>
     </ClCompile>
     <ClCompile Include="ExtFile.cpp">
-      <Filter>File</Filter>
+      <Filter>File Process</Filter>
     </ClCompile>
     <ClCompile Include="LocalLibFunc.cpp">
-      <Filter>Data</Filter>
+      <Filter>EC Framework</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ExtJson.cpp">
       <Filter>EC SDK</Filter>
@@ -1227,13 +1245,10 @@
       <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="InitSomewhere.cpp">
-      <Filter>Init</Filter>
+      <Filter>Life Cycle</Filter>
     </ClCompile>
     <ClCompile Include="InitialLoad.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Exception.cpp">
-      <Filter>Util</Filter>
+      <Filter>EC Framework</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\EC.Misc.cpp">
       <Filter>EC SDK</Filter>
@@ -1266,31 +1281,19 @@
       <Filter>EC SDK</Filter>
     </ClCompile>
     <ClCompile Include="ECDbgConsole.cpp">
-      <Filter>Console</Filter>
+      <Filter>Debug Console</Filter>
     </ClCompile>
     <ClCompile Include="ExtScenario.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
-    <ClCompile Include="StringManagerExt.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtHotKey.cpp">
-      <Filter>Extended</Filter>
+      <Filter>Loading</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\ThirdParty\cJSON\cJSON.c">
       <Filter>EC SDK</Filter>
     </ClCompile>
-    <ClCompile Include="Update.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
     <ClCompile Include="ExtYRM.cpp">
-      <Filter>Extended</Filter>
+      <Filter>Loading</Filter>
     </ClCompile>
     <ClCompile Include="Init.Hooks.cpp">
-      <Filter>Init</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtFNT.cpp">
-      <Filter>Extended</Filter>
+      <Filter>Life Cycle</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IHLoader\IH.File.cpp">
       <Filter>EC SDK</Filter>
@@ -1313,35 +1316,53 @@
     <ClCompile Include="RemoteCommType.cpp">
       <Filter>Interprocess</Filter>
     </ClCompile>
-    <ClCompile Include="ExtCD.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtCsf.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtMix.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtMessageList.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
     <ClCompile Include="ExtLoadAI.cpp">
-      <Filter>Extended</Filter>
-    </ClCompile>
-    <ClCompile Include="ExtIni.cpp">
-      <Filter>Extended</Filter>
+      <Filter>Loading</Filter>
     </ClCompile>
     <ClCompile Include="ModuleProc.cpp">
-      <Filter>File</Filter>
+      <Filter>File Process</Filter>
     </ClCompile>
     <ClCompile Include="DaemonProc.cpp">
-      <Filter>Console</Filter>
+      <Filter>Debug Console</Filter>
     </ClCompile>
     <ClCompile Include="SyringeCaller.cpp">
       <Filter>Interprocess</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Logger\Debug.cpp">
       <Filter>Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtCD.cpp">
+      <Filter>File System</Filter>
+    </ClCompile>
+    <ClCompile Include="Update.cpp">
+      <Filter>Life Cycle</Filter>
+    </ClCompile>
+    <ClCompile Include="StringManagerExt.cpp">
+      <Filter>CSF</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtCsf.cpp">
+      <Filter>CSF</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtFNT.cpp">
+      <Filter>Text Drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="Exception.cpp">
+      <Filter>ExceptIH</Filter>
+    </ClCompile>
+    <ClCompile Include="Init.Info.cpp">
+      <Filter>Life Cycle</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtMessageList.cpp">
+      <Filter>Text Drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtMix.cpp">
+      <Filter>File System</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtHotKey.cpp">
+      <Filter>Hot Key</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtIni.cpp">
+      <Filter>INI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
