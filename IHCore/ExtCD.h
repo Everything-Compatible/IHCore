@@ -7,6 +7,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "ToolFunc.h"
+#include <IH.Loader.h>
+
+class IHFileClass;
 
 struct CDPath : public ForwardNode<CDPath>
 {
@@ -67,6 +70,7 @@ class CDExt
 {
 	CDDrives* pDrives;
 	std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> Redirect;
+	std::unordered_set<std::string, UpperHash, UpperEqualPred> LoadedMixFileNames;
 public:
 	std::vector<std::string> PathHead;
 	std::vector<std::string> PathTail;
@@ -86,11 +90,51 @@ public:
 	void PushCustomPathToFirst(const std::string& Path);
 	void AddRedirect(const char* Old, const char* New);
 	const char* TryRedirect(const char* Name);
+	void RegisterLoadedMix(const char* Name);
+	bool IsLoadedMix(const char* Name);
 };
 extern CDExt CDExt_Instance;
 extern std::unordered_set<std::string, UpperHash, UpperEqualPred> BlackList;
 extern std::unordered_set<std::string, UpperHash, UpperEqualPred> WhiteList;
 void ExtCD_InitBeforeEverything();
+std::string GetBindingIHFile(const char* pFileName);
+bool HasBindingIHFile(const char* pFileName);
+
+struct BiasedFileEntry
+{
+	bool Biased;
+	bool NeedsCachedAccess;
+	bool CachedAccess;
+	bool CachedAccessClosed;
+	int BiasedOffset;
+	int BiasedLength;
+	char* BiasedFileName;
+	size_t CachedAccessThreshold;
+	size_t CachedAccessToken;
+	int CachedAccessPosition;
+	FileIterationType CachedAccessIterType;
+private:
+	DWORD FileStart;//PlaceHolder
+public:
+	IHFileClass* GetFile()
+	{
+		return reinterpret_cast<IHFileClass*>(&FileStart);
+	}
+
+	static consteval size_t HeaderSize()
+	{
+		return sizeof(BiasedFileEntry) - sizeof(DWORD);
+	}
+
+	int Position();
+
+	void CloseCache();
+
+	int Seek(int Offset, FileSeekMode Mode);
+
+	int ReadBytes(void* Buffer, int Size);
+};
+static_assert(BiasedFileEntry::HeaderSize() % 16 == 0);
 
 class FileClassExt
 {
@@ -98,25 +142,23 @@ public:
 	const char* CDFileClass_SetFileName(char* pOriginalFileName);
 	const char* RawFileClass_GetFileName();
 	bool BufferIOFileClass_Exists(bool WriteShared);
-	
-	/*
-	bool CDFileClass_Open(FileAccessMode Mode)
-	{
-		static std::unordered_set<std::string> Set;
-		auto This = reinterpret_cast<CDFileClass*>(this);
-		if (Set.insert(This->GetFileName()).second)
-			Debug::Log("Opening File \"%s\"\n", This->GetFileName());
-		return This->BufferIOFileClass::Open(Mode);
-	}
-	bool CDFileClass_Open(FileAccessMode Mode)
-	{
-		auto This = reinterpret_cast<CDFileClass*>(this);
-		Debug::Log("Opening File \"%s\"\n", This->GetFileName());
-		std::string Name = This->GetFileName();
-		for (auto& c : Name)c = (char)toupper(c);
-		if (Name == "RA2MD.CSF")return false;
-		return This->BufferIOFileClass::Open(Mode);
-	}
-	*/
-	
+	CCFileClass* CCFileClass_Constructor_pFileName_InMixFile(const char* Source);
+	//same as CCFileClass::CTOR but an ordinary member function here
+	CCFileClass* CCFileClass_Constructor_pFileName_Orig(const char* Source) { JMP_THIS(0x4739F0); }
+	BOOL CCFileClass_Open(FileAccessMode Mode);
+	bool CCFileClass_Exists(bool WriteShared);
 };
+
+struct IHExtPtrType
+{
+	BiasedFileEntry* GetEntry();
+	IHFileClass* GetIHExt();
+	void Destroy();
+};
+
+struct IHExtPtrTypeDeleter
+{
+	void operator()(IHExtPtrType* p);
+};
+
+using IHExtUniquePtr = std::unique_ptr<IHExtPtrType, IHExtPtrTypeDeleter>;

@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Global.h"
 #include <IH.Loader.h>
+#include "CachedFile.h"
 
 namespace Local
 {
@@ -31,6 +32,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
+        CachedFile::SetShuttingDown();
         break;
     }
     return TRUE;
