@@ -6,6 +6,7 @@
 #include "InitialLoad.h"
 #include "..\Common\LocalData.h"
 #include <Helpers/Macro.h>
+#include "CachedFile.h"
 
 CDExt CDExt_Instance(&CDDrives::Instance);
 
@@ -53,12 +54,105 @@ const char* CDExt::TryRedirect(const char* Name)
 	return New;
 }
 
+void CDExt::RegisterLoadedMix(const char* Name)
+{
+	LoadedMixFileNames.insert(Name);
+}
+
+bool CDExt::IsLoadedMix(const char* Name)
+{
+	return LoadedMixFileNames.contains(Name);
+}
+
+BiasedFileEntry* IHExtPtrType::GetEntry()
+{
+	return (BiasedFileEntry*)((((DWORD)this) + 0xF) & 0xFFFFFFF0);
+}
+IHFileClass* IHExtPtrType::GetIHExt()
+{
+	return GetEntry()->GetFile();
+}
+
+BiasedFileEntry* GetExtEntry(RawFileClass* pFile)
+{
+	return pFile->IHExtPtr ? pFile->IHExtPtr->GetEntry() : nullptr;
+}
+
 IHFileClass* GetIHExt(RawFileClass* pFile)
 {
-	if (pFile->IHExtPtr)
-		return (IHFileClass*)( ( ((DWORD)pFile->IHExtPtr) + 0xF) & 0xFFFFFFF0 );
+	return pFile->IHExtPtr ? pFile->IHExtPtr->GetIHExt() : nullptr;
+}
+
+int BiasedFileEntry::Seek(int Offset, FileSeekMode Mode)
+{
+	if (CachedAccess)
+	{
+		//Debug::LogFormat("[IH] Cached Seek Entry {} Ext {} Position {} Offset {} Mode {}\n", (void*)this, (void*)GetFile(), CachedAccessPosition, Offset, (int)Mode);
+		switch (Mode)
+		{
+		case FileSeekMode::Set:
+			return CachedFile::Seek(CachedAccessToken, GetFile(), CachedAccessPosition, Offset);
+		case FileSeekMode::Current:
+			return CachedFile::Seek(CachedAccessToken, GetFile(), CachedAccessPosition, CachedAccessPosition + Offset);
+		case FileSeekMode::End:
+			return CachedFile::Seek(CachedAccessToken, GetFile(), CachedAccessPosition, GetFile()->GetFileSize() + Offset);
+		default:
+			return 0;
+		}
+	}
+	else return GetFile()->Seek(Offset, Mode);
+}
+
+int BiasedFileEntry::ReadBytes(void* Buffer, int Size)
+{
+	if(CachedAccess) return CachedFile::ReadBytes(CachedAccessToken, GetFile(), CachedAccessIterType, CachedAccessPosition, Buffer, Size);
+	else return GetFile()->ReadBytes(Buffer, Size);
+}
+
+int BiasedFileEntry::Position()
+{
+	if(CachedAccess) return CachedAccessPosition;
+	else return GetFile()->Position();
+}
+
+void BiasedFileEntry::CloseCache()
+{
+	if (CachedAccess)
+	{
+		CachedFile::ClearCache(CachedAccessToken);
+		GetFile()->Seek(CachedAccessPosition, FileSeekMode::Set);
+		CachedAccess = false;
+	}
+}
+
+void IHExtPtrType::Destroy()
+{
+	auto Entry = GetEntry();
+	if (Entry->Biased && Entry->BiasedFileName)
+		CRT::free(Entry->BiasedFileName);
+	auto Ext = Entry->GetFile();
+	Ext->~IHFileClass();
+}
+
+void IHExtPtrTypeDeleter::operator()(IHExtPtrType* p)
+{
+	if (!p)return;
+	p->Destroy();
+	CRT::_delete(p);
+}
+
+void RemoveExt(RawFileClass* This)
+{
+	if (CachedFile::CanAcceptIHExtPtr(This->IHExtPtr))
+	{
+		CachedFile::TakeOverIHFile(This->IHExtPtr);
+	}
 	else
-		return nullptr;
+	{
+		This->IHExtPtr->Destroy();
+		CRT::_delete(This->IHExtPtr);
+	}
+	This->IHExtPtr = nullptr;
 }
 
 
@@ -68,17 +162,60 @@ void SetName_Impl(CDFileClass* This, const std::string& Str,const char* pFileNam
 	auto jt = Local::IHFileStreamer.find(Str);
 	if (jt != Local::IHFileStreamer.end())
 	{
+		This->IHExtPtr = nullptr;
+		bool CachedAccess = Local::IHFileCachedAccess.contains(Str);
+		if (CachedAccess)
+		{
+			auto Token = CachedFile::GenerateToken(Str, pFileName);
+			if (CachedFile::CanReleaseIHFile(Token))
+			{
+				This->IHExtPtr = CachedFile::ReleaseIHFile(Token);
+				auto Entry = GetExtEntry(This);
+				auto Ext = GetIHExt(This);
+				This->FileName = CRT::strdup(Ext->GetFileName());
+				Entry->Biased = false;
+				Entry->Seek(0, FileSeekMode::Set);
+				return;
+			}
+		}
+
+
 		//Debug::Log("PTR At %08X \n", This);
-		auto sz = jt->second.Size;
+		auto sz = jt->second.Size + BiasedFileEntry::HeaderSize();
 		auto aligned = (sz + 0xF) & 0xFFFFFFF0;
-		This->IHExtPtr = CRT::_new(aligned);
+		This->IHExtPtr = (IHExtPtrType*)CRT::_new(aligned);
 		memset(This->IHExtPtr, 0, aligned);
 
+		auto Entry = GetExtEntry(This);
 		auto Ext = GetIHExt(This);
 
+		Entry->Biased = false;
+		Entry->NeedsCachedAccess = false;
+		Entry->CachedAccess = false;
+		Entry->BiasedLength = 0;
+		Entry->BiasedOffset = 0;
+		Entry->BiasedFileName = nullptr;
+		Entry->CachedAccessClosed = false;
+
+		if (CachedAccess)
+		{
+			auto& Info = Local::IHFileCachedAccess[Str];
+			Entry->CachedAccessThreshold = Info.Threshold;
+			Entry->CachedAccessToken = CachedFile::GenerateToken(Str, pFileName);
+			Entry->CachedAccessIterType = Info.IterType;
+		}
+		else
+		{
+			Entry->CachedAccessThreshold = 0xFFFFFFFF;
+			Entry->CachedAccessToken = 0;
+			Entry->CachedAccessIterType = FileIterationType::RandomAccess;
+		}
+
 		VTABLE_SET(Ext, jt->second.vptr);
+		//Debug::Log("IHCore : File Stream %s for File %s at %08X binding to %08X\n", Str.c_str(), pFileName, Ext, This);
 		Ext->Initialize();
 		Ext->SetFileName(pFileName);
+		This->FileName = CRT::strdup(Ext->GetFileName());
 	}
 }
 
@@ -97,8 +234,28 @@ void ClearPrevName_Impl(CDFileClass* This)
 
 JsonObject GetIHCoreJson();
 
+LPCVOID Internal_GetGlobalVarPtr(const char* Usage, const char* Key);
+
+std::string GetBindingIHFile(const char* pFileName)
+{
+	auto it = Local::IHFileBinder.find(pFileName);
+	if (it != Local::IHFileBinder.end())
+		return it->second;
+	for (auto& p : Local::IHFileFilter)
+		if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
+			return p.first;
+	return std::string();
+}
+
+bool HasBindingIHFile(const char* pFileName)
+{
+	return !GetBindingIHFile(pFileName).empty();
+}
+
 const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 {
+	//Debug::Log("[IH] Requesting \"%s\"\n", pOriginalFileName);
+
 	static bool First = true;
 	if (First)
 	{
@@ -146,30 +303,22 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 			{ Debug::Log("IHCore : Adding Path \"%hs\"\n", Param.Path); CDExt_Instance.PushCustomPathToTail(Param.Path); });
 		Service_CustomPathListFirst.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Adding Path \"%hs\"\n", Param.Path); CDExt_Instance.PushCustomPathToFirst(Param.Path); });
+		Service_RegisterIHFileTag.RefreshAndProcess([](const auto& Param)
+			{
+				auto Value = Internal_GetGlobalVarPtr(Param.TagType, Param.TagVar);
+				Debug::Log("IHCore : Register File Stream \"%hs\" Tag \"%hs\" -> \"%hs\" Value 0x%08X(%u)\n", Param.Name, Param.TagType, Param.TagVar, Value, Value);
+				if(!strcmp(Param.TagType, "IHFile::CachedAccessThreshold"))
+					Local::IHFileCachedAccess[Param.Name].Threshold = (size_t)Value;
+				if(!strcmp(Param.TagType, "IHFile::IterationType"))
+					Local::IHFileCachedAccess[Param.Name].IterType = (FileIterationType)((int)Value);
+			});
 		First = false;
 	}
-	//Debug::Log("[IH] Requesting \"%s\"\n", pOriginalFileName);
 
-
-	
 	auto This = reinterpret_cast<CDFileClass*>(this);
 	const char* pFileName = CDExt_Instance.TryRedirect(pOriginalFileName);
 	char v5[MAX_PATH];
 
-
-	/*
-	{
-		CRCEngine crc;
-		crc.Index = 0;
-		crc.CRC = 0;
-		crc.StagingBuffer.Composite = 0;
-		char String[260]{};
-		CRT::strcpy(String, pFileName);
-		CRT::strupr(String);
-		int crc32 = crc(String);
-		Debug::Log("[IH] File \"%s\", CRC32=%08X\n", String, crc32);
-	}
-	*/
 
 	if (!UseOriginalFileClass())
 	{
@@ -177,12 +326,9 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 		//	Debug::Log("[IH] %s->%s", pOriginalFileName, pFileName);
 		//Debug::Log("[IH] Requesting \"%s\"\n", pFileName);
 		ClearPrevName_Impl(This);
-		auto it = Local::IHFileBinder.find(pFileName);
-		if (it != Local::IHFileBinder.end())
-			SetName_Impl(This, it->second, pFileName);
-		for (auto& p : Local::IHFileFilter)
-			if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
-				SetName_Impl(This, p.first, pFileName);
+		auto ClassName = GetBindingIHFile(pFileName);
+		if(!ClassName.empty())
+			SetName_Impl(This, ClassName, pFileName);
 		if (This->IHExtPtr)return GetIHExt(This)->GetFileName();
 	}
 	
@@ -256,23 +402,247 @@ bool FileClassExt::BufferIOFileClass_Exists(bool WriteShared)
 	else return This->RawFileClass::Exists(false);
 }
 
+CCFileClass* FileClassExt::CCFileClass_Constructor_pFileName_InMixFile(const char* Source)
+{
+	Debug::LogFormat("[IH] Loading MIX file {}\n", Source);
+	CDExt_Instance.RegisterLoadedMix(Source);
+	return CCFileClass_Constructor_pFileName_Orig(Source);
+}
+
+BOOL FileClassExt::CCFileClass_Open(FileAccessMode Mode)
+{
+	auto This = reinterpret_cast<CCFileClass*>(this);
+	//Dont assume its lifecycle since there is a OpenEx below
+	std::string Name = This->GetFileName();
+	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, Name.c_str());
+
+	if (This->IHExtPtr && !UseOriginalFileClass())
+	{
+		auto Entry = GetExtEntry(This);
+		auto Ext = GetIHExt(This);
+		if (Entry->CachedAccess && Entry->CachedAccessClosed)
+		{
+			Entry->CachedAccessClosed = false;
+			return true;
+		}
+		else
+		{
+			auto Result = Ext->Open(Mode);
+			auto Size = Ext->GetFileSize();
+			if (Size > (int)Entry->CachedAccessThreshold)
+				Entry->NeedsCachedAccess = true;
+			return Result;
+		}
+	}
+
+	int Size = 0;
+	void* pBuffer = nullptr;
+	MixFileClass* mixfile = nullptr;
+	int Offset = 0;
+
+	This->Close();
+	if ( (Mode & FileAccessMode::Write) || This->BufferIOFileClass::Exists(false))
+		return This->CDFileClass::Open(Mode);
+	if (!MixFileClass::Offset(Name.c_str(), &pBuffer, &mixfile, &Offset, &Size))
+		return This->CDFileClass::Open(Mode);
+	if (pBuffer || !mixfile)
+	{
+		if (This != (CCFileClass*)((DWORD)-88))
+			new (&This->Buffer) MemoryBuffer(pBuffer, Size);
+		This->Position = 0;
+		return TRUE;
+	}
+	if (!mixfile->FileName) return FALSE;
+
+	if (This->OpenEx(mixfile->FileName, FileAccessMode::Read))
+	{
+		if (CDExt_Instance.IsLoadedMix(mixfile->FileName) && GetIHExt(This))
+		{
+			auto Entry = GetExtEntry(This);
+			if (Entry->Biased)
+			{
+				auto ExternalName = This->GetFileName();
+				auto DirectOuterSize = This->GetFileSize();
+				//Debug::LogFormat("[IH] Bias On Bias {} In {} Offset {} Size {} DirectOuterSize {}\n",Name, ExternalName, Offset, Size, DirectOuterSize);
+
+				//BiasedFileName修正到最内层，同时This->GetFileName()修正到最外层
+				Entry->BiasedFileName = CRT::strdup(Name.c_str());
+				auto OriginalOffset = Entry->BiasedOffset;
+				if (Size < 0)Size = 0;
+				if (Offset >= OriginalOffset + DirectOuterSize)
+				{
+					Offset = OriginalOffset + DirectOuterSize;
+					Size = 0;
+				}
+				else
+				{
+					Size = std::min(Size, OriginalOffset + DirectOuterSize - Offset);
+				}
+
+				Entry->BiasedLength = Size;
+				Entry->BiasedOffset = Offset;
+				//Debug::LogFormat("[IH] Biased Final Offset {} Size {}\n", Entry->BiasedOffset, Entry->BiasedLength);
+				//Debug::Log("Seek inner 1 : ");
+				This->Seek(0, FileSeekMode::Set);
+				This->FilePointer = Entry->BiasedOffset;
+				//Debug::Log("Open inner Successfully\n");
+				return TRUE;
+			}
+			else 
+			{
+				auto OriginalSize = This->GetFileSize();
+				//Debug::LogFormat("[IH] Biased File {} In {} Offset {} Size {} OrigSize {}\n", Name.c_str(), mixfile->FileName, Offset, Size, OriginalSize);
+
+				Entry->Biased = true;
+				Entry->BiasedFileName = CRT::strdup(Name.c_str());
+				if (Size < 0)Size = 0;
+				if (Offset >= OriginalSize)
+				{
+					Offset = OriginalSize;
+					Size = 0;
+				}
+				else
+				{
+					Size = std::min(Size, OriginalSize - Offset);
+				}
+				Entry->BiasedLength = Size;
+				Entry->BiasedOffset = Offset;
+				//Debug::LogFormat("[IH] Biased Final Offset {} Size {}\n", Entry->BiasedOffset, Entry->BiasedLength);
+				//Debug::Log("Seek 1 : ");
+				This->Seek(0, FileSeekMode::Set);
+				This->FilePointer = Entry->BiasedOffset;
+				//Debug::Log("Open Successfully\n");
+				return TRUE;
+			}
+		}
+		else
+		{
+			auto OriginalSize = This->GetFileSize();
+			//Debug::LogFormat("[IH] Biased File {} In {} Offset {} Size {} OrigSize {}\n", Name.c_str(), mixfile->FileName, Offset, Size, OriginalSize);
+			char* __FileName = CRT::strdup(This->GetFileName());
+			This->IsDisabled = true;
+			This->SetFileName(__FileName);
+			This->IsDisabled = false;
+			auto fp1 = This->FilePointer;
+			This->Bias(0, -1);
+			auto fp2 = This->FilePointer;
+			This->Bias(Offset, Size);
+			auto fp3 = This->FilePointer;
+			This->Seek(0, FileSeekMode::Set);
+			//Debug::LogFormat("[IH] Bias FP1 {} FP2 {} FP3 {}\n", fp1, fp2, fp3);
+			free(__FileName);
+			return TRUE;
+		}
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+bool FileClassExt::CCFileClass_Exists(bool WriteShared)
+{
+	auto This = reinterpret_cast<CCFileClass*>(this);
+	//Debug::LogFormat("[IH] CCFileClass_Exists {} \"{}\" Ext {}\n", (void*)This, This->GetFileName(), This->IHExtPtr);
+	if (This->IHExtPtr && !UseOriginalFileClass())
+	{
+		auto Result = GetIHExt(This)->Exists(WriteShared);
+		//Debug::LogFormat("[IH] Custom CCFileClass_Exists {} -> {}\n", This->GetFileName(), Result);
+		return Result;
+		//return GetIHExt(This)->Exists(WriteShared);
+	}
+
+	if (This->Availablility == 1)
+		return true;
+	if (This->HasHandle())
+	{
+		This->Availablility = 1;
+		return true;
+	}
+	else
+	{
+		auto Name = This->GetFileName();
+		if (MixFileClass::Offset(Name, 0, 0, 0, 0))
+		{
+			This->Availablility = 1;
+			return true;
+		}
+		else if (This->BufferIOFileClass::Exists(false))
+		{
+			This->Availablility = 1;
+			return true;
+		}
+		else
+		{
+			This->Availablility = 2;
+			return false;
+		}
+	}
+}
+
 void ExtCD_InitBeforeEverything()
 {
 	Patch::Apply_LJMP(0x47AE10, union_cast<void*>(&FileClassExt::CDFileClass_SetFileName));
 	Patch::Apply_LJMP(0x401940, union_cast<void*>(&FileClassExt::RawFileClass_GetFileName));
 	Patch::Apply_LJMP(0x431F10, union_cast<void*>(&FileClassExt::BufferIOFileClass_Exists));
+	Patch::Apply_LJMP(0x473D10, union_cast<void*>(&FileClassExt::CCFileClass_Open));
+	Patch::Apply_LJMP(0x473C50, union_cast<void*>(&FileClassExt::CCFileClass_Exists));
+	Patch::Apply_CALL(0x5B3C8B, union_cast<void*>(&FileClassExt::CCFileClass_Constructor_pFileName_InMixFile));
 };
 
+int CCFileClass_ReadBytes_Ext(RawFileClass* This, LPVOID Buffer, size_t Size)
+{
+	auto Entry = GetExtEntry(This);
+	auto Ext = GetIHExt(This);
 
-DEFINE_HOOK(0x473C50, CCFileClass_Exists, 9)
+	//Enable CachedAccess on first seek if the file is large enough
+	if (Entry->NeedsCachedAccess && Entry->CachedAccessToken != 0 && !Entry->CachedAccess)
+	{
+		Entry->CachedAccess = true;
+		Entry->CachedAccessPosition = Ext->Position();
+		CFM_Log("[IH] Enabling CachedAccess on {} Position {} Threshold {}\n", This->GetFileName(), Entry->CachedAccessPosition, Entry->CachedAccessThreshold);
+	}
+
+	int BytesRead;
+	//Debug::LogFormat("[IH] Reading {} Entry {} Ext {} Size {}\n", (void*)This, (void*)Entry, (void*)Ext, Size);
+	if (Entry->Biased)
+	{
+		auto ActualPosition = Entry->Position();
+		if (ActualPosition < Entry->BiasedOffset)
+		{
+			ActualPosition = Entry->Seek(Entry->BiasedOffset, FileSeekMode::Set);
+		}
+		auto BiasedEnd = Entry->BiasedOffset + Entry->BiasedLength;
+		if (ActualPosition >= BiasedEnd)
+			BytesRead = 0;
+		else
+		{
+			auto RestSize = BiasedEnd - ActualPosition;
+			if (RestSize < (int)Size) Size = RestSize;
+			BytesRead = Entry->ReadBytes(Buffer, Size);
+		}
+	}
+	else BytesRead = Entry->ReadBytes(Buffer, Size);
+	if (Entry->CachedAccess)
+	{
+		//Debug::LogFormat("[IH] Cached Read Position {} BytesRead {}\n", Entry->CachedAccessPosition, BytesRead);
+	}
+
+	return BytesRead;
+}
+
+DEFINE_HOOK(0x65CCE0, RawFileClass_ReadBytes, 5)
 {
 	GET(RawFileClass*, This, ECX);
-	GET_STACK(BOOL, WriteShared, 0x4);
+	GET_STACK(LPVOID, Buffer, 0x4);
+	GET_STACK(size_t, Size, 0x8);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(GetIHExt(This)->Exists((bool)WriteShared));
-		return 0x473CC0;
+		int BytesRead = CCFileClass_ReadBytes_Ext(This, Buffer, Size);
+		R->EAX(BytesRead);
+		return 0x65CD0C;
 	}
 	return 0;
 }
@@ -287,18 +657,6 @@ DEFINE_HOOK(0x473CD0, CCFileClass_HasHandle, 5)
 	}
 	return 0;
 }
-DEFINE_HOOK(0x473D10, CCFileClass_Open, 5)
-{
-	GET(CCFileClass*, This, ECX);
-	GET_STACK(FileAccessMode, Access, 0x4);
-	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
-	if (This->IHExtPtr && !UseOriginalFileClass())
-	{
-		R->EAX(GetIHExt(This)->Open(Access));
-		return 0x473DF3;
-	}
-	return 0;
-}
 DEFINE_HOOK(0x473B10, CCFileClass_ReadBytes, 5)
 {
 	GET(RawFileClass*, This, ECX);
@@ -307,7 +665,8 @@ DEFINE_HOOK(0x473B10, CCFileClass_ReadBytes, 5)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(GetIHExt(This)->ReadBytes(Buffer,Size));
+		int BytesRead = CCFileClass_ReadBytes_Ext(This, Buffer, Size);
+		R->EAX(BytesRead);
 		return 0x473B9B;
 	}
 	return 0;
@@ -318,9 +677,64 @@ DEFINE_HOOK(0x473BA0, CCFileClass_Seek, 5)
 	GET_STACK(int, Offset, 0x4);
 	GET_STACK(FileSeekMode , Mode, 0x8);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
+	//Debug::LogFormat("[IH] Seeking {} Offset {} Mode {}\n", (void*)This, Offset, (int)Mode);
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(GetIHExt(This)->Seek(Offset, Mode));
+		auto Entry = GetExtEntry(This);
+		auto Ext = GetIHExt(This);
+
+		//Enable CachedAccess on first seek if the file is large enough
+		if (Entry->NeedsCachedAccess && Entry->CachedAccessToken != 0 && !Entry->CachedAccess)
+		{
+			Entry->CachedAccess = true;
+			Entry->CachedAccessPosition = Ext->Position();
+			CFM_Log("[IH] Enabling CachedAccess on {} Position {} Threshold {}\n", This->GetFileName(), Entry->CachedAccessPosition, Entry->CachedAccessThreshold);
+		}
+
+
+		auto BiasedEnd = Entry->BiasedOffset + Entry->BiasedLength;
+		int Position;
+		if (Entry->Biased)
+		{
+			bool UnknownMode = false;
+			switch (Mode)
+			{
+			case FileSeekMode::Set:
+				Position = Entry->Seek(Entry->BiasedOffset + Offset, FileSeekMode::Set);
+				//Debug::LogFormat("[IH] Actual Offset {} Mode {} Position {}\n", Entry->BiasedOffset + Offset, (int)FileSeekMode::Set, Position);
+				break;
+			case FileSeekMode::Current:
+				Position = Entry->Seek(Offset, FileSeekMode::Current);
+				//Debug::LogFormat("[IH] Actual Offset {} Mode {} Position {}\n", Offset, (int)FileSeekMode::Current, Position);
+				break;
+			case FileSeekMode::End:
+				Position = Entry->Seek(BiasedEnd + Offset, FileSeekMode::Set);
+				//Debug::LogFormat("[IH] Actual Offset {} Mode {} Position {}\n", BiasedEnd + Offset, (int)FileSeekMode::Set, Position);
+				break;
+			default:
+				UnknownMode = true;
+				break;
+			}
+			if (UnknownMode)
+			{
+				//return 0 on error
+				//like what gamemd does
+				This->CDCheck(ERROR_INVALID_BLOCK, 0, This->GetFileName());
+				Position = 0;
+			}
+			else
+			{
+				if (Position < Entry->BiasedOffset)
+					Position = Entry->Seek(Entry->BiasedOffset, FileSeekMode::Set);
+				if (Position > BiasedEnd)
+					Position = Entry->Seek(BiasedEnd, FileSeekMode::Set);
+				Position -= Entry->BiasedOffset;
+			}
+		}
+		else Position = Entry->Seek(Offset, Mode);
+		//Debug::LogFormat("[IH] Final Position {}\n", Position);
+		R->EAX(Position);
+
 		return 0x473BF8;
 	}
 	return 0;
@@ -331,7 +745,14 @@ DEFINE_HOOK(0x473C00, CCFileClass_GetFileSize, 7)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(GetIHExt(This)->GetFileSize());
+		auto Entry = GetExtEntry(This);
+		auto Ext = GetIHExt(This);
+		int Size;
+		if (Entry->Biased)
+			Size = Entry->BiasedLength;
+		else
+			Size = Ext->GetFileSize();
+		R->EAX(Size);
 		return 0x473C10;
 	}
 	return 0;
@@ -344,7 +765,10 @@ DEFINE_HOOK(0x473AE0, CCFileClass_WriteBytes, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		R->EAX(GetIHExt(This)->WriteBytes(Buffer, Size));
+		auto Entry = GetExtEntry(This);
+		auto Ext = GetIHExt(This);
+		if (Entry->CachedAccess)Entry->CloseCache();
+		R->EAX(Ext->WriteBytes(Buffer, Size));
 		return 0x473B0D;
 	}
 	return 0;
@@ -381,7 +805,15 @@ DEFINE_HOOK(0x473CE0, CCFileClass_Close, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		GetIHExt(This)->Close();
+		auto Entry = GetExtEntry(This);
+		if (Entry->CachedAccess)
+		{
+			Entry->CachedAccessClosed = true;
+		}
+		else
+		{
+			GetIHExt(This)->Close();
+		}
 		return 0x473D02;
 	}
 	return 0;
@@ -392,9 +824,7 @@ DEFINE_HOOK(0x4019A0, CCFileClass_Destructor_III, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		GetIHExt(This)->~IHFileClass();
-		CRT::_delete(This->IHExtPtr);
-		This->IHExtPtr = nullptr;
+		RemoveExt(This);
 	}
 	return 0;
 }
@@ -404,9 +834,7 @@ DEFINE_HOOK(0x535A60, CCFileClass_Destructor_II, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		GetIHExt(This)->~IHFileClass();
-		CRT::_delete(This->IHExtPtr);
-		This->IHExtPtr = nullptr;
+		RemoveExt(This);
 	}
 	return 0;
 }
@@ -416,9 +844,17 @@ DEFINE_HOOK(0x535A70, CCFileClass_Destructor, 6)
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
 	{
-		GetIHExt(This)->~IHFileClass();
-		CRT::_delete(This->IHExtPtr);
-		This->IHExtPtr = nullptr;
+		RemoveExt(This);
+	}
+	return 0;
+}
+DEFINE_HOOK(0x431B80, BufferIOFileClass_Destructor_Static, 6)
+{
+	GET(BufferIOFileClass*, This, ECX);
+	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
+	if (This->IHExtPtr && !UseOriginalFileClass())
+	{
+		RemoveExt(This);
 	}
 	return 0;
 }

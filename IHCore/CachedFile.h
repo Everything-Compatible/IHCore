@@ -2,6 +2,14 @@
 #include <IH.File.h>
 #include <IH.Loader.h>
 
+//Set to 1 when testing Cached File Manager
+//#define CFM_DebugMode 1
+#if CFM_DebugMode
+#define CFM_Log  Debug::LogFormat
+#else
+#define CFM_Log(...)
+#endif
+
 namespace CachedFile
 {
 	static constexpr size_t CachePageSize = 16 * 1024 * 1024; //8MB per page
