@@ -24,3 +24,6 @@ extern InitialLoad::Service<InitialLoadParam_RegisterFunction>
 	Service_RegisterIHFileFilter,// bool(__cdecl*)(const char*)
 	Service_RegisterListenerAccess,// FuncHandle (__cdecl*)(const char*) FOR INTERNAL USE
 	Service_RegisterAddressCommentProvider;// const char* (__cdecl *)(const AddressCommentInfo&)
+
+extern InitialLoad::Service<InitialLoadParam_RegisterTag>
+	Service_RegisterIHFileTag;

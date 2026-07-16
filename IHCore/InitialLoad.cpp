@@ -28,3 +28,6 @@ InitialLoad::Service<InitialLoadParam_RegisterFunction>
 	Service_RegisterIHFileFilter("IHFile::RegisterIHFileFilter"),//名字分大小写
 	Service_RegisterListenerAccess("EC::Internal::ListenerAccess"),//名字分大小写
 	Service_RegisterAddressCommentProvider("EC::RegisterAddressCommentProvider");//名字分大小写
+
+InitialLoad::Service<InitialLoadParam_RegisterTag>
+	Service_RegisterIHFileTag("IHFile::RegisterIHFileTag");//名字分大小写
