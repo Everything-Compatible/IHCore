@@ -1200,6 +1200,12 @@
     <ClInclude Include="ExtIni.h">
       <Filter>INI</Filter>
     </ClInclude>
+    <ClInclude Include="CachedFile.h">
+      <Filter>File System</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtBink.h">
+      <Filter>File System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1363,6 +1369,12 @@
     </ClCompile>
     <ClCompile Include="ExtIni.cpp">
       <Filter>INI</Filter>
+    </ClCompile>
+    <ClCompile Include="CachedFile.cpp">
+      <Filter>File System</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtBink.cpp">
+      <Filter>File System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

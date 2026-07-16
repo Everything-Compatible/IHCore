@@ -115,6 +115,7 @@
       </DisableSpecificWarnings>
       <ExternalWarningLevel>Level2</ExternalWarningLevel>
       <MinimalRebuild>false</MinimalRebuild>
+      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -187,9 +188,11 @@
     <ClInclude Include="..\Common\LocalData.h" />
     <ClInclude Include="..\Common\Logger\Debug.h" />
     <ClInclude Include="..\Common\ToolFunc.h" />
+    <ClInclude Include="CachedFile.h" />
     <ClInclude Include="ConfData.h" />
     <ClInclude Include="ECDbgConsole.h" />
     <ClInclude Include="ECInterprocess.h" />
+    <ClInclude Include="ExtBink.h" />
     <ClInclude Include="ExtCD.h" />
     <ClInclude Include="ExtCsf.h" />
     <ClInclude Include="ExtFile.h" />
@@ -555,6 +558,8 @@
     <ClCompile Include="..\Common\LocalLibManager.cpp" />
     <ClCompile Include="..\Common\Logger\Debug.cpp" />
     <ClCompile Include="..\Common\ToolFunc.cpp" />
+    <ClCompile Include="CachedFile.cpp" />
+    <ClCompile Include="ExtBink.cpp" />
     <ClCompile Include="Init.Info.cpp" />
     <ClCompile Include="DaemonProc.cpp" />
     <ClCompile Include="dllmain.cpp" />

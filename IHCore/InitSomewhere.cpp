@@ -7,6 +7,7 @@ void ConfigJson_InitBeforeEverything();
 void HotKey_InitBeforeEverything();
 void DebugConsole_InitBeforeEverything();
 void ExtMsgList_InitBeforeEverything();
+void ExtBink_InitBeforeEverything();
 
 void InitBeforeEverything()
 {
@@ -18,6 +19,7 @@ void InitBeforeEverything()
 	HotKey_InitBeforeEverything();
 	DebugConsole_InitBeforeEverything();
 	ExtMsgList_InitBeforeEverything();
+	ExtBink_InitBeforeEverything();
 	StringManagerExt::Apply();
 
 	for (auto hd : ECListener::GetAll("EC::InitBeforeEverything"))
