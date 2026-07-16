@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <GeneralDefinitions.h>
 #include <YRAllocator.h>
@@ -19,6 +19,8 @@ enum class FileSeekMode : int {
 	Current = 1 , // SEEK_CUR
 	End = 2 // SEEK_END
 };
+
+struct IHExtPtrType;
 
 //--------------------------------------------------------------------
 //Abstract File class
@@ -118,7 +120,7 @@ public:
 	int FileSize;
 	HANDLE Handle;
 	const char* FileName;
-	void* IHExtPtr;
+	IHExtPtrType* IHExtPtr;
 	//short unknown_short_1C;	//FatTime?
 	//short unknown_short_1E;	//FatDate?
 	bool FileNameAllocated;
