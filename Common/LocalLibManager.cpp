@@ -49,6 +49,7 @@ namespace Local
 	std::unordered_map<std::string, VClass> IHFileStreamer;
 	std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;
 	std::unordered_map<std::string, LibFuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
+	std::unordered_map<std::string, CachedAccessInfo, UpperHash, UpperEqualPred> IHFileCachedAccess;
 	std::unordered_map<std::string, std::vector<FuncInfo*>> NamedFunc;
 	std::unordered_map<std::string, ContextFunc_t> ContextMap;
 	std::unordered_map<std::string, BinderType> BinderMap;

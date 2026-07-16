@@ -120,11 +120,18 @@ namespace Local
 		size_t Size;
 	};
 
+	struct CachedAccessInfo
+	{
+		size_t Threshold{ 1024 * 1024 };//1MB
+		FileIterationType IterType{ FileIterationType::RandomAccess };
+	};
+
 	extern std::vector<LibType> Libs;
 	extern std::unordered_map<std::string, LibType*> LibMap;
 	extern std::unordered_map<std::string, VClass> IHFileStreamer;
 	extern std::unordered_map<std::string, std::string, UpperHash, UpperEqualPred> IHFileBinder;//name to stream
 	extern std::unordered_map<std::string, LibFuncHandle, UpperHash, UpperEqualPred> IHFileFilter;
+	extern std::unordered_map<std::string, CachedAccessInfo, UpperHash, UpperEqualPred> IHFileCachedAccess;
 	extern std::unordered_map<std::string, std::vector<FuncInfo*>> NamedFunc;
 	extern std::unordered_map<std::string, ContextFunc_t> ContextMap;
 	extern std::unordered_map<std::string, BinderType> BinderMap;
