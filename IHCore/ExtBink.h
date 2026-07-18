@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <YRPP.h>
 
 #define BINKIOPROCESSOR       0x02000000L // Set an io processor (call BinkIO first)
@@ -44,3 +44,7 @@ void __stdcall ExtBink_SetIO(BinkIOInitFn callback);
 int __stdcall ExtBink_Open(DWORD Handle, DWORD Flags);
 
 void ExtBink_InitBeforeEverything();
+
+// Returns the current .bik filename for proxy audio replacement.
+// Set by MixFileClass_Offset_Impl before BinkOpen, cleared after.
+extern "C" __declspec(dllexport) const char* __stdcall ExtBink_GetCurrentBikName();
