@@ -1,4 +1,4 @@
-﻿#include "ExtBink.h"
+#include "ExtBink.h"
 #include <stdexcept>
 #include "Patch.h"
 #include "Debug.h"
@@ -49,6 +49,14 @@ int __stdcall ExtBink_Open(DWORD Handle, DWORD Flags)
 
 std::unordered_map<BINKIO*, BinkIOUserData> BinkIOUserDataMap;
 BINKIO* LastBinkIO = nullptr;
+
+// Global .bik filename for proxy audio replacement
+static char g_currentBikName[MAX_PATH] = "";
+
+extern "C" __declspec(dllexport) const char* __stdcall ExtBink_GetCurrentBikName()
+{
+    return g_currentBikName;
+}
 
 namespace ExtBink
 {
@@ -194,6 +202,11 @@ namespace ExtBink
 	bool __fastcall MixFileClass_Offset_Impl(const char* filename, void** data, MixFileClass** mixfile, int* offset, int* length)
 	{
 		//Debug::Log("[IH] ExtBink IN %s\n", filename);
+
+		// Save original .bik filename for proxy audio replacement
+		if (filename && filename[0])
+			strncpy_s(g_currentBikName, sizeof(g_currentBikName), filename, _TRUNCATE);
+
 		auto pCC = GameCreate<CCFileClass>(filename);
 		pCC->Open(FileAccessMode::Read);
 		//Debug::LogFormat("[IH] ExtBink CCFileClass {} Name {} Exists {} ExtPtr {}\n", (void*)pCC, pCC->GetFileName(), pCC->Exists(), (void*)pCC->IHExtPtr);
@@ -247,6 +260,7 @@ namespace ExtBink
 			ExtBinkFile = nullptr;
 			EnableExtBink = false;
 			LastBinkIO = nullptr;
+			g_currentBikName[0] = '\0';  // clear after use
 			if (!Ret && pFile)
 			{
 				// BinkOpen 失败 → close(栈BINKIO)只调了Close(), ownsFile=false不删
@@ -255,6 +269,7 @@ namespace ExtBink
 			//Debug::Log("[IH] ExtBink OFF result=%p\n", Ret);
 			return Ret;
 		}
+		g_currentBikName[0] = '\0';
 		return ExtBink_Open(Handle, Flags);
 	}
 }
