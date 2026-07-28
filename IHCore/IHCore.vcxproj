@@ -192,8 +192,10 @@
     <ClInclude Include="ConfData.h" />
     <ClInclude Include="ECDbgConsole.h" />
     <ClInclude Include="ECInterprocess.h" />
+    <ClInclude Include="ExtAudio.h" />
     <ClInclude Include="ExtBink.h" />
     <ClInclude Include="ExtCD.h" />
+    <ClInclude Include="stb_vorbis_wrapper.h" />
     <ClInclude Include="ExtCsf.h" />
     <ClInclude Include="ExtFile.h" />
     <ClInclude Include="ExtFNT.h" />
@@ -557,8 +559,10 @@
     <ClCompile Include="..\Common\Logger\Debug.cpp" />
     <ClCompile Include="..\Common\ToolFunc.cpp" />
     <ClCompile Include="CachedFile.cpp" />
+    <ClCompile Include="ExtAudio.cpp" />
     <ClCompile Include="ExtBink.cpp" />
     <ClCompile Include="Init.Info.cpp" />
+    <ClCompile Include="stb_vorbis_impl.cpp" />
     <ClCompile Include="DaemonProc.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ECDbgConsole.cpp" />
