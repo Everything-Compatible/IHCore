@@ -1,4 +1,4 @@
-﻿#include "ExtCD.h"
+#include "ExtCD.h"
 #include "Debug.h"
 #include "Patch.h"
 #include "ConfData.h"
@@ -7,6 +7,7 @@
 #include "..\Common\LocalData.h"
 #include <Helpers/Macro.h>
 #include "CachedFile.h"
+#include "ExtAudio.h"
 
 CDExt CDExt_Instance(&CDDrives::Instance);
 
@@ -252,6 +253,135 @@ bool HasBindingIHFile(const char* pFileName)
 	return !GetBindingIHFile(pFileName).empty();
 }
 
+//=============================================================================
+// OGG audio fallback helpers
+//=============================================================================
+
+// Search for a file across all game search paths (same paths used by
+// CDFileClass::SetFileName). Returns the first match.
+static bool FindFileInGamePaths(const char* fileName, std::string& outFullPath)
+{
+	// 1. PathFirst (checked in order)
+	for (auto& p : CDExt_Instance.PathFirst)
+	{
+		std::string full = p + fileName;
+		if (GetFileAttributesA(full.c_str()) != INVALID_FILE_ATTRIBUTES)
+		{
+			outFullPath = full;
+			return true;
+		}
+	}
+
+	// 2. Current / game directory
+	if (GetFileAttributesA(fileName) != INVALID_FILE_ATTRIBUTES)
+	{
+		outFullPath = fileName;
+		return true;
+	}
+
+	// 3. PathHead (custom paths before CD)
+	for (auto& p : CDExt_Instance.PathHead)
+	{
+		std::string full = p + fileName;
+		if (GetFileAttributesA(full.c_str()) != INVALID_FILE_ATTRIBUTES)
+		{
+			outFullPath = full;
+			return true;
+		}
+	}
+
+	// 4. CD paths
+	if (!CDDrives::Instance().Paths.Empty())
+	{
+		auto PathLink = CDDrives::Instance().Paths.Header;
+		while (PathLink)
+		{
+			std::string full = std::string(((CDPath*)PathLink)->Path) + fileName;
+			if (GetFileAttributesA(full.c_str()) != INVALID_FILE_ATTRIBUTES)
+			{
+				outFullPath = full;
+				return true;
+			}
+			PathLink = PathLink->PreviousEntry;
+		}
+	}
+
+	// 5. PathTail (custom paths after CD)
+	for (auto& p : CDExt_Instance.PathTail)
+	{
+		std::string full = p + fileName;
+		if (GetFileAttributesA(full.c_str()) != INVALID_FILE_ATTRIBUTES)
+		{
+			outFullPath = full;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// OGG audio fallback: when a .WAV file is not found through normal means,
+// look for a .ogg with the same base name, decode it, and bind it via IHExt.
+void TryOggFallback(CDFileClass* pThis, const char* pFileName)
+{
+	// Only handle .WAV files
+	const char* ext = strrchr(pFileName, '.');
+	if (!ext || _stricmp(ext, ".wav") != 0)
+		return;
+
+	// Build .ogg file name from the .WAV base name
+	std::string oggName(pFileName, ext - pFileName);
+	oggName += ".ogg";
+
+	// Check if already cached; if not, search disk and decode
+	if (!OGGManager::Instance().Has(pFileName))
+	{
+		std::string oggFullPath;
+		if (!FindFileInGamePaths(oggName.c_str(), oggFullPath))
+		{
+			Debug::Log("[OGG] No .ogg fallback for \"%s\" (tried \"%s\")\n", pFileName, oggName.c_str());
+			return;
+		}
+
+		if (!OGGManager::Instance().DecodeAndCache(pFileName, oggFullPath))
+		{
+			Debug::Log("[OGG] Failed to decode \"%s\" for \"%s\"\n", oggFullPath.c_str(), pFileName);
+			return;
+		}
+	}
+
+	// Allocate IHExt memory (BiasedFileEntry + OGGMemoryFileClass)
+	auto sz = sizeof(OGGMemoryFileClass) + BiasedFileEntry::HeaderSize();
+	auto aligned = (sz + 0xF) & 0xFFFFFFF0;
+	pThis->IHExtPtr = (IHExtPtrType*)CRT::_new(aligned);
+	memset(pThis->IHExtPtr, 0, aligned);
+
+	auto Entry = GetExtEntry(pThis);
+	auto Ext = GetIHExt(pThis);
+
+	// Initialize BiasedFileEntry (no bias, no caching)
+	Entry->Biased = false;
+	Entry->NeedsCachedAccess = false;
+	Entry->CachedAccess = false;
+	Entry->BiasedLength = 0;
+	Entry->BiasedOffset = 0;
+	Entry->BiasedFileName = nullptr;
+	Entry->CachedAccessClosed = false;
+	Entry->CachedAccessThreshold = 0xFFFFFFFF;
+	Entry->CachedAccessToken = 0;
+	Entry->CachedAccessIterType = FileIterationType::RandomAccess;
+
+	// Construct OGGMemoryFileClass in-place via vtable placement
+	VTABLE_SET(Ext, GetIHFileRegisterKey<OGGMemoryFileClass>());
+
+	auto oggFile = static_cast<OGGMemoryFileClass*>(Ext);
+	oggFile->Initialize();
+	oggFile->SetFileName(pFileName);
+
+	pThis->FileName = CRT::strdup(oggFile->GetFileName());
+	Debug::Log("[OGG] Bound \"%s\" -> OGGMemoryFileClass (cached)\n", pFileName);
+}
+
 const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 {
 	//Debug::Log("[IH] Requesting \"%s\"\n", pOriginalFileName);
@@ -374,6 +504,12 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 			if (This->BufferIOFileClass::Exists(0))
 				return This->GetFileName();
 		}
+
+		// OGG audio fallback: if .WAV not found anywhere, try .ogg
+		TryOggFallback(This, pFileName);
+		if (This->IHExtPtr)
+			return GetIHExt(This)->GetFileName();
+
 		This->BufferIOFileClass::SetFileName(pFileName);
 	}
 	return This->GetFileName();
