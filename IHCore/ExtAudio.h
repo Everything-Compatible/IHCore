@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "../Common/IHLoader/IH.File.h"
 #include <string>
 #include <vector>
@@ -17,6 +17,8 @@ public:
 	// key: the original WAV filename (e.g. "SOME.WAV")
 	// oggPath: full path to the .ogg file on disk
 	bool DecodeAndCache(const std::string& key, const std::string& oggPath);
+
+	bool DecodeAndCache(const std::string& key, const std::string& oggPath, void* pBuffer, int Size);
 
 	// Query cache
 	bool Has(const std::string& key) const;
@@ -81,3 +83,6 @@ private:
 // OGG fallback entry point. Called from CDFileClass_SetFileName.
 //=============================================================================
 void TryOggFallback(CDFileClass* pThis, const char* pFileName);
+
+
+static const char* pOGGMemoryFileClassName = "OGGMemoryFileClass";
