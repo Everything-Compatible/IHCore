@@ -1,4 +1,4 @@
-#include "ExtCD.h"
+﻿#include "ExtCD.h"
 #include "Debug.h"
 #include "Patch.h"
 #include "ConfData.h"
@@ -322,7 +322,7 @@ static bool FindFileInGamePaths(const char* fileName, std::string& outFullPath)
 
 // OGG audio fallback: when a .WAV file is not found through normal means,
 // look for a .ogg with the same base name, decode it, and bind it via IHExt.
-void TryOggFallback(CDFileClass* pThis, const char* pFileName)
+void TryOggFallback_Old(CDFileClass* pThis, const char* pFileName)
 {
 	// Only handle .WAV files
 	const char* ext = strrchr(pFileName, '.');
@@ -382,6 +382,43 @@ void TryOggFallback(CDFileClass* pThis, const char* pFileName)
 	Debug::Log("[OGG] Bound \"%s\" -> OGGMemoryFileClass (cached)\n", pFileName);
 }
 
+
+// OGG audio fallback: when a .WAV file is not found through normal means,
+// look for a .ogg with the same base name, decode it, and bind it via IHExt.
+void TryOggFallback(CDFileClass* pThis, const char* pFileName)
+{
+	// Only handle .WAV files
+	const char* ext = strrchr(pFileName, '.');
+	if (!ext || _stricmp(ext, ".wav") != 0)
+		return;
+
+	// Build .ogg file name from the .WAV base name
+	std::string oggName(pFileName, ext - pFileName);
+	oggName += ".ogg";
+
+	if (!OGGManager::Instance().Has(pFileName))
+	{
+		//Check if exists
+		//if so, decode and cache it then continue
+		//if not, return
+		CCFileClass CC(oggName.c_str());
+		if (!CC.Exists())return;
+		auto Size = CC.GetFileSize();
+		if (Size <= 0)return;
+		if (!CC.Open(FileAccessMode::Read))return;
+		auto pBuffer = CC.ReadWholeFile();
+		auto Success = OGGManager::Instance().DecodeAndCache(pFileName, oggName, pBuffer, Size);
+		YRMemory::Deallocate(pBuffer);
+		CC.Close();
+		if (!Success)return;
+	}
+	
+	ClearPrevName_Impl(pThis);
+	SetName_Impl(pThis, pOGGMemoryFileClassName, pFileName);
+	Debug::Log("pThis : GetFileName() = \"%s\", pFileName = \"%s\", Size = %u, Ext = %p", pThis->GetFileName(), pFileName, pThis->GetFileSize(), pThis->IHExtPtr);
+	Debug::Log("[OGG] Bound \"%s\" -> OGGMemoryFileClass (cached)\n", pFileName);
+}
+
 const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 {
 	//Debug::Log("[IH] Requesting \"%s\"\n", pOriginalFileName);
@@ -418,6 +455,7 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 		Service_RegisterIHFile.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Register File Stream \"%hs\"\n", Param.Name);
 		Local::RegisterIHFileStream(Param.Name, { Param.vptr, Param.Size }); });
+		Local::RegisterIHFileStream(pOGGMemoryFileClassName, { GetIHFileRegisterKey<OGGMemoryFileClass>(), sizeof(OGGMemoryFileClass) });
 		Service_BindToStream.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Register File \"%hs\" Binding to \"%hs\"\n", Param.OriginalName, Param.TargetName);
 		Local::IHFileBinder.insert({ Param.OriginalName, Param.TargetName }); });

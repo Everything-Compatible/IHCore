@@ -1200,7 +1200,7 @@
       <Filter>File System</Filter>
     </ClInclude>
     <ClInclude Include="stb_vorbis_wrapper.h">
-      <Filter>File System</Filter>
+      <Filter>External</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1369,11 +1369,11 @@
     <ClCompile Include="ExtBink.cpp">
       <Filter>File System</Filter>
     </ClCompile>
-    <ClCompile Include="stb_vorbis_impl.cpp">
-      <Filter>File System</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>DllMain</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_vorbis_impl.cpp">
+      <Filter>External</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
