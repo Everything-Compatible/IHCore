@@ -1,4 +1,4 @@
-// stb_vorbis is compiled separately in stb_vorbis_impl.cpp.
+﻿// stb_vorbis is compiled separately in stb_vorbis_impl.cpp.
 // Only the thin wrapper header is included here to avoid
 // conflicts with Windows SDK headers.
 #include "stb_vorbis_wrapper.h"
@@ -56,9 +56,18 @@ bool OGGManager::DecodeAndCache(const std::string& key, const std::string& oggPa
 	}
 	fclose(fp);
 
+	return DecodeAndCache(key, oggPath, oggData.data(), (int)oggSize);
+}
+
+
+bool OGGManager::DecodeAndCache(const std::string& key, const std::string& oggPath, void* pBuffer, int Size)
+{
+	if (m_cache.find(key) != m_cache.end())
+		return true;
+
 	// Decode OGG -> PCM via stb_vorbis (memory -> memory)
 	int error = 0;
-	stb_vorbis* vorbis = stb_vorbis_open_memory(oggData.data(), (int)oggSize, &error, nullptr);
+	stb_vorbis* vorbis = stb_vorbis_open_memory((const unsigned char*)pBuffer, Size, &error, nullptr);
 	if (!vorbis)
 	{
 		Debug::Log("[OGG] stb_vorbis error %d decoding \"%s\"\n", error, oggPath.c_str());
@@ -224,6 +233,8 @@ void OGGMemoryFileClass::Initialize()
 	m_position = 0;
 	m_open = false;
 	m_initialized = false;
+	new (&m_fileName) std::string();
+	new (&m_cacheKey) std::string();
 }
 
 const char* OGGMemoryFileClass::GetFileName() const
