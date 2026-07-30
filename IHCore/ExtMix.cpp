@@ -127,11 +127,6 @@ void ConfigJson_InitBeforeEverything()
 		EnableCustomFile = true;
 		EnterDebugWhenCrash = false;
 	}
-
-	if(EnableCustomFile)
-		Debug::Log("IHCore : Custom File Enabled.\n");
-	else 
-		Debug::Log("IHCore : Custom File Disabled.\n");
 }
 
 JsonObject GetIHCoreJson()

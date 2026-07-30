@@ -9,6 +9,8 @@
 #include "CachedFile.h"
 #include "ExtAudio.h"
 
+extern bool EnableCustomFile;
+
 CDExt CDExt_Instance(&CDDrives::Instance);
 
 CDExt::CDExt(CDDrives* p) :pDrives(p) {}
@@ -631,12 +633,15 @@ bool FileClassExt::CCFileClass_Exists(bool WriteShared)
 
 void ExtCD_InitBeforeEverything()
 {
-	Patch::Apply_LJMP(0x47AE10, union_cast<void*>(&FileClassExt::CDFileClass_SetFileName));
-	Patch::Apply_LJMP(0x401940, union_cast<void*>(&FileClassExt::RawFileClass_GetFileName));
-	Patch::Apply_LJMP(0x431F10, union_cast<void*>(&FileClassExt::BufferIOFileClass_Exists));
-	Patch::Apply_LJMP(0x473D10, union_cast<void*>(&FileClassExt::CCFileClass_Open));
-	Patch::Apply_LJMP(0x473C50, union_cast<void*>(&FileClassExt::CCFileClass_Exists));
-	Patch::Apply_CALL(0x5B3C8B, union_cast<void*>(&FileClassExt::CCFileClass_Constructor_pFileName_InMixFile));
+	if (EnableCustomFile)
+	{
+		Patch::Apply_LJMP(0x47AE10, union_cast<void*>(&FileClassExt::CDFileClass_SetFileName));
+		Patch::Apply_LJMP(0x401940, union_cast<void*>(&FileClassExt::RawFileClass_GetFileName));
+		Patch::Apply_LJMP(0x431F10, union_cast<void*>(&FileClassExt::BufferIOFileClass_Exists));
+		Patch::Apply_LJMP(0x473D10, union_cast<void*>(&FileClassExt::CCFileClass_Open));
+		Patch::Apply_LJMP(0x473C50, union_cast<void*>(&FileClassExt::CCFileClass_Exists));
+		Patch::Apply_CALL(0x5B3C8B, union_cast<void*>(&FileClassExt::CCFileClass_Constructor_pFileName_InMixFile));
+	}
 };
 
 int CCFileClass_ReadBytes_Ext(RawFileClass* This, LPVOID Buffer, size_t Size)
@@ -682,6 +687,7 @@ int CCFileClass_ReadBytes_Ext(RawFileClass* This, LPVOID Buffer, size_t Size)
 
 DEFINE_HOOK(0x65CCE0, RawFileClass_ReadBytes, 5)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	GET_STACK(LPVOID, Buffer, 0x4);
 	GET_STACK(size_t, Size, 0x8);
@@ -696,6 +702,7 @@ DEFINE_HOOK(0x65CCE0, RawFileClass_ReadBytes, 5)
 }
 DEFINE_HOOK(0x473CD0, CCFileClass_HasHandle, 5)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -707,6 +714,7 @@ DEFINE_HOOK(0x473CD0, CCFileClass_HasHandle, 5)
 }
 DEFINE_HOOK(0x473B10, CCFileClass_ReadBytes, 5)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	GET_STACK(LPVOID, Buffer, 0x4);
 	GET_STACK(size_t, Size, 0x8);
@@ -721,6 +729,7 @@ DEFINE_HOOK(0x473B10, CCFileClass_ReadBytes, 5)
 }
 DEFINE_HOOK(0x473BA0, CCFileClass_Seek, 5)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	GET_STACK(int, Offset, 0x4);
 	GET_STACK(FileSeekMode , Mode, 0x8);
@@ -789,6 +798,7 @@ DEFINE_HOOK(0x473BA0, CCFileClass_Seek, 5)
 }
 DEFINE_HOOK(0x473C00, CCFileClass_GetFileSize, 7)
 {
+	if (!EnableCustomFile) return 0;
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -807,6 +817,7 @@ DEFINE_HOOK(0x473C00, CCFileClass_GetFileSize, 7)
 }
 DEFINE_HOOK(0x473AE0, CCFileClass_WriteBytes, 6)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	GET_STACK(LPVOID, Buffer, 0x4);
 	GET_STACK(size_t, Size, 0x8);
@@ -827,6 +838,7 @@ DEFINE_HOOK(0x473AE0, CCFileClass_WriteBytes, 6)
 
 DEFINE_HOOK(0x65D150, RawFileClass_CreateFile, 5)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -838,6 +850,7 @@ DEFINE_HOOK(0x65D150, RawFileClass_CreateFile, 5)
 }
 DEFINE_HOOK(0x65D190, RawFileClass_DeleteFile, 5)
 {
+	if (!EnableCustomFile) return 0;
 	GET(RawFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -849,6 +862,7 @@ DEFINE_HOOK(0x65D190, RawFileClass_DeleteFile, 5)
 }
 DEFINE_HOOK(0x473CE0, CCFileClass_Close, 6)
 {
+	if (!EnableCustomFile) return 0;
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -868,6 +882,7 @@ DEFINE_HOOK(0x473CE0, CCFileClass_Close, 6)
 }
 DEFINE_HOOK(0x4019A0, CCFileClass_Destructor_III, 6)
 {
+	if (!EnableCustomFile) return 0;
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -878,6 +893,7 @@ DEFINE_HOOK(0x4019A0, CCFileClass_Destructor_III, 6)
 }
 DEFINE_HOOK(0x535A60, CCFileClass_Destructor_II, 6)
 {
+	if (!EnableCustomFile) return 0;
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -888,6 +904,7 @@ DEFINE_HOOK(0x535A60, CCFileClass_Destructor_II, 6)
 }
 DEFINE_HOOK(0x535A70, CCFileClass_Destructor, 6)
 {
+	if (!EnableCustomFile) return 0;
 	GET(CCFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())
@@ -898,6 +915,7 @@ DEFINE_HOOK(0x535A70, CCFileClass_Destructor, 6)
 }
 DEFINE_HOOK(0x431B80, BufferIOFileClass_Destructor_Static, 6)
 {
+	if (!EnableCustomFile) return 0;
 	GET(BufferIOFileClass*, This, ECX);
 	//Debug::Log(__FUNCTION__"  %08X \"%s\"\n", This, This->GetFileName());
 	if (This->IHExtPtr && !UseOriginalFileClass())

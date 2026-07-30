@@ -1,9 +1,11 @@
-#include "ExtBink.h"
+﻿#include "ExtBink.h"
 #include <stdexcept>
 #include "Patch.h"
 #include "Debug.h"
 #include "ExtCD.h"
 #include <EC.Misc.h>
+
+extern bool EnableCustomFile;
 
 static const char* BinkDLLName = "BINKW32.DLL";
 static HMODULE BinkDLLHandle = nullptr;
@@ -303,8 +305,11 @@ void BINKIO::DestroyUserData()
 
 void ExtBink_InitBeforeEverything()
 {
-	Patch::Apply_CALL(0x432803, ExtBink::MixFileClass_Offset_Impl);
-	Patch::Apply_CALL6(0x432824, ExtBink::CreateFileA_Impl);
-	Patch::Apply_CALL6(0x43283A, ExtBink::SetFilePointer_Impl);
-	Patch::Apply_CALL6(0x432849, ExtBink::BinkOpen_Impl);
+	if (EnableCustomFile)
+	{
+		Patch::Apply_CALL(0x432803, ExtBink::MixFileClass_Offset_Impl);
+		Patch::Apply_CALL6(0x432824, ExtBink::CreateFileA_Impl);
+		Patch::Apply_CALL6(0x43283A, ExtBink::SetFilePointer_Impl);
+		Patch::Apply_CALL6(0x432849, ExtBink::BinkOpen_Impl);
+	}
 }

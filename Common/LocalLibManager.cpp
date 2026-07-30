@@ -518,6 +518,11 @@ namespace Local
 	void LocalInit()
 	{
 		Debug::Log("IHCore : Version %s , Built at %s\n", "" FINAL_VERSION_STR, __TIME__ " " __DATE__);
+		if (EnableCustomFile)
+			Debug::Log("IHCore : Custom File Enabled.\n");
+		else
+			Debug::Log("IHCore : Custom File Disabled.\n");
+
 		atexit(ExitClearImpl);
 		InitLibs();
 	}
