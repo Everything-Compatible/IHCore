@@ -13,6 +13,7 @@
 #include "IHCore/Version.h"
 
 bool EnterDebugWhenCrash = false;
+bool EnableCustomFile = true;
 
 void Internal_SetGlobalVarString(const char* Usage, const char* Key, const char* Value);
 const char8_t* GetTextDrawVariable(const std::u8string_view Key);

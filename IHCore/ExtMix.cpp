@@ -20,6 +20,7 @@ std::unordered_set<std::string, UpperHash, UpperEqualPred> WhiteList;
 extern bool EnterDebugWhenCrash;
 extern bool EnableExceptionHandler;
 extern int RemoteComponentDefaultTimeOut;
+extern bool EnableCustomFile;
 SyringeData::LibRemoteData* IHCoreData = nullptr;
 JsonFile IHCoreJson;
 JsonObject IHCoreJson_Data;
@@ -115,8 +116,22 @@ void ConfigJson_InitBeforeEverything()
 		{
 			RemoteComponentDefaultTimeOut = oDefaultTimeOut.GetInt();
 		}
+		auto oEnableCustomFile = IHCoreJson_Data.GetObjectItem("EnableCustomFile");
+		if (oEnableCustomFile.Available() && oEnableCustomFile.IsTypeBool())
+		{
+			EnableCustomFile = oEnableCustomFile.GetBool();
+		}
 	}
-	else EnterDebugWhenCrash = false;
+	else 
+	{
+		EnableCustomFile = true;
+		EnterDebugWhenCrash = false;
+	}
+
+	if(EnableCustomFile)
+		Debug::Log("IHCore : Custom File Enabled.\n");
+	else 
+		Debug::Log("IHCore : Custom File Disabled.\n");
 }
 
 JsonObject GetIHCoreJson()
