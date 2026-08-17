@@ -6,6 +6,8 @@
 #include "InitialLoad.h"
 #include "..\Common\LocalData.h"
 #include <Helpers/Macro.h>
+#include <windows.h>
+#include <cstring>
 #include "CachedFile.h"
 #include "ExtAudio.h"
 
@@ -295,6 +297,163 @@ void TryOggFallback(CDFileClass* pThis, const char* pFileName)
 	Debug::Log("[OGG] Bound \"%s\" -> OGGMemoryFileClass (cached)\n", pFileName);
 }
 
+// Build an absolute directory path from a relative ExtraPath entry.
+// A leading '\' is optional (the separator from the executable dir is inserted
+// automatically), and a trailing '\' is guaranteed.
+std::string MakeAbsoluteExtraPath(const char* relative)
+{
+	std::string base = SyringeData::ExecutableDirectoryPath();
+	if (!base.empty() && base.back() != '\\' && base.back() != '/')
+		base += '\\';
+
+	std::string rel = relative ? relative : "";
+	while (!rel.empty() && (rel.front() == '\\' || rel.front() == '/'))
+		rel.erase(rel.begin());
+
+	base += rel;
+	if (base.empty() || (base.back() != '\\' && base.back() != '/'))
+		base += '\\';
+	return base;
+}
+
+// Recursive expansion core for the '*' wildcard in an ExtraPath entry.
+// Each '*' segment expands to the immediate subdirectories at that level.
+static void ExpandExtraPathWildcard_Impl(
+	const std::string& base,
+	const std::vector<std::string>& segs,
+	size_t idx,
+	bool first)
+{
+	if (idx == segs.size())
+	{
+		if (first)
+			CDExt_Instance.PushCustomPathToFirst(base);
+		else
+			CDExt_Instance.PushCustomPathToTail(base);
+
+		Debug::Log("IHCore : [FileLoader] ExtraPath %s Registered \"%s\"\n", first ? "First" : "Last", base.c_str());
+		return;
+	}
+
+	const std::string& seg = segs[idx];
+	if (seg == "*")
+	{
+		std::string search = base + "*";
+		WIN32_FIND_DATAA fd;
+		HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
+		if (hFind == INVALID_HANDLE_VALUE)
+		{
+			Debug::Log("IHCore : [FileLoader] Wildcard scan failed (no match): \"%s\"\n", search.c_str());
+			return;
+		}
+		do
+		{
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
+				&& std::strcmp(fd.cFileName, ".") != 0
+				&& std::strcmp(fd.cFileName, "..") != 0)
+			{
+				ExpandExtraPathWildcard_Impl(base + fd.cFileName + "\\", segs, idx + 1, first);
+			}
+		} while (FindNextFileA(hFind, &fd));
+		FindClose(hFind);
+	}
+	else
+	{
+		ExpandExtraPathWildcard_Impl(base + seg + "\\", segs, idx + 1, first);
+	}
+}
+
+// Register a single ExtraPath entry (First/Last). Entries containing '*' are
+// treated as a one-level subdirectory wildcard (e.g. "\\Macjohn\\*\\" expands
+// to every direct subdirectory of Macjohn). Plain entries register as-is.
+void ExpandExtraPathEntry(const char* relative, bool first)
+{
+	if (!relative || !*relative)
+		return;
+
+	std::vector<std::string> segs;
+	std::string seg;
+	for (const char* p = relative; *p; ++p)
+	{
+		if (*p == '\\' || *p == '/')
+		{
+			if (!seg.empty()) { segs.push_back(seg); seg.clear(); }
+		}
+		else
+		{
+			seg += *p;
+		}
+	}
+	if (!seg.empty()) segs.push_back(seg);
+
+	std::string base = SyringeData::ExecutableDirectoryPath();
+	if (!base.empty() && base.back() != '\\' && base.back() != '/')
+		base += '\\';
+
+	ExpandExtraPathWildcard_Impl(base, segs, 0, first);
+}
+
+// Recursively enumerate every subdirectory under baseDir (all levels) and
+// register each one as an ExtraPath entry. The top-level base directory itself
+// is also registered. depth guards against pathological deep trees / junctions.
+void EnumerateSubdirsAsExtraPathRecursive(const std::string& baseDir, bool first, int depth)
+{
+	if (depth > 32)
+		return;
+
+	// Register the base directory itself (only at the top level; every child is
+	// registered by its parent's scan below, so no duplicates).
+	if (depth == 0)
+	{
+		if (first)
+			CDExt_Instance.PushCustomPathToFirst(baseDir);
+		else
+			CDExt_Instance.PushCustomPathToTail(baseDir);
+
+		Debug::Log("IHCore : [FileLoader] Recursive ExtraPath %s (base) \"%s\"\n", first ? "First" : "Last", baseDir.c_str());
+	}
+
+	std::string search = baseDir;
+	if (search.empty() || (search.back() != '\\' && search.back() != '/'))
+		search += '\\';
+	search += '*';
+
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
+	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		if (depth == 0)
+			Debug::Log("IHCore : [FileLoader] Recursive ExtraPath scan failed: \"%s\"\n", search.c_str());
+		return;
+	}
+
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (std::strcmp(fd.cFileName, ".") != 0 && std::strcmp(fd.cFileName, "..") != 0)
+			{
+				std::string sub = baseDir;
+				if (sub.empty() || (sub.back() != '\\' && sub.back() != '/'))
+					sub += '\\';
+				sub += fd.cFileName;
+				sub += '\\';
+
+				if (first)
+					CDExt_Instance.PushCustomPathToFirst(sub);
+				else
+					CDExt_Instance.PushCustomPathToTail(sub);
+
+				Debug::Log("IHCore : [FileLoader] Recursive ExtraPath %s \"%s\"\n", first ? "First" : "Last", sub.c_str());
+
+				// Recurse one level deeper.
+				EnumerateSubdirsAsExtraPathRecursive(sub, first, depth + 1);
+			}
+		}
+	} while (FindNextFileA(hFind, &fd));
+	FindClose(hFind);
+}
+
 const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 {
 	//Debug::Log("[IH] Requesting \"%s\"\n", pOriginalFileName);
@@ -309,15 +468,15 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 			if (Obj.Available() && Obj.IsNotEmptyArray())
 				for (const auto& s : Obj.GetArrayString())
 				{
-					CDExt_Instance.PushCustomPathToFirst(SyringeData::ExecutableDirectoryPath() + s);
-					Debug::Log("IHCore : Adding Path From Config \"%hs%hs\"\n", SyringeData::ExecutableDirectoryPath().c_str(), s.c_str());
+					Debug::Log("IHCore : Adding Path From Config \"%hs\"\n", s.c_str());
+					ExpandExtraPathEntry(s.c_str(), true);
 				}
 			Obj = cfg.GetObjectItem("ExtraPath_Last");
 			if (Obj.Available() && Obj.IsNotEmptyArray())
 				for (const auto& s : Obj.GetArrayString())
 				{
-					CDExt_Instance.PushCustomPathToTail(SyringeData::ExecutableDirectoryPath() + s);
-					Debug::Log("IHCore : Adding Path From Config \"%hs%hs\"\n", SyringeData::ExecutableDirectoryPath().c_str(), s.c_str());
+					Debug::Log("IHCore : Adding Path From Config \"%hs\"\n", s.c_str());
+					ExpandExtraPathEntry(s.c_str(), false);
 				}
 			Obj = cfg.GetObjectItem("FileRedirect");
 			if (Obj.Available() && Obj.IsTypeObject())
@@ -326,6 +485,26 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 					CDExt_Instance.AddRedirect(Original.c_str(), Target.c_str());
 					Debug::Log("IHCore : Adding Redirection From Config \"%hs\"->\"%hs\"\n", Original.c_str(), Target.c_str());
 				}
+
+			// ExtraPath_First_Recursive / ExtraPath_Last_Recursive:
+			// each entry is a base directory whose subdirectories (at every level)
+			// are all registered as ExtraPath entries at startup.
+			auto ParseRecursive = [&cfg](const char* key, bool first)
+			{
+				auto Arr = cfg.GetObjectItem(key);
+				if (!Arr.Available() || !Arr.IsNotEmptyArray())
+				{
+					Debug::Log("IHCore : [FileLoader] %s: not present or empty.\n", key);
+					return;
+				}
+				for (const auto& s : Arr.GetArrayString())
+				{
+					Debug::Log("IHCore : [FileLoader] %s base \"%hs\"\n", key, s.c_str());
+					EnumerateSubdirsAsExtraPathRecursive(MakeAbsoluteExtraPath(s.c_str()), first, 0);
+				}
+			};
+			ParseRecursive("ExtraPath_First_Recursive", true);
+			ParseRecursive("ExtraPath_Last_Recursive", false);
 		}
 
 		Service_RegisterIHFile.RefreshAndProcess([](const auto& Param)
