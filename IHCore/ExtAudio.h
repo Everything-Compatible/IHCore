@@ -13,12 +13,15 @@ class OGGManager
 public:
 	static OGGManager& Instance();
 
-	// Decode an OGG file, convert to WAV (header + PCM), and cache it.
+	// Phase 1: parse OGG header only, build WAV header, cache raw OGG data (~2ms).
 	// key: the original WAV filename (e.g. "SOME.WAV")
 	// oggPath: full path to the .ogg file on disk
-	bool DecodeAndCache(const std::string& key, const std::string& oggPath);
+	bool CacheOggHeader(const std::string& key, const std::string& oggPath);
+	bool CacheOggHeader(const std::string& key, const std::string& oggPath, void* pBuffer, int Size);
 
-	bool DecodeAndCache(const std::string& key, const std::string& oggPath, void* pBuffer, int Size);
+	// Phase 2: deferred decode + resample to 22050 Hz.
+	// Triggered on first ReadBytes past byte 44; idempotent.
+	bool EnsurePcmDecoded(const std::string& key);
 
 	// Query cache
 	bool Has(const std::string& key) const;
@@ -36,7 +39,14 @@ private:
 
 	struct Entry
 	{
-		std::vector<uint8_t> data;	// Complete WAV file: RIFF header + PCM
+		// Phase 1: header-only parse (~2ms)
+		std::vector<uint8_t> wavHeader;   // 44-byte precomputed WAV header (22050 Hz / 16-bit)
+		uint32_t             finalDataSize = 0; // Expected PCM byte count after resampling
+		std::vector<uint8_t> rawOgg;      // Raw compressed OGG data (DLL-heap copy for Phase 2)
+
+		// Phase 2: deferred decode + resample (triggered by ReadBytes past byte 44)
+		bool                 pcmReady = false;
+		// When pcmReady=true, wavHeader has PCM appended → complete WAV in memory
 	};
 
 	std::unordered_map<std::string, Entry> m_cache;

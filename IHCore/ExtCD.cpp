@@ -285,7 +285,7 @@ void TryOggFallback(CDFileClass* pThis, const char* pFileName)
 		if (Size <= 0)return;
 		if (!CC.Open(FileAccessMode::Read))return;
 		auto pBuffer = CC.ReadWholeFile();
-		auto Success = OGGManager::Instance().DecodeAndCache(pFileName, oggName, pBuffer, Size);
+		auto Success = OGGManager::Instance().CacheOggHeader(pFileName, oggName, pBuffer, Size);
 		YRMemory::Deallocate(pBuffer);
 		CC.Close();
 		if (!Success)return;
