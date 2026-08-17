@@ -1172,6 +1172,9 @@
     <ClInclude Include="ExtCD.h">
       <Filter>File System</Filter>
     </ClInclude>
+    <ClInclude Include="MixOverlay.h">
+      <Filter>File System</Filter>
+    </ClInclude>
     <ClInclude Include="InfoStack.h">
       <Filter>External</Filter>
     </ClInclude>
@@ -1352,6 +1355,9 @@
       <Filter>Text Drawing</Filter>
     </ClCompile>
     <ClCompile Include="ExtMix.cpp">
+      <Filter>File System</Filter>
+    </ClCompile>
+    <ClCompile Include="MixOverlay.cpp">
       <Filter>File System</Filter>
     </ClCompile>
     <ClCompile Include="ExtHotKey.cpp">

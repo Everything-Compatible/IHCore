@@ -195,6 +195,7 @@
     <ClInclude Include="ExtAudio.h" />
     <ClInclude Include="ExtBink.h" />
     <ClInclude Include="ExtCD.h" />
+    <ClInclude Include="MixOverlay.h" />
     <ClInclude Include="stb_vorbis_wrapper.h" />
     <ClInclude Include="ExtCsf.h" />
     <ClInclude Include="ExtFile.h" />
@@ -579,6 +580,7 @@
     <ClCompile Include="ExtLog.cpp" />
     <ClCompile Include="ExtMessageList.cpp" />
     <ClCompile Include="ExtMix.cpp" />
+    <ClCompile Include="MixOverlay.cpp" />
     <ClCompile Include="ExtScenario.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="ExtHotKey.cpp" />
