@@ -10,6 +10,7 @@
 #include <cstring>
 #include "CachedFile.h"
 #include "ExtAudio.h"
+#include "MixOverlay.h"
 
 extern bool EnableCustomFile;
 
@@ -246,6 +247,8 @@ std::string GetBindingIHFile(const char* pFileName)
 	auto it = Local::IHFileBinder.find(pFileName);
 	if (it != Local::IHFileBinder.end())
 		return it->second;
+	if (MixOverlayManager::Instance().IsInternalName(pFileName))
+		return pVirtualMixFileClassName;
 	for (auto& p : Local::IHFileFilter)
 		if (p.second && ((bool(__cdecl*)(const char*))p.second)(pFileName))
 			return p.first;
@@ -526,6 +529,10 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 			{ Debug::Log("IHCore : Adding Path \"%hs\"\n", Param.Path); CDExt_Instance.PushCustomPathToTail(Param.Path); });
 		Service_CustomPathListFirst.RefreshAndProcess([](const auto& Param)
 			{ Debug::Log("IHCore : Adding Path \"%hs\"\n", Param.Path); CDExt_Instance.PushCustomPathToFirst(Param.Path); });
+		MixOverlay_InitBeforeEverything();
+		Service_AddMixDirectory.RefreshAndProcess([](const auto& Param)
+			{ Debug::Log("IHCore : Adding MixDirectory \"%hs\" -> \"%hs\" (%s)\n", Param.Directory, Param.Mix, Param.First ? "First" : "Last");
+			MixOverlayManager::Instance().Add(Param.Directory, Param.Mix, Param.First); });
 		Service_RegisterIHFileTag.RefreshAndProcess([](const auto& Param)
 			{
 				auto Value = Internal_GetGlobalVarPtr(Param.TagType, Param.TagVar);
@@ -672,8 +679,26 @@ BOOL FileClassExt::CCFileClass_Open(FileAccessMode Mode)
 	This->Close();
 	if ( (Mode & FileAccessMode::Write) || This->BufferIOFileClass::Exists(false))
 		return This->CDFileClass::Open(Mode);
+
+	const uint8_t* overlayData = nullptr;
+	int overlaySize = 0;
+	if (MixOverlayManager::Instance().TryGetOverlayFile(Name.c_str(), true, overlayData, overlaySize))
+	{
+		new (&This->Buffer) MemoryBuffer((void*)overlayData, overlaySize);
+		This->Position = 0;
+		return TRUE;
+	}
+
 	if (!MixFileClass::Offset(Name.c_str(), &pBuffer, &mixfile, &Offset, &Size))
+	{
+		if (MixOverlayManager::Instance().TryGetOverlayFile(Name.c_str(), false, overlayData, overlaySize))
+		{
+			new (&This->Buffer) MemoryBuffer((void*)overlayData, overlaySize);
+			This->Position = 0;
+			return TRUE;
+		}
 		return This->CDFileClass::Open(Mode);
+	}
 	if (pBuffer || !mixfile)
 	{
 		if (This != (CCFileClass*)((DWORD)-88))
@@ -792,21 +817,35 @@ bool FileClassExt::CCFileClass_Exists(bool WriteShared)
 	else
 	{
 		auto Name = This->GetFileName();
+
+		const uint8_t* overlayData = nullptr;
+		int overlaySize = 0;
+		if (MixOverlayManager::Instance().TryGetOverlayFile(Name, true, overlayData, overlaySize))
+		{
+			This->Availablility = 1;
+			return true;
+		}
+
 		if (MixFileClass::Offset(Name, 0, 0, 0, 0))
 		{
 			This->Availablility = 1;
 			return true;
 		}
-		else if (This->BufferIOFileClass::Exists(false))
+
+		if (MixOverlayManager::Instance().TryGetOverlayFile(Name, false, overlayData, overlaySize))
 		{
 			This->Availablility = 1;
 			return true;
 		}
-		else
+
+		if (This->BufferIOFileClass::Exists(false))
 		{
-			This->Availablility = 2;
-			return false;
+			This->Availablility = 1;
+			return true;
 		}
+
+		This->Availablility = 2;
+		return false;
 	}
 }
 

@@ -10,6 +10,9 @@ extern InitialLoad::Service<InitialLoadParam_CustomFile>
 	Service_StringTable,
 	Service_MixFile;
 
+extern InitialLoad::Service<InitialLoadParam_AddMixDirectory>
+	Service_AddMixDirectory;
+
 extern InitialLoad::Service<InitialLoadParam_StringTablePair>
 	Service_StringTableAddPair;
 
