@@ -298,16 +298,60 @@ void TryOggFallback(CDFileClass* pThis, const char* pFileName)
 }
 
 // ExtraPath glob semantics (conventional):
-//   *  = single-level wildcard  - matches exactly one directory level (immediate children)
-//   ** = recursive wildcard     - matches zero or more directory levels
+//   *       = single-level wildcard  - matches any chars within one segment (e.g. "INI_*" matches "INI_1", "INI_Foo")
+//   ?       = single-char wildcard   - matches exactly one char within a segment
+//   **      = recursive wildcard     - matches zero or more directory levels, must be a whole segment
 // Examples:
 //   "Assets"                -> <exe>/Assets/
 //   "Assets/*"              -> <exe>/Assets/<each child>/
+//   "Assets/INI_*"          -> <exe>/Assets/<each child matching INI_*>/  (segment-level wildcard)
 //   "Assets/**"             -> <exe>/Assets/ and every descendant recursively
 //   "Assets/**/Textures"    -> every "Textures" at any depth under Assets
+//   "Assets/**/INI_*"       -> every INI_* directory at any depth under Assets (common use case)
 //   "**"                   -> <exe>/ and every descendant
-// Rules: "*" and "**" must be a whole path segment (delimited by \ or /).
+// Rules: "*" and "?" are allowed inside a segment; "**" must be a whole segment.
 // Consecutive "**/**" is collapsed to a single "**".
+
+// Case-insensitive wildcard match for a single path segment.
+// "*" matches any sequence (including empty), "?" matches exactly one char.
+static bool WildcardMatchSegment(const std::string& pat, const std::string& str)
+{
+	size_t p = 0, s = 0;
+	size_t star = std::string::npos;
+	size_t match = 0;
+	while (s < str.size())
+	{
+		if (p < pat.size() && pat[p] == '?')
+		{
+			++p; ++s;
+		}
+		else if (p < pat.size() && std::tolower((unsigned char)pat[p]) == std::tolower((unsigned char)str[s]))
+		{
+			++p; ++s;
+		}
+		else if (p < pat.size() && pat[p] == '*')
+		{
+			star = p++;
+			match = s;
+		}
+		else if (star != std::string::npos)
+		{
+			p = star + 1;
+			s = ++match;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	while (p < pat.size() && pat[p] == '*') ++p;
+	return p == pat.size();
+}
+
+static bool IsSegmentWildcard(const std::string& seg)
+{
+	return seg.find('*') != std::string::npos || seg.find('?') != std::string::npos;
+}
 
 // Core recursive expansion for ExtraPath glob.
 // depth guards against pathological deep trees / junctions (limit 64).
@@ -333,28 +377,7 @@ static void ExpandExtraPathWildcard_Impl(
 	}
 
 	const std::string& seg = segs[idx];
-	if (seg == "*")
-	{
-		std::string search = base + "*";
-		WIN32_FIND_DATAA fd;
-		HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
-		if (hFind == INVALID_HANDLE_VALUE)
-		{
-			Debug::Log("IHCore : [FileLoader] Wildcard \"*\" no match under \"%s\"\n", base.c_str());
-			return;
-		}
-		do
-		{
-			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
-				&& std::strcmp(fd.cFileName, ".") != 0
-				&& std::strcmp(fd.cFileName, "..") != 0)
-			{
-				ExpandExtraPathWildcard_Impl(base + fd.cFileName + "\\", segs, idx + 1, first, depth + 1);
-			}
-		} while (FindNextFileA(hFind, &fd));
-		FindClose(hFind);
-	}
-	else if (seg == "**")
+	if (seg == "**")
 	{
 		// Collapse consecutive "**" (e.g. "**/**" == "**")
 		size_t next = idx + 1;
@@ -386,6 +409,36 @@ static void ExpandExtraPathWildcard_Impl(
 		} while (FindNextFileA(hFind, &fd));
 		FindClose(hFind);
 	}
+	else if (IsSegmentWildcard(seg))
+	{
+		// Segment-level wildcard: "*" / "?" / "INI_*" etc.
+		// Enumerate immediate children and filter by WildcardMatchSegment.
+		std::string search = base + "*";
+		WIN32_FIND_DATAA fd;
+		HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
+		if (hFind == INVALID_HANDLE_VALUE)
+		{
+			Debug::Log("IHCore : [FileLoader] Wildcard \"%s\" no match under \"%s\"\n", seg.c_str(), base.c_str());
+			return;
+		}
+		bool any = false;
+		do
+		{
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
+				&& std::strcmp(fd.cFileName, ".") != 0
+				&& std::strcmp(fd.cFileName, "..") != 0)
+			{
+				if (WildcardMatchSegment(seg, fd.cFileName))
+				{
+					any = true;
+					ExpandExtraPathWildcard_Impl(base + fd.cFileName + "\\", segs, idx + 1, first, depth + 1);
+				}
+			}
+		} while (FindNextFileA(hFind, &fd));
+		FindClose(hFind);
+		if (!any)
+			Debug::Log("IHCore : [FileLoader] Wildcard \"%s\" no match under \"%s\"\n", seg.c_str(), base.c_str());
+	}
 	else
 	{
 		// Literal segment - append as-is and continue.
@@ -393,8 +446,8 @@ static void ExpandExtraPathWildcard_Impl(
 	}
 }
 
-// Register a single ExtraPath entry (First/Last) supporting "*" and "**".
-// Uses conventional glob meaning: "*" = one level, "**" = zero or more levels.
+// Register a single ExtraPath entry (First/Last) supporting "*", "?" and "**".
+// Uses conventional glob meaning: "*" / "?" = within one level, "**" = zero or more levels.
 void ExpandExtraPathEntry(const char* relative, bool first)
 {
 	if (!relative || !*relative)
