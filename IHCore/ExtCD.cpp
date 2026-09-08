@@ -297,33 +297,74 @@ void TryOggFallback(CDFileClass* pThis, const char* pFileName)
 	Debug::Log("[OGG] Bound \"%s\" -> OGGMemoryFileClass (cached)\n", pFileName);
 }
 
-// Build an absolute directory path from a relative ExtraPath entry.
-// A leading '\' is optional (the separator from the executable dir is inserted
-// automatically), and a trailing '\' is guaranteed.
-std::string MakeAbsoluteExtraPath(const char* relative)
+// ExtraPath glob semantics (conventional):
+//   *       = single-level wildcard  - matches any chars within one segment (e.g. "INI_*" matches "INI_1", "INI_Foo")
+//   ?       = single-char wildcard   - matches exactly one char within a segment
+//   **      = recursive wildcard     - matches zero or more directory levels, must be a whole segment
+// Examples:
+//   "Assets"                -> <exe>/Assets/
+//   "Assets/*"              -> <exe>/Assets/<each child>/
+//   "Assets/INI_*"          -> <exe>/Assets/<each child matching INI_*>/  (segment-level wildcard)
+//   "Assets/**"             -> <exe>/Assets/ and every descendant recursively
+//   "Assets/**/Textures"    -> every "Textures" at any depth under Assets
+//   "Assets/**/INI_*"       -> every INI_* directory at any depth under Assets (common use case)
+//   "**"                   -> <exe>/ and every descendant
+// Rules: "*" and "?" are allowed inside a segment; "**" must be a whole segment.
+// Consecutive "**/**" is collapsed to a single "**".
+
+// Case-insensitive wildcard match for a single path segment.
+// "*" matches any sequence (including empty), "?" matches exactly one char.
+static bool WildcardMatchSegment(const std::string& pat, const std::string& str)
 {
-	std::string base = SyringeData::ExecutableDirectoryPath();
-	if (!base.empty() && base.back() != '\\' && base.back() != '/')
-		base += '\\';
-
-	std::string rel = relative ? relative : "";
-	while (!rel.empty() && (rel.front() == '\\' || rel.front() == '/'))
-		rel.erase(rel.begin());
-
-	base += rel;
-	if (base.empty() || (base.back() != '\\' && base.back() != '/'))
-		base += '\\';
-	return base;
+	size_t p = 0, s = 0;
+	size_t star = std::string::npos;
+	size_t match = 0;
+	while (s < str.size())
+	{
+		if (p < pat.size() && pat[p] == '?')
+		{
+			++p; ++s;
+		}
+		else if (p < pat.size() && std::tolower((unsigned char)pat[p]) == std::tolower((unsigned char)str[s]))
+		{
+			++p; ++s;
+		}
+		else if (p < pat.size() && pat[p] == '*')
+		{
+			star = p++;
+			match = s;
+		}
+		else if (star != std::string::npos)
+		{
+			p = star + 1;
+			s = ++match;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	while (p < pat.size() && pat[p] == '*') ++p;
+	return p == pat.size();
 }
 
-// Recursive expansion core for the '*' wildcard in an ExtraPath entry.
-// Each '*' segment expands to the immediate subdirectories at that level.
+static bool IsSegmentWildcard(const std::string& seg)
+{
+	return seg.find('*') != std::string::npos || seg.find('?') != std::string::npos;
+}
+
+// Core recursive expansion for ExtraPath glob.
+// depth guards against pathological deep trees / junctions (limit 64).
 static void ExpandExtraPathWildcard_Impl(
 	const std::string& base,
 	const std::vector<std::string>& segs,
 	size_t idx,
-	bool first)
+	bool first,
+	int depth)
 {
+	if (depth > 64)
+		return;
+
 	if (idx == segs.size())
 	{
 		if (first)
@@ -336,36 +377,77 @@ static void ExpandExtraPathWildcard_Impl(
 	}
 
 	const std::string& seg = segs[idx];
-	if (seg == "*")
+	if (seg == "**")
 	{
+		// Collapse consecutive "**" (e.g. "**/**" == "**")
+		size_t next = idx + 1;
+		while (next < segs.size() && segs[next] == "**")
+			++next;
+
+		// 1) "**" matches zero levels: try to match remainder at current base
+		ExpandExtraPathWildcard_Impl(base, segs, next, first, depth);
+
+		// 2) "**" matches one or more levels: recurse into every child directory,
+		//    keeping "**" active so it can consume arbitrary depth.
+		if (depth > 32) // hard cap for recursive descent
+			return;
 		std::string search = base + "*";
 		WIN32_FIND_DATAA fd;
 		HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
 		if (hFind == INVALID_HANDLE_VALUE)
-		{
-			Debug::Log("IHCore : [FileLoader] Wildcard scan failed (no match): \"%s\"\n", search.c_str());
 			return;
-		}
 		do
 		{
 			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
 				&& std::strcmp(fd.cFileName, ".") != 0
 				&& std::strcmp(fd.cFileName, "..") != 0)
 			{
-				ExpandExtraPathWildcard_Impl(base + fd.cFileName + "\\", segs, idx + 1, first);
+				std::string sub = base + fd.cFileName + "\\";
+				// Stay at "**" (idx) to allow consuming additional levels;
+				ExpandExtraPathWildcard_Impl(sub, segs, idx, first, depth + 1);
 			}
 		} while (FindNextFileA(hFind, &fd));
 		FindClose(hFind);
 	}
+	else if (IsSegmentWildcard(seg))
+	{
+		// Segment-level wildcard: "*" / "?" / "INI_*" etc.
+		// Enumerate immediate children and filter by WildcardMatchSegment.
+		std::string search = base + "*";
+		WIN32_FIND_DATAA fd;
+		HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
+		if (hFind == INVALID_HANDLE_VALUE)
+		{
+			Debug::Log("IHCore : [FileLoader] Wildcard \"%s\" no match under \"%s\"\n", seg.c_str(), base.c_str());
+			return;
+		}
+		bool any = false;
+		do
+		{
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
+				&& std::strcmp(fd.cFileName, ".") != 0
+				&& std::strcmp(fd.cFileName, "..") != 0)
+			{
+				if (WildcardMatchSegment(seg, fd.cFileName))
+				{
+					any = true;
+					ExpandExtraPathWildcard_Impl(base + fd.cFileName + "\\", segs, idx + 1, first, depth + 1);
+				}
+			}
+		} while (FindNextFileA(hFind, &fd));
+		FindClose(hFind);
+		if (!any)
+			Debug::Log("IHCore : [FileLoader] Wildcard \"%s\" no match under \"%s\"\n", seg.c_str(), base.c_str());
+	}
 	else
 	{
-		ExpandExtraPathWildcard_Impl(base + seg + "\\", segs, idx + 1, first);
+		// Literal segment - append as-is and continue.
+		ExpandExtraPathWildcard_Impl(base + seg + "\\", segs, idx + 1, first, depth);
 	}
 }
 
-// Register a single ExtraPath entry (First/Last). Entries containing '*' are
-// treated as a one-level subdirectory wildcard (e.g. "\\Macjohn\\*\\" expands
-// to every direct subdirectory of Macjohn). Plain entries register as-is.
+// Register a single ExtraPath entry (First/Last) supporting "*", "?" and "**".
+// Uses conventional glob meaning: "*" / "?" = within one level, "**" = zero or more levels.
 void ExpandExtraPathEntry(const char* relative, bool first)
 {
 	if (!relative || !*relative)
@@ -390,68 +472,7 @@ void ExpandExtraPathEntry(const char* relative, bool first)
 	if (!base.empty() && base.back() != '\\' && base.back() != '/')
 		base += '\\';
 
-	ExpandExtraPathWildcard_Impl(base, segs, 0, first);
-}
-
-// Recursively enumerate every subdirectory under baseDir (all levels) and
-// register each one as an ExtraPath entry. The top-level base directory itself
-// is also registered. depth guards against pathological deep trees / junctions.
-void EnumerateSubdirsAsExtraPathRecursive(const std::string& baseDir, bool first, int depth)
-{
-	if (depth > 32)
-		return;
-
-	// Register the base directory itself (only at the top level; every child is
-	// registered by its parent's scan below, so no duplicates).
-	if (depth == 0)
-	{
-		if (first)
-			CDExt_Instance.PushCustomPathToFirst(baseDir);
-		else
-			CDExt_Instance.PushCustomPathToTail(baseDir);
-
-		Debug::Log("IHCore : [FileLoader] Recursive ExtraPath %s (base) \"%s\"\n", first ? "First" : "Last", baseDir.c_str());
-	}
-
-	std::string search = baseDir;
-	if (search.empty() || (search.back() != '\\' && search.back() != '/'))
-		search += '\\';
-	search += '*';
-
-	WIN32_FIND_DATAA fd;
-	HANDLE hFind = FindFirstFileA(search.c_str(), &fd);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
-		if (depth == 0)
-			Debug::Log("IHCore : [FileLoader] Recursive ExtraPath scan failed: \"%s\"\n", search.c_str());
-		return;
-	}
-
-	do
-	{
-		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			if (std::strcmp(fd.cFileName, ".") != 0 && std::strcmp(fd.cFileName, "..") != 0)
-			{
-				std::string sub = baseDir;
-				if (sub.empty() || (sub.back() != '\\' && sub.back() != '/'))
-					sub += '\\';
-				sub += fd.cFileName;
-				sub += '\\';
-
-				if (first)
-					CDExt_Instance.PushCustomPathToFirst(sub);
-				else
-					CDExt_Instance.PushCustomPathToTail(sub);
-
-				Debug::Log("IHCore : [FileLoader] Recursive ExtraPath %s \"%s\"\n", first ? "First" : "Last", sub.c_str());
-
-				// Recurse one level deeper.
-				EnumerateSubdirsAsExtraPathRecursive(sub, first, depth + 1);
-			}
-		}
-	} while (FindNextFileA(hFind, &fd));
-	FindClose(hFind);
+	ExpandExtraPathWildcard_Impl(base, segs, 0, first, 0);
 }
 
 const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
@@ -486,25 +507,6 @@ const char* FileClassExt::CDFileClass_SetFileName(char* pOriginalFileName)
 					Debug::Log("IHCore : Adding Redirection From Config \"%hs\"->\"%hs\"\n", Original.c_str(), Target.c_str());
 				}
 
-			// ExtraPath_First_Recursive / ExtraPath_Last_Recursive:
-			// each entry is a base directory whose subdirectories (at every level)
-			// are all registered as ExtraPath entries at startup.
-			auto ParseRecursive = [&cfg](const char* key, bool first)
-			{
-				auto Arr = cfg.GetObjectItem(key);
-				if (!Arr.Available() || !Arr.IsNotEmptyArray())
-				{
-					Debug::Log("IHCore : [FileLoader] %s: not present or empty.\n", key);
-					return;
-				}
-				for (const auto& s : Arr.GetArrayString())
-				{
-					Debug::Log("IHCore : [FileLoader] %s base \"%hs\"\n", key, s.c_str());
-					EnumerateSubdirsAsExtraPathRecursive(MakeAbsoluteExtraPath(s.c_str()), first, 0);
-				}
-			};
-			ParseRecursive("ExtraPath_First_Recursive", true);
-			ParseRecursive("ExtraPath_Last_Recursive", false);
 		}
 
 		Service_RegisterIHFile.RefreshAndProcess([](const auto& Param)
