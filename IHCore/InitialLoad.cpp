@@ -14,6 +14,9 @@ InitialLoad::Service<InitialLoadParam_CustomFile>
 	Service_StringTable("IHFile::AddStringTable"),//不分大小写
 	Service_MixFile("IHFile::AddMixFile");//不分大小写
 
+InitialLoad::Service<InitialLoadParam_AddMixDirectory>
+	Service_AddMixDirectory("IHFile::AddMixDirectory");//不分大小写
+
 InitialLoad::Service<InitialLoadParam_StringTablePair>
 	Service_StringTableAddPair("StringTable::AddPair");//Key不分大小写
 
