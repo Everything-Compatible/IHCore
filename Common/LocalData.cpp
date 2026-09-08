@@ -1,6 +1,7 @@
 ﻿
 #include "LocalData.h"
 #include <Windows.h>
+#include <cwchar>
 #include <map>
 #include <Debug.h>
 #include "..\IHCore\SomeData.h"
@@ -35,11 +36,63 @@ namespace IHLibList
 		}
 		return true;
 	}
+	// 定位 IHLibList.dll。
+	// 依次尝试：进程内已加载 → 注射器通过环境变量给出的扫描目录（ExtensionPacks）
+	//          → 与当前模块同目录 → 游戏根目录\Patches → 游戏根目录。
+	static HMODULE FindIHLibList()
+	{
+		if (HMODULE h = GetModuleHandleW(L"IHLibList.dll"))
+			return h;
+
+		// 认注射器配置：Syringe 把实际扫描过的扩展目录以分号分隔写入环境变量
+		{
+			WCHAR buf[8192] = { 0 };
+			if (DWORD const n = GetEnvironmentVariableW(L"SYRINGE_EXTENSION_DIRS", buf, 8192);
+				n > 0)
+			{
+				DWORD const Need = 13; // len(L"\\IHLibList.dll") + 1
+				WCHAR* ctx = nullptr;
+				for (WCHAR* d = wcstok_s(buf, L";", &ctx); d; d = wcstok_s(nullptr, L";", &ctx))
+				{
+					if (wcslen(d) + Need >= MAX_PATH) continue;
+					WCHAR path[MAX_PATH] = { 0 };
+					wcscpy_s(path, d);
+					wcscat_s(path, L"\\IHLibList.dll");
+					if (HMODULE h = LoadLibraryW(path))
+						return h;
+				}
+			}
+		}
+
+		// 与当前模块同目录（支持部署到根目录之外的扩展包子目录）
+		HMODULE self = nullptr;
+		if (GetModuleHandleExW(
+				GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
+				| GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+				reinterpret_cast<LPCWSTR>(&FindIHLibList), &self)
+			&& self)
+		{
+			WCHAR path[MAX_PATH] = { 0 };
+			if (DWORD const len = GetModuleFileNameW(self, path, MAX_PATH);
+				len > 0 && len < MAX_PATH)
+			{
+				if (WCHAR* const sep = wcsrchr(path, L'\\'))
+					*(sep + 1) = 0;
+				wcscat_s(path, L"IHLibList.dll");
+				if (HMODULE h = LoadLibraryW(path))
+					return h;
+			}
+		}
+
+		if (HMODULE h = LoadLibraryW(L"Patches\\IHLibList.dll"))
+			return h;
+		return LoadLibraryW(L"IHLibList.dll");
+	}
+
 	bool Initialize()
 	{
 		if (Available)return true;
-		LibListDLL = LoadLibraryW(L"Patches\\IHLibList.dll");
-		if (LibListDLL == NULL)LibListDLL = LoadLibraryW(L"IHLibList.dll");
+		LibListDLL = FindIHLibList();
 		if (LibListDLL == NULL)
 		{
 			Debug::Log("IHCore : Cannot initialize LibList\n");
